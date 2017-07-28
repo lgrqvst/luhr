@@ -48,3 +48,7 @@ A small game to learn more about canvas, to strengthen my JavaScript and to brus
 - [ ] Missions (maybe just randomizing the environment)
 - [ ] Check that math again.
 - [ ] Structure and clean up code. Make it conform to best practices.
+
+### Stretch goals (if I have time and energy)
+
+- [ ] Add some sort of story elements (cutscenes? dialogue? npcs? maybe randomize it?)
