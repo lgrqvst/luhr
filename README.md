@@ -2,13 +2,25 @@
 
 A small game to learn more about canvas, to strengthen my JavaScript and to brush up on my trigonometry.
 
+Play it [here](https://lgrqvst.github.io/luhr/build).
+
+Controls:
+
+Q - Engine on/off
+W - Main thruster
+A - Turn counter-clockwise
+D - Turn clockwise
+S - Boost (Drains engine power quickly)
+E - Stabilizers (Drains engine power)
+F - Replenish engine power
+
 ## TO DO
 
 ### Ship
 - [ ] Fuel
 - [ ] Particles restore fuel
-- [ ] Thrusters
-- [ ] Thruster exhaust
+- [ ] Visible stabilizers
+- [ ] Stabilizer exhaust
 - [ ] Landing gear
 - [ ] Adjust behaviour when craft is in contact with the ground, like rolling, rather than stopping abruptly
 - [ ] Weapon turret
@@ -25,7 +37,7 @@ A small game to learn more about canvas, to strengthen my JavaScript and to brus
 - [ ] Air resistance slows down horizontal movement
 - [ ] Wind
 - [ ] Particle pulsation
-- [ ] Particle regeneration
+- [ ] Particles regenerate/reform after a certain time
 - [ ] Obstacles
 - [ ] Enemies
 - [ ] Terrain
@@ -51,4 +63,4 @@ A small game to learn more about canvas, to strengthen my JavaScript and to brus
 
 ### Stretch goals (if I have time and energy)
 
-- [ ] Add some sort of story elements (cutscenes? dialogue? npcs? maybe randomize it?)
+- [ ] Add some sort of story elements (cutscenes? dialogue? NPCs? maybe randomize it?)
