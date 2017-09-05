@@ -6,12 +6,12 @@ Play it [here](https://lgrqvst.github.io/luhr/build).
 
 Controls:
 
-Q - Engine on/off
-W - Main thruster
-A - Turn counter-clockwise
-D - Turn clockwise
-S - Boost (Drains engine power quickly)
-E - Stabilizers (Drains engine power)
+Q - Engine on/off  
+W - Main thruster  
+A - Turn counter-clockwise  
+D - Turn clockwise  
+S - Boost (Drains engine power quickly)  
+E - Stabilizers (Drains engine power)  
 F - Replenish engine power
 
 ## TO DO
