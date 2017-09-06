@@ -1,0 +1,27 @@
+{
+  "name": "ravr",
+  "version": "1.0.0",
+  "description": "A small game to learn more about canvas, to strengthen my JavaScript and to brush up on my trigonometry.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Johan Lagerqvist",
+  "license": "MIT",
+  "devDependencies": {
+    "browser-sync": "^2.18.13",
+    "del": "^3.0.0",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-cssnano": "^2.1.2",
+    "gulp-postcss": "^7.0.0",
+    "gulp-pug": "^3.3.0",
+    "gulp-rucksack": "^0.1.4",
+    "gulp-sourcemaps": "^2.6.1",
+    "postcss-assets": "^5.0.0",
+    "postcss-cssnext": "^3.0.2",
+    "postcss-math": "0.0.8",
+    "postcss-short-color": "^3.0.0",
+    "precss": "^2.0.0"
+  }
+}

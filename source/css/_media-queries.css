@@ -1,0 +1,32 @@
+/* min-width */
+@define-mixin min $width {
+  @media screen and (min-width: $width + px) {
+    @content;
+  }
+}
+
+/* max-width */
+@define-mixin max $width {
+  @media screen and (max-width: $width + px) {
+    @content;
+  }
+}
+
+/* min-width and max-width */
+@define-mixin minmax $min-width, $max-width {
+  @media only screen and (min-width: $min-width + px) and (max-width: $max-width + px) {
+    @content;
+  }
+}
+
+@define-mixin portrait {
+  @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation : portrait) {
+    @content;
+  }
+}
+
+@define-mixin landscape {
+  @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation : landscape) {
+    @content;
+  }
+}
