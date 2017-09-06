@@ -4,7 +4,9 @@ A small game to learn more about canvas, to strengthen my JavaScript and to brus
 
 Note: I decided to start over from scratch. This whole thing started as an improvised project, and the things I wanted to add increased exponentially as I went along, until it got to the point where I just didn't feel like touching the code anymore. I still feel it has potential though, both as a learning experience for my self, and in terms of its value as a game. Flying the ship is fun, and I want to make it a more complete experience. I also changed the name to RAVr. I'll come up with what the acronym means later.
 
-Play the old version [here](https://lgrqvst.github.io/ravr/old/build).
+Play the old version [here](https://lgrqvst.github.io/ravr/old/build/).
+
+The new version [here](https://lgrqvst.github.io/ravr/build/)
 
 ### Objectives:
 
