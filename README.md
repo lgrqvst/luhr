@@ -1,8 +1,8 @@
 # RAVr
 
-A small game to learn more about canvas, to strengthen my JavaScript and to brush up on my trigonometry.
+A small game I started making to learn more about canvas, to strengthen my JavaScript and to brush up on my trigonometry.
 
-Note: I decided to start over from scratch. This whole thing started as an improvised project, and the things I wanted to add increased exponentially as I went along, until it got to the point where I just didn't feel like touching the code anymore. I still feel it has potential though, both as a learning experience for my self, and in terms of its value as a game. Flying the ship is fun, and I want to make it a more complete experience. I also changed the name to RAVr. I'll come up with what the acronym means later.
+Note: I decided to start over from scratch. This whole thing started as an improvised project, and the things I wanted to add increased exponentially as I went along, until it got to the point where I just didn't feel like touching the code anymore. I still feel it has potential though, both as a learning opportunity for myself, and in terms of its value as a game. Flying the ship is fun, and I want to make it a more complete experience. I also changed the name to RAVr. I'll come up with what the acronym means later.
 
 Play the old version [here](https://lgrqvst.github.io/ravr/old/build/).
 
@@ -36,6 +36,7 @@ left click - Fire turret _(not yet implemented)_
 
 ### Ship
 - [ ] Rewrite the old ship
+- [ ] The stabilizer ring from the previous design should extend when the ship starts, and retract when the engine is turned off.
 - [ ] Fuel
 - [ ] Particles restore fuel
 - [ ] Visible stabilizers
@@ -63,17 +64,27 @@ left click - Fire turret _(not yet implemented)_
 - [x] Particle pulsation
 - [x] Particle flicker
 - [ ] Particles regenerate/reform after a certain time
+- [ ] Make number of particles depend on viewport size
 - [ ] Obstacles
 - [ ] Enemies
 - [ ] Threats
-- [ ] Terrain
-- [ ] Buildings
-- [ ] Background landscape (css?)
+- [ ] Procedurally generated clouds?
+- [x] A moon gently moving across the screen
+- [ ] More moons?
+- [ ] Handle the moon when it goes off-screen
+- [x] Procedurally generated mountains
+- [ ] Procedurally generated buildings
+- [x] Procedurally generated trees
+- [x] Trees sway in the wind
+- [ ] Trees react to proximity of ship
+- [ ] Buildings and mountains should move slightly depending on where the ship is, parallax-like
+- [x] Landing pad/base
+- [ ] Maybe at some point in time expand a bit on the landing pad design
+- [ ] Make the landing pad land-able
 - [ ] No-particle areas
-- [ ] Sparks when exhaust touches terrain
 - [ ] Smoke in addition to sparks
-- [ ] Safe landing pads
 - [ ] Power-ups
+- [ ] Add occasional lines in the sky to indicate wind, cartoon style
 
 ### UI
 
@@ -88,6 +99,7 @@ left click - Fire turret _(not yet implemented)_
 - [ ] Horizontal speed
 - [ ] Thruster indication
 - [ ] Box for subtitles, dialogue, etc.
+- [ ] Wind direction and strength
 
 ### Game
 

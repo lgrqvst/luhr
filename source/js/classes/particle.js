@@ -1,11 +1,11 @@
 class Particle {
   constructor() {
-    this.x = Math.round(Math.random() * w);
-    this.y = Math.round(Math.random() * h);
+    this.x = Math.round(Math.random() * VW);
+    this.y = Math.round(Math.random() * VH);
 
     this.energy = Math.round(Math.random() * 1000);
 
-    this.radiusFactor = 100;
+    this.radiusFactor = 200;
     this.targetRadiusFactor = this.radiusFactor + (25 - Math.round(Math.random() * 50));
 
     this.color = {
@@ -22,7 +22,7 @@ class Particle {
     this.targetY = this.y + (this.driftDistance - Math.round(Math.random() * this.driftDistance * 2));
   }
 
-  draw() {
+  draw(ctx) {
     let color = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
     ctx.fillStyle = color;
     ctx.beginPath();
@@ -35,10 +35,10 @@ class Particle {
     let y = (this.targetY - this.y) / (Math.round(Math.random() * 400) + 100);
     this.x += x;
     this.y += y;
-    if (this.x > w + this.energy / this.radiusFactor) this.x = 0;
-    if (this.x < 0 - this.energy / this.radiusFactor) this.x = w;
-    if (this.y > h + this.energy / this.radiusFactor) this.y = 0;
-    if (this.y < 0 - this.energy / this.radiusFactor) this.y = h;
+    if (this.x > VW + this.energy / this.radiusFactor) this.x = 0;
+    if (this.x < 0 - this.energy / this.radiusFactor) this.x = VW;
+    if (this.y > VH + this.energy / this.radiusFactor) this.y = 0;
+    if (this.y < 0 - this.energy / this.radiusFactor) this.y = VH;
     if (Math.abs(this.targetX - this.x) < 10 || Math.abs(this.targetX - this.x) > 100) this.targetX = this.x + (this.driftDistance - Math.round(Math.random() * this.driftDistance * 2));
     if (Math.abs(this.targetY - this.y) < 10 || Math.abs(this.targetY - this.y) > 100) this.targetY = this.y + (this.driftDistance - Math.round(Math.random() * this.driftDistance * 2));
   }
@@ -47,8 +47,8 @@ class Particle {
     let r = (this.targetRadiusFactor - this.radiusFactor) / 70;
     this.radiusFactor += r;
 
-    if (this.radiusFactor < 75) this.targetRadiusFactor += 50;
-    if (this.radiusFactor > 125) this.targetRadiusFactor -= 50;
+    if (this.radiusFactor < 125) this.targetRadiusFactor += 50;
+    if (this.radiusFactor > 225) this.targetRadiusFactor -= 50;
 
     if (Math.abs(this.targetRadiusFactor - this.radiusFactor) < 10) this.targetRadiusFactor = this.radiusFactor + (25 - Math.round(Math.random() * 50));
   }
@@ -66,6 +66,6 @@ class Particle {
   }
 
   deplete() {
-    
+
   }
 }
