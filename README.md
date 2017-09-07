@@ -16,7 +16,7 @@ The new version [here](https://lgrqvst.github.io/ravr/build/)
 
 ### Controls:
 
-(The _not implemented_ refers to the old version linked above. In the new version _nothing_ is implemented yet.)
+(These refer to the old version linked above. Controls for the new version will be largely the same, but with more stuff added on. See below for details of what has been implemented.)
 
 Q - Engine on/off  
 W - Main thruster  
@@ -24,18 +24,15 @@ A - Turn counter-clockwise
 D - Turn clockwise  
 S - Boost (Drains engine power quickly)  
 E - Stabilizers (Drains engine power)  
-F - Replenish engine power (Drains fuel)  
+F - Replenish engine power  
 R - Rotate to face up  
-C - Toggle harvesting (Decreases responsiveness) _(not yet implemented)_  
-X - Toggle landing gear _(not yet implemented)_  
-space - Fire front cannon _(not yet implemented)_  
-mouse - Turn turret _(not yet implemented)_  
-left click - Fire turret _(not yet implemented)_  
+T - Maintain current vector
 
 ## TO DO
 
 ### Ship
 - [ ] Rewrite the old ship
+- [ ] Ship starts on landing pad
 - [ ] The stabilizer ring from the previous design should extend when the ship starts, and retract when the engine is turned off.
 - [ ] Fuel
 - [ ] Particles restore fuel
@@ -56,6 +53,22 @@ left click - Fire turret _(not yet implemented)_
 - [ ] More details on the body (maybe red and green lights for port/starboard?)
 - [ ] Shading on body
 
+### Controls
+
+- [ ] Q - Engine on/off
+- [ ] W - Main thruster
+- [ ] A - Turn counter-clockwise
+- [ ] D - Turn clockwise
+- [ ] S - Boost (Drains engine power quickly)
+- [ ] E - Stabilizers (Drains engine power)
+- [ ] F - Replenish engine power (Drains fuel)
+- [ ] R - Rotate to face up
+- [ ] C - Toggle harvesting (Decreases responsiveness) _(not yet implemented)_
+- [ ] X - Toggle landing gear _(not yet implemented)_
+- [ ] T (or maybe some other key) - Maintain current vector
+- [ ] space - Fire front cannon _(not yet implemented)_
+- [ ] mouse - Turn turret _(not yet implemented)_
+- [ ] left click - Fire turret _(not yet implemented)_
 
 ### Environment
 
@@ -74,6 +87,7 @@ left click - Fire turret _(not yet implemented)_
 - [ ] Handle the moon when it goes off-screen
 - [x] Procedurally generated mountains
 - [ ] Procedurally generated buildings
+- [ ] Make the buildings prettier. I like the contrast of something being there, but they need to look better.
 - [x] Procedurally generated trees
 - [x] Trees sway in the wind
 - [ ] Trees react to proximity of ship
@@ -85,6 +99,8 @@ left click - Fire turret _(not yet implemented)_
 - [ ] Smoke in addition to sparks
 - [ ] Power-ups
 - [ ] Add occasional lines in the sky to indicate wind, cartoon style
+- [ ] Some stars in the sky near the top of the screen
+- [ ] Add a bit of ground at the bottom. Not aesthetically pleasing to have the trees right at the bottom of the screen.
 
 ### UI
 
@@ -92,7 +108,7 @@ left click - Fire turret _(not yet implemented)_
 - [ ] Engine power
 - [ ] Fuel
 - [ ] Fuel drain
-- [ ] Ship status/health
+- [ ] Ship status/health/hull integrity
 - [ ] Ship rotation
 - [ ] Altitude
 - [ ] Vertical speed
@@ -100,6 +116,10 @@ left click - Fire turret _(not yet implemented)_
 - [ ] Thruster indication
 - [ ] Box for subtitles, dialogue, etc.
 - [ ] Wind direction and strength
+- [ ] Add acronym meaning to the title screen
+- [ ] Add phonetic reading to the title screen
+- [ ] Something something Japanese to the title screen?? Nice aesthetic maybe?
+- [ ] About link on title screen
 
 ### Game
 

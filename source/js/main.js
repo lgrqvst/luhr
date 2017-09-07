@@ -8,9 +8,44 @@ const globals = {
   wind: 0,
 }
 
-const controls = {
+/*****************************************************************************
 
+ CONTROLS
+
+ *****************************************************************************/
+
+const controls = {
+  main: false,
+  turnCw: false,
+  turnCcw: false,
+  boost: false,
+  stabilize: false,
+  turnReset: false,
+  maintain: false,
 }
+
+window.addEventListener('keydown',(e) => {
+  // console.log(e.which);
+  let code = e.which;
+  if (code === 87) controls.main = true;
+  if (code === 65) controls.turnCcw = true;
+  if (code === 68) controls.turnCw = true;
+  if (code === 83) controls.boost = true;
+  if (code === 69) controls.stabilize = true;
+  if (code === 82) controls.turnReset = true;
+  if (code === 84) controls.maintain = true;
+});
+
+window.addEventListener('keyup',(e) => {
+  let code = e.which;
+  if (code === 87) controls.main = false;
+  if (code === 65) controls.turnCcw = false;
+  if (code === 68) controls.turnCw = false;
+  if (code === 83) controls.boost = false;
+  if (code === 69) controls.stabilize = false;
+  if (code === 82) controls.turnReset = false;
+  if (code === 84) controls.maintain = false;
+});
 
 /*****************************************************************************
 
@@ -42,6 +77,7 @@ const moons = [];
 const mountains = [];
 const landingpads = [];
 const trees = [];
+const buildings = [];
 
 let setStage = () => {
 
@@ -68,7 +104,7 @@ let setStage = () => {
   landingpads.push(p);
 
   //Generate trees
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 100; i++) {
     let x = Math.round(Math.random() * VW);
     // I want more trees of type 1 than type 2
     let type = Math.floor(Math.random() * 100 + 1) <= 85 ? 1 : 2;
@@ -81,6 +117,17 @@ let setStage = () => {
     }
     let t = new Tree(x,z,type,h,color);
     trees.push(t);
+  }
+
+  // Generate buildings
+  for (let i = 0; i < 5; i++) {
+    let x = Math.round(Math.random() * VW);
+    let type = 1;
+    let height = Math.round(Math.random() * 20 + 20);
+    let color = {}
+    color.r = color.g = color.b = Math.round(Math.random() * 75 + 50);
+    let b = new Building(x,type,height,color);
+    buildings.push(b);
   }
 
   // Generate particles
@@ -154,6 +201,10 @@ let draw = () => {
     if (e.z === 1) {
       e.draw(context1,parallax);
     }
+  })
+
+  buildings.forEach((e) => {
+    e.draw(context1,parallax)
   })
 
   landingpads.forEach((e) => {

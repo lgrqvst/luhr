@@ -1,7 +1,7 @@
 'use strict';
 
 const VW = window.innerWidth;
-const VH = window.innerHeight;
+const VH = window.innerHeight - 10;
 
 let getContext = (w, h, c) => {
   let canvas = document.createElement("canvas");
