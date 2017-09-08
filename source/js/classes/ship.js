@@ -50,15 +50,27 @@ class Ship {
 
   cw() {
     this.rotation += this.turnSpeed * this.responsiveness / 100 * this.engineOutput / 100;
+
+    let pos = local2global(this);
+    let p = pos(this.r * -0.38, this.r * -1.07)
+    return {x: p.x, y: p.y};
   }
 
   ccw() {
     this.rotation -= this.turnSpeed * this.responsiveness / 100 * this.engineOutput / 100;
+
+    let pos = local2global(this);
+    let p = pos(this.r * -0.38, this.r * 1.07)
+    return {x: p.x, y: p.y};
   }
 
   primaryThruster() {
     this.vy += Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
     this.vx += Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+
+    let pos = local2global(this);
+    let p = pos(this.r * -0.45, this.r * 0)
+    return {x: p.x, y: p.y};
   }
 
   secondaryThruster() {

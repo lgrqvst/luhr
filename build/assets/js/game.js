@@ -33,21 +33,69 @@ class Building {
 }
 
 class Exhaust {
-  constructor(x,y,vx,vy,type,color,opacity) {
+  constructor(x,y,rotation,speed,type,size,color,opacity) {
     this.x = x;
     this.y = y;
-    this.vx = vx;
-    this.vy = vy;
+    this.speed = speed;
+    this.rotation = rotation;
     this.type = type;
+    this.size = size;
     this.color = color;
     this.opacity = opacity;
   }
 
   move() {
+    if (this.x < 0 || this.x > VW || this.y < 0 || this.y > VH) {
+      return true;
+    }
 
+    this.y += Math.sin(rads(this.rotation)) * this.speed;
+    this.x += Math.cos(rads(this.rotation)) * this.speed;
+
+    if (this.type === 'smoke') {
+      this.y -= globals.gravity * 5;
+      this.x += globals.wind / 10;
+    }
+
+    return false;
   }
 
-  draw() {
+  fade() {
+    if (this.type === 'line') {
+      this.opacity -= 0.03;
+      this.size += Math.random() * 2;
+    } else if (this.type === 'smoke') {
+      this.opacity -= 0.03;
+      this.size += Math.random() * 0.5;
+    } else if (this.type === 'quick') {
+      this.opacity -= 0.1;
+      this.size += Math.random();
+    }
+    if (this.opacity <= 0) {
+      return true;
+    }
+    return false;
+  }
+
+  draw(ctx) {
+    let pos = local2global(this);
+    let p;
+
+    if (this.type === 'line' || this.type === 'quick') {
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      p = pos(this.size * 2, 0);
+      ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
+      ctx.lineWidth = this.size / 5;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    } else if (this.type === 'smoke') {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, Math.random() * this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
+      ctx.fill();
+    }
 
   }
 }
@@ -459,15 +507,27 @@ class Ship {
 
   cw() {
     this.rotation += this.turnSpeed * this.responsiveness / 100 * this.engineOutput / 100;
+
+    let pos = local2global(this);
+    let p = pos(this.r * -0.38, this.r * -1.07)
+    return {x: p.x, y: p.y};
   }
 
   ccw() {
     this.rotation -= this.turnSpeed * this.responsiveness / 100 * this.engineOutput / 100;
+
+    let pos = local2global(this);
+    let p = pos(this.r * -0.38, this.r * 1.07)
+    return {x: p.x, y: p.y};
   }
 
   primaryThruster() {
     this.vy += Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
     this.vx += Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+
+    let pos = local2global(this);
+    let p = pos(this.r * -0.45, this.r * 0)
+    return {x: p.x, y: p.y};
   }
 
   secondaryThruster() {
@@ -924,7 +984,7 @@ const globals = {
   stage: false,
   frame: 0,
   state: {
-    current: 'titlescreen',
+    current: 'running',
     previous: '',
   },
   wind: 0,
@@ -1006,6 +1066,7 @@ const landingpads = [];
 const trees = [];
 const buildings = [];
 const ships = [];
+const primaryExhaustIdle = [];
 const primaryExhaust = [];
 const secondaryExhaust = [];
 const tertiaryExhaust = [];
@@ -1123,7 +1184,15 @@ let handleShip = (s) => {
   if (s.engineOn) {
     let p = s.runEngine();
 
-    // Use the returned position when generating exhaust. Use the ship's rotation to determine vector. (Maybe return that as well???)
+    let c = {
+      r: 150,
+      g: 150,
+      b: 150
+    }
+    if (!controls.primaryThruster) {
+      let e = new Exhaust(p.x, p.y, s.rotation + 180, 0.01, 'smoke', 1, c, 1);
+      primaryExhaustIdle.push(e);
+    }
   }
 
   if (!s.engineOn && s.engineOutput > 0){
@@ -1134,13 +1203,37 @@ let handleShip = (s) => {
 
   if (s.engineOutput > 0) {
     if (controls.primaryThruster) {
-      s.primaryThruster();
+      let p = s.primaryThruster();
+
+      let c = {
+        r: 200,
+        g: 200,
+        b: 200
+      }
+      let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'line', 10, c, 1);
+      primaryExhaust.push(e);
     }
     if (controls.turnCw) {
-      s.cw();
+      let p = s.cw();
+
+      let c = {
+        r: 200,
+        g: 200,
+        b: 200
+      }
+      let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'quick', 2, c, 1);
+      tertiaryExhaust.push(e);
     }
     if (controls.turnCcw) {
-      s.ccw();
+      let p = s.ccw();
+
+      let c = {
+        r: 200,
+        g: 200,
+        b: 200
+      }
+      let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'quick', 2, c, 1);
+      tertiaryExhaust.push(e);
     }
   }
 
@@ -1167,6 +1260,40 @@ let update = () => {
   })
 
   handleShip(ships[0]);
+
+  let a = [];
+  primaryExhaustIdle.forEach((e) => {
+    if (!e.fade() && !e.move()) {
+      a.push(e);
+    }
+  })
+  primaryExhaustIdle.length = 0;
+  a.forEach((e) => {
+    primaryExhaustIdle.push(e);
+  })
+
+  a = [];
+  primaryExhaust.forEach((e) => {
+    if (!e.fade() && !e.move()) {
+      a.push(e);
+    }
+  })
+  primaryExhaust.length = 0;
+  a.forEach((e) => {
+    primaryExhaust.push(e);
+  })
+
+  a = [];
+  tertiaryExhaust.forEach((e) => {
+    if (!e.fade() && !e.move()) {
+      a.push(e);
+    }
+  })
+  tertiaryExhaust.length = 0;
+  a.forEach((e) => {
+    tertiaryExhaust.push(e);
+  })
+
 }
 
 /*****************************************************************************
@@ -1208,6 +1335,18 @@ let draw = () => {
     if (e.z === 2) {
       e.draw(context2,parallax);
     }
+  })
+
+  primaryExhaustIdle.forEach((e) => {
+    e.draw(context2);
+  })
+
+  primaryExhaust.forEach((e) => {
+    e.draw(context2);
+  })
+
+  tertiaryExhaust.forEach((e) => {
+    e.draw(context2);
   })
 
   particles.forEach((e) => {

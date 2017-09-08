@@ -2,7 +2,7 @@ const globals = {
   stage: false,
   frame: 0,
   state: {
-    current: 'titlescreen',
+    current: 'running',
     previous: '',
   },
   wind: 0,
@@ -84,6 +84,7 @@ const landingpads = [];
 const trees = [];
 const buildings = [];
 const ships = [];
+const primaryExhaustIdle = [];
 const primaryExhaust = [];
 const secondaryExhaust = [];
 const tertiaryExhaust = [];
@@ -201,7 +202,15 @@ let handleShip = (s) => {
   if (s.engineOn) {
     let p = s.runEngine();
 
-    // Use the returned position when generating exhaust. Use the ship's rotation to determine vector. (Maybe return that as well???)
+    let c = {
+      r: 150,
+      g: 150,
+      b: 150
+    }
+    if (!controls.primaryThruster) {
+      let e = new Exhaust(p.x, p.y, s.rotation + 180, 0.01, 'smoke', 1, c, 1);
+      primaryExhaustIdle.push(e);
+    }
   }
 
   if (!s.engineOn && s.engineOutput > 0){
@@ -212,13 +221,37 @@ let handleShip = (s) => {
 
   if (s.engineOutput > 0) {
     if (controls.primaryThruster) {
-      s.primaryThruster();
+      let p = s.primaryThruster();
+
+      let c = {
+        r: 200,
+        g: 200,
+        b: 200
+      }
+      let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'line', 10, c, 1);
+      primaryExhaust.push(e);
     }
     if (controls.turnCw) {
-      s.cw();
+      let p = s.cw();
+
+      let c = {
+        r: 200,
+        g: 200,
+        b: 200
+      }
+      let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'quick', 2, c, 1);
+      tertiaryExhaust.push(e);
     }
     if (controls.turnCcw) {
-      s.ccw();
+      let p = s.ccw();
+
+      let c = {
+        r: 200,
+        g: 200,
+        b: 200
+      }
+      let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'quick', 2, c, 1);
+      tertiaryExhaust.push(e);
     }
   }
 
@@ -245,6 +278,40 @@ let update = () => {
   })
 
   handleShip(ships[0]);
+
+  let a = [];
+  primaryExhaustIdle.forEach((e) => {
+    if (!e.fade() && !e.move()) {
+      a.push(e);
+    }
+  })
+  primaryExhaustIdle.length = 0;
+  a.forEach((e) => {
+    primaryExhaustIdle.push(e);
+  })
+
+  a = [];
+  primaryExhaust.forEach((e) => {
+    if (!e.fade() && !e.move()) {
+      a.push(e);
+    }
+  })
+  primaryExhaust.length = 0;
+  a.forEach((e) => {
+    primaryExhaust.push(e);
+  })
+
+  a = [];
+  tertiaryExhaust.forEach((e) => {
+    if (!e.fade() && !e.move()) {
+      a.push(e);
+    }
+  })
+  tertiaryExhaust.length = 0;
+  a.forEach((e) => {
+    tertiaryExhaust.push(e);
+  })
+
 }
 
 /*****************************************************************************
@@ -286,6 +353,18 @@ let draw = () => {
     if (e.z === 2) {
       e.draw(context2,parallax);
     }
+  })
+
+  primaryExhaustIdle.forEach((e) => {
+    e.draw(context2);
+  })
+
+  primaryExhaust.forEach((e) => {
+    e.draw(context2);
+  })
+
+  tertiaryExhaust.forEach((e) => {
+    e.draw(context2);
   })
 
   particles.forEach((e) => {
