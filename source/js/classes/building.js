@@ -7,8 +7,10 @@ class Building {
   }
 
   draw(ctx, plx) {
+    let x = this.x + plx * 1.3;
+
     ctx.beginPath();
     ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},1)`;
-    ctx.fillRect(this.x, VH - this.height, 50, this.height);
+    ctx.fillRect(x, VH - this.height, 50, this.height);
   }
 }

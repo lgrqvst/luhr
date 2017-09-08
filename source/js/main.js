@@ -6,6 +6,7 @@ const globals = {
     previous: '',
   },
   wind: 0,
+  gravity: 0
 }
 
 /*****************************************************************************
@@ -15,36 +16,40 @@ const globals = {
  *****************************************************************************/
 
 const controls = {
-  main: false,
+  primaryThruster: false,
   turnCw: false,
   turnCcw: false,
-  boost: false,
-  stabilize: false,
-  turnReset: false,
-  maintain: false,
+  // boost: false,
+  // stabilize: false,
+  // turnReset: false,
+  // maintain: false,
 }
 
 window.addEventListener('keydown',(e) => {
   // console.log(e.which);
   let code = e.which;
-  if (code === 87) controls.main = true;
+  if (code === 87) controls.primaryThruster = true;
   if (code === 65) controls.turnCcw = true;
   if (code === 68) controls.turnCw = true;
-  if (code === 83) controls.boost = true;
-  if (code === 69) controls.stabilize = true;
-  if (code === 82) controls.turnReset = true;
-  if (code === 84) controls.maintain = true;
+  // if (code === 83) controls.boost = true;
+  // if (code === 69) controls.stabilize = true;
+  // if (code === 82) controls.turnReset = true;
+  // if (code === 84) controls.maintain = true;
+
+  if (code === 81) {
+    ships[0].engineOn = !ships[0].engineOn;
+  }
 });
 
 window.addEventListener('keyup',(e) => {
   let code = e.which;
-  if (code === 87) controls.main = false;
+  if (code === 87) controls.primaryThruster = false;
   if (code === 65) controls.turnCcw = false;
   if (code === 68) controls.turnCw = false;
-  if (code === 83) controls.boost = false;
-  if (code === 69) controls.stabilize = false;
-  if (code === 82) controls.turnReset = false;
-  if (code === 84) controls.maintain = false;
+  // if (code === 83) controls.boost = false;
+  // if (code === 69) controls.stabilize = false;
+  // if (code === 82) controls.turnReset = false;
+  // if (code === 84) controls.maintain = false;
 });
 
 /*****************************************************************************
@@ -78,10 +83,16 @@ const mountains = [];
 const landingpads = [];
 const trees = [];
 const buildings = [];
+const ships = [];
+const primaryExhaust = [];
+const secondaryExhaust = [];
+const tertiaryExhaust = [];
 
 let setStage = () => {
 
   globals.wind = Math.round(Math.random() * 20 - 10);
+
+  globals.gravity = 0.03;
 
   // Create the moon(s?)
   let m = new Moon(Math.floor(Math.random() * VW), VH * 0.75, 75);
@@ -94,6 +105,7 @@ let setStage = () => {
     let height = Math.random() * ((4 - i) * 10) + 10;
     let peaks = Math.ceil(Math.random() * 3);
     let color = {r: Math.floor(Math.random() * 40), g: 0, b: Math.floor(Math.random() * 40), a: 1};
+    // Higher = farther away = more parallax
     let distance = i + 1;
     let m = new Mountain(foot,height,peaks,color,distance);
     mountains.push(m)
@@ -104,8 +116,8 @@ let setStage = () => {
   landingpads.push(p);
 
   //Generate trees
-  for (let i = 0; i < 100; i++) {
-    let x = Math.round(Math.random() * VW);
+  for (let i = 0; i < 150; i++) {
+    let x = Math.round(Math.random() * VW * 1.5 - VW * 0.25);
     // I want more trees of type 1 than type 2
     let type = Math.floor(Math.random() * 100 + 1) <= 85 ? 1 : 2;
     let z = type === 2 ? 2 : Math.floor(Math.random() * 2 + 1);
@@ -137,6 +149,11 @@ let setStage = () => {
     globals.stage = true;
   }
 
+  // Create ship
+  let s = new Ship(landingpads[0].apparentX, VH - 162 - 15);
+  // let s = new Ship(VW / 2, VH / 2);
+  ships.push(s);
+
 }
 
 /*****************************************************************************
@@ -156,6 +173,60 @@ let rads = degs => degs * Math.PI / 180;
 
 let degs = rads => rads * 180 / Math.PI;
 
+let local2global = (self) => {
+  let r = rads(self.rotation) || 0;
+  return (x1, y1) => {
+    // Make the passed-in local coordinates global using the magic of trigonometry and the provided rotation
+
+    let l = Math.hypot(x1,y1);
+    let a = Math.atan2(y1,x1) + r;
+    // Keep the below bit for now. Don't know if I'll need it later.
+    // a += a < 0 ? Math.PI * 2 : 0;
+    // a += r;
+
+    let x2 = self.x + Math.cos(a) * l;
+    let y2 = self.y + Math.sin(a) * l;
+
+    return {x: x2, y: y2};
+  };
+}
+
+/*****************************************************************************
+
+ SHIP HANDLING
+
+ *****************************************************************************/
+
+let handleShip = (s) => {
+  if (s.engineOn) {
+    let p = s.runEngine();
+
+    // Use the returned position when generating exhaust. Use the ship's rotation to determine vector. (Maybe return that as well???)
+  }
+
+  if (!s.engineOn && s.engineOutput > 0){
+    s.powerDownEngine();
+  }
+
+  // Controls
+
+  if (s.engineOutput > 0) {
+    if (controls.primaryThruster) {
+      s.primaryThruster();
+    }
+    if (controls.turnCw) {
+      s.cw();
+    }
+    if (controls.turnCcw) {
+      s.ccw();
+    }
+  }
+
+  // Update position of ship
+
+  s.move();
+}
+
 /*****************************************************************************
 
  UPDATE
@@ -163,8 +234,6 @@ let degs = rads => rads * 180 / Math.PI;
  *****************************************************************************/
 
 let update = () => {
-  if (globals.stage === false) setStage();
-
   moons.forEach((e) => {
     e.move();
   })
@@ -174,6 +243,8 @@ let update = () => {
     e.pulsate();
     e.flicker()
   })
+
+  handleShip(ships[0]);
 }
 
 /*****************************************************************************
@@ -183,11 +254,11 @@ let update = () => {
  *****************************************************************************/
 
 let draw = () => {
-  // Clear the canvas
+  // Clear the canvases
   context1.clearRect(0,0,VW,VH);
   context2.clearRect(0,0,VW,VH);
 
-  let parallax = 1;
+  let parallax = 50 * Math.round((VW / 2 - ships[0].x) / (VW / 2) * 1000) / 1000;
 
   moons.forEach((e) => {
     e.draw(context1);
@@ -208,7 +279,7 @@ let draw = () => {
   })
 
   landingpads.forEach((e) => {
-    e.draw(context2);
+    e.draw(context2,parallax);
   })
 
   trees.forEach((e) => {
@@ -220,6 +291,8 @@ let draw = () => {
   particles.forEach((e) => {
     e.draw(context2);
   })
+
+  ships[0].draw(context2);
 }
 
 /*****************************************************************************
@@ -230,6 +303,7 @@ let draw = () => {
 
 let frame = setInterval(() => {
   if (globals.state.current === 'running') {
+    if (globals.stage === false) setStage();
     globals.frame++;
     update();
     draw();

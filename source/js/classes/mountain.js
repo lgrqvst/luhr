@@ -8,7 +8,13 @@ class Mountain {
   }
 
   draw(ctx, plx) {
-    let foot = this.foot + plx * (1 + this.distance / 3);
+    let plxf = 1;
+    if (this.distance === 1) plxf = 0.25;
+    if (this.distance === 2) plxf = 0.5;
+    if (this.distance === 3) plxf = 0.8;
+    if (this.distance === 4) plxf = 1;
+    if (this.distance === 5) plxf = 1.5;
+    let foot = this.foot + plx * plxf;
 
     ctx.beginPath();
     ctx.moveTo(foot, VH);

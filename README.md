@@ -26,12 +26,11 @@ S - Boost (Drains engine power quickly)
 E - Stabilizers (Drains engine power)  
 F - Replenish engine power  
 R - Rotate to face up  
-T - Maintain current vector
 
 ## TO DO
 
 ### Ship
-- [ ] Rewrite the old ship
+- [x] Rewrite the old ship
 - [ ] Ship starts on landing pad
 - [ ] The stabilizer ring from the previous design should extend when the ship starts, and retract when the engine is turned off.
 - [ ] Fuel
@@ -55,14 +54,14 @@ T - Maintain current vector
 
 ### Controls
 
-- [ ] Q - Engine on/off
-- [ ] W - Main thruster
-- [ ] A - Turn counter-clockwise
-- [ ] D - Turn clockwise
-- [ ] S - Boost (Drains engine power quickly)
-- [ ] E - Stabilizers (Drains engine power)
-- [ ] F - Replenish engine power (Drains fuel)
-- [ ] R - Rotate to face up
+- [x] Q - Engine on/off
+- [x] W - Main thruster
+- [x] A - Turn counter-clockwise
+- [x] D - Turn clockwise
+- [ ] S - Boost (Drains engine output quickly)
+- [ ] E - Stabilizers
+- [ ] F - Boost engine output (Drains fuel) (Boost too much and bad things happen)
+- [ ] R - Rotate to face up (Is this one really needed?)
 - [ ] C - Toggle harvesting (Decreases responsiveness) _(not yet implemented)_
 - [ ] X - Toggle landing gear _(not yet implemented)_
 - [ ] T (or maybe some other key) - Maintain current vector
@@ -91,10 +90,11 @@ T - Maintain current vector
 - [x] Procedurally generated trees
 - [x] Trees sway in the wind
 - [ ] Trees react to proximity of ship
-- [ ] Buildings and mountains should move slightly depending on where the ship is, parallax-like
+- [x] Buildings and mountains should move slightly depending on where the ship is, parallax-like
 - [x] Landing pad/base
+- [ ] Add a dome to the landing pad that open/closes when the ship leaves and takes off
 - [ ] Maybe at some point in time expand a bit on the landing pad design
-- [ ] Make the landing pad land-able
+- [x] Make the landing pad land-able
 - [ ] No-particle areas
 - [ ] Smoke in addition to sparks
 - [ ] Power-ups
