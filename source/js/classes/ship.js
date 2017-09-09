@@ -21,11 +21,22 @@ class Ship {
     this.states = {
       landed: false,
       parked: false,
-      landingpadcontact: false,
-      groundcontact: false,
-      landingpadproximity: false,
-      groundproximity: false,
+      landingPadContact: false,
+      groundContact: false,
+      landingPadProximity: false,
+      groundProximity: false,
       flying: false,
+      primaryThruster: false,
+      secondaryThruster: false,
+      turningCw: false,
+      turningCcw: false,
+    }
+
+    this.animationProps = {
+      stabilizerRing: {
+        current: 0,
+        max: 100,
+      }
     }
 
     // this.currentPowerMod = 0;
@@ -56,6 +67,10 @@ class Ship {
 
   powerDownEngine() {
     if (this.engineOutput > 0) this.engineOutput -= 0.5;
+
+    let pos = local2global(this);
+    let p = pos(this.r * -0.45, this.r * 0);
+    return {x: p.x, y: p.y};
   }
 
   primaryThruster() {
@@ -110,10 +125,10 @@ class Ship {
   move() {
     this.states.landed = false;
     this.states.parked = false;
-    this.states.landingpadcontact = false;
-    this.states.groundcontact = false;
-    this.states.landingpadproximity = false;
-    this.states.groundproximity = false;
+    this.states.landingPadContact = false;
+    this.states.groundContact = false;
+    this.states.landingPadProximity = false;
+    this.states.groundProximity = false;
     this.states.flying = false;
 
     // this.vx += globals.wind / 200;
@@ -124,11 +139,11 @@ class Ship {
     this.vy += globals.gravity;
 
     if (this.y + this.vy > VH - this.r * 4) {
-      this.states.groundproximity = true;
+      this.states.groundProximity = true;
     }
 
     if (landingpads[0].apparentX - 40 < this.x && this.x < landingpads[0].apparentX + 40 && this.y + this.vy > VH - 162 - this.r * 4 && this.y <= VH - 162 - this.r) {
-      this.states.landingpadproximity = true;
+      this.states.landingPadProximity = true;
     }
 
     if (this.y + this.vy > VH - this.r) {
@@ -140,7 +155,7 @@ class Ship {
       if (Math.abs(this.vx) < 0.1 &&  Math.abs(this.vy) < 0.1 && this.rotation % 360 < 280 && this.rotation % 360 > 260) {
         this.states.parked = true;
       }
-      this.states.groundcontact = true;
+      this.states.groundContact = true;
     }
 
     if (landingpads[0].apparentX - 40 < this.x && this.x < landingpads[0].apparentX + 40 && this.y + this.vy > VH - 162 - this.r && this.y <= VH - 162 - this.r) {
@@ -153,7 +168,7 @@ class Ship {
       if (Math.abs(this.vx) < 0.1 &&  Math.abs(this.vy) < 0.1 && this.rotation % 360 < 280 && this.rotation % 360 > 260) {
         this.states.landed = true;
       }
-      this.states.landingpadcontact = true;
+      this.states.landingPadContact = true;
     }
 
     this.vx = Math.round(this.vx * 1000) / 1000;
@@ -167,15 +182,15 @@ class Ship {
     // if (this.x > VW) this.x = 0;
     // if (this.x < 0) this.x = VW;
 
-    if (!this.states.groundcontact && !this.states.landingpadcontact) {
+    if (!this.states.groundContact && !this.states.landingPadContact) {
       this.states.flying = true;
       this.vx += globals.wind / 300;
     }
-    
+
     this.x += this.vx;
     this.y += this.vy;
 
-    console.log(this.states.landed ? 'landed' : '', this.states.parked ? 'parked' : '', this.states.landingpadcontact ? 'landingpadcontact' : '', this.states.groundcontact ? 'groundcontact' : '', this.states.landingpadproximity ? 'landingpadproximity' : '', this.states.groundproximity ? 'groundproximity' : '', this.states.flying ? 'flying' : '');
+    // console.log(this.states.landed ? 'landed' : '', this.states.parked ? 'parked' : '', this.states.landingPadContact ? 'landingPadContact' : '', this.states.groundContact ? 'groundContact' : '', this.states.landingPadProximity ? 'landingPadProximity' : '', this.states.groundProximity ? 'groundProximity' : '', this.states.flying ? 'flying' : '');
   }
 
   draw(ctx) {
@@ -234,8 +249,19 @@ class Ship {
 
     // STABILIZER RING
     // This should only render for certain ship states -- or should it??? Have a think about this.
+
+    if ((!this.states.landed && !this.states.parked)) {
+      if (this.engineOn) {
+        this.animationProps.stabilizerRing.current += this.animationProps.stabilizerRing.current < this.animationProps.stabilizerRing.max ? 2 : 0;
+      } else {
+        this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
+      }
+    } else {
+      this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
+    }
+
     ctx.beginPath();
-    ctx.arc(this.x, this.y, r, 0, 2 * Math.PI);
+    ctx.arc(this.x, this.y, r * this.animationProps.stabilizerRing.current / 100, 0, 2 * Math.PI);
     ctx.closePath();
     ctx.strokeStyle = "#FFF";
     ctx.lineWidth = r / 10;
@@ -400,6 +426,13 @@ class Ship {
       pos(r * -0.85, r * 1.1),
       pos(r * -0.65, r * 0.7),
     ];
+    if (this.states.secondaryThruster) {
+      p = [
+        pos(r * -0.95, r * 1.02),
+        pos(r * -1, r * 0.9),
+        pos(r * -0.65, r * 0.7),
+      ];
+    }
     p.forEach(function(e) {
       ctx.lineTo(e.x, e.y);
     });
@@ -417,6 +450,13 @@ class Ship {
       pos(r * -0.85, r * -1.1),
       pos(r * -0.65, r * -0.7),
     ];
+    if (this.states.secondaryThruster) {
+      p = [
+        pos(r * -0.95, r * -1.02),
+        pos(r * -1, r * -0.9),
+        pos(r * -0.65, r * -0.7),
+      ];
+    }
     p.forEach(function(e) {
       ctx.lineTo(e.x, e.y);
     });

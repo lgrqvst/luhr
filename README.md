@@ -31,8 +31,9 @@ R - Rotate to face up
 
 ### Ship
 - [x] Rewrite the old ship
-- [ ] Ship starts on landing pad
-- [ ] The stabilizer ring from the previous design should extend when the ship starts, and retract when the engine is turned off.
+- [x] Ship starts on landing pad
+- [ ] When the ship starts up, have the cockpit lights flicker.
+- [x] The stabilizer ring from the previous design should extend when the ship starts, and retract when the engine is turned off.
 - [ ] Fuel
 - [ ] Particles restore fuel
 - [ ] Visible stabilizers
@@ -48,12 +49,12 @@ R - Rotate to face up
 - [ ] Health / HP
 - [ ] Explosion upon death
 - [ ] Craft breaks apart on crash
-- [ ] Render a copy of the craft on the other side when crossing over horizontally
 - [ ] More details on the body (maybe red and green lights for port/starboard?)
 - [ ] Shading on body
 - [ ] Handle ship going off-screen
-- [ ] Clean up exhaust
-- [ ] Handle exhaust outside of handleShip()
+- [x] Clean up exhaust
+- [x] Handle exhaust outside of handleShip()
+- [ ] Animate more parts of the ship
 
 ### Controls
 
@@ -71,6 +72,7 @@ R - Rotate to face up
 - [ ] space - Fire front cannon _(not yet implemented)_
 - [ ] mouse - Turn turret _(not yet implemented)_
 - [ ] left click - Fire turret _(not yet implemented)_
+- [ ] Prevent right click
 - [ ] Fine tune control balance
 
 ### Environment
@@ -91,7 +93,7 @@ R - Rotate to face up
 - [ ] Handle the moon when it goes off-screen
 - [x] Procedurally generated mountains
 - [ ] Procedurally generated buildings
-- [ ] Make the buildings prettier. I like the contrast of something being there, but they need to look better.
+- [ ] Make the buildings prettier. I like the contrast of something being there, but they need to look way better.
 - [x] Procedurally generated trees
 - [x] Trees sway in the wind
 - [ ] Trees react to proximity of ship

@@ -204,6 +204,11 @@ let local2global = (self) => {
  *****************************************************************************/
 
 let handleShip = (s) => {
+  s.states.primaryThruster = false;
+  s.states.secondaryThruster = false;
+  s.states.turningCw = false;
+  s.states.turningCcw = false;
+
   if (s.engineOn) {
     let p = s.runEngine();
 
@@ -211,7 +216,9 @@ let handleShip = (s) => {
   }
 
   if (!s.engineOn && s.engineOutput > 0){
-    s.powerDownEngine();
+    let p = s.powerDownEngine();
+
+    addExhaust('idle',s,p);
   }
 
   // Controls
@@ -219,24 +226,29 @@ let handleShip = (s) => {
   if (s.engineOutput > 0) {
     if (controls.secondaryThruster) {
       let p = s.secondaryThruster();
+      s.states.primaryThruster = true;
+      s.states.secondaryThruster = true;
 
       addExhaust('primary',s,{x: p.x1, y: p.y1});
       addExhaust('secondary',s,p);
 
     } else if (controls.primaryThruster) {
       let p = s.primaryThruster();
+      s.states.primaryThruster = true;
 
       addExhaust('primary',s,p);
     }
 
     if (controls.turnCw) {
       let p = s.cw();
+      s.states.turningCw = true;
 
       addExhaust('tertiaryCw',s,p);
     }
 
     if (controls.turnCcw) {
       let p = s.ccw();
+      s.states.turningCcw = true;
 
       addExhaust('tertiaryCcw',s,p);
     }
@@ -254,7 +266,7 @@ let addExhaust = (type, s, p) => {
       g: 150,
       b: 150
     }
-    let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, c, 0.5);
+    let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, s.engineOutput, c, 0.5);
     primaryExhaustIdle.push(e);
 
   } else if (type === 'primary') {
@@ -263,7 +275,7 @@ let addExhaust = (type, s, p) => {
       g: 200,
       b: 200
     }
-    let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'primary', 10, c, 1);
+    let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'primary', 10, s.engineOutput, c, 1);
     primaryExhaust.push(e);
 
   } else if (type === 'secondary') {
@@ -272,10 +284,10 @@ let addExhaust = (type, s, p) => {
       g: Math.round(Math.random() * 55 + 200),
       b: Math.round(Math.random() * 55 + 200)
     }
-    let e = new Exhaust(p.x2, p.y2, s.rotation + 180, 10, 'secondary', 10, c, 1);
+    let e = new Exhaust(p.x2, p.y2, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
     secondaryExhaust.push(e);
 
-    e = new Exhaust(p.x3, p.y3, s.rotation + 180, 10, 'secondary', 10, c, 1);
+    e = new Exhaust(p.x3, p.y3, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
     secondaryExhaust.push(e);
 
   } else if (type === 'tertiaryCw') {
@@ -284,7 +296,7 @@ let addExhaust = (type, s, p) => {
       g: 200,
       b: 200
     }
-    let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'tertiary', 2, c, 1);
+    let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'tertiary', 2, s.engineOutput, c, 1);
     tertiaryExhaust.push(e);
   } else if (type === 'tertiaryCcw') {
     let c = {
@@ -292,7 +304,7 @@ let addExhaust = (type, s, p) => {
       g: 200,
       b: 200
     }
-    let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'tertiary', 2, c, 1);
+    let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'tertiary', 2, s.engineOutput, c, 1);
     tertiaryExhaust.push(e);
   }
 }

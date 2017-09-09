@@ -1,11 +1,12 @@
 class Exhaust {
-  constructor(x,y,rotation,speed,type,size,color,opacity) {
+  constructor(x,y,rotation,speed,type,size,intensity,color,opacity) {
     this.x = x;
     this.y = y;
-    this.speed = speed;
+    this.speed = speed * intensity / 100;
     this.rotation = rotation;
     this.type = type;
-    this.size = size;
+    this.size = size * intensity / 100;
+    // this.intensity = intensity;
     this.color = color;
     this.opacity = opacity;
   }
