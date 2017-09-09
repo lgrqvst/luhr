@@ -15,8 +15,18 @@ class Ship {
     // Handling
     this.responsiveness = 100;
     this.moveSpeed = 0.07;
-    this.boostSpeed = 0.1;
+    this.boostSpeed = 0.14;
     this.turnSpeed = 2.5;
+
+    this.states = {
+      landed: false,
+      parked: false,
+      landingpadcontact: false,
+      groundcontact: false,
+      landingpadproximity: false,
+      groundproximity: false,
+      flying: false,
+    }
 
     // this.currentPowerMod = 0;
     // this.standardPowerMod = 1;
@@ -35,12 +45,12 @@ class Ship {
   }
 
   runEngine() {
-    // if (this.engineOutput < 100) this.engineOutput += 0.5;
-    if (this.engineOutput < 100) this.engineOutput += 5;
+    if (this.engineOutput < 100) this.engineOutput += 0.5;
+    // if (this.engineOutput < 100) this.engineOutput += 5;
     if (this.engineOutput > 101) this.engineOutput -= 1;
 
     let pos = local2global(this);
-    let p = pos(this.r * -0.45, this.r * 0)
+    let p = pos(this.r * -0.45, this.r * 0);
     return {x: p.x, y: p.y};
   }
 
@@ -48,66 +58,124 @@ class Ship {
     if (this.engineOutput > 0) this.engineOutput -= 0.5;
   }
 
+  primaryThruster() {
+    this.vy += Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    this.vx += Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+
+    let pos = local2global(this);
+    let p = pos(this.r * -0.45, this.r * 0);
+    return {x: p.x, y: p.y};
+  }
+
+  secondaryThruster() {
+    this.vy += Math.sin(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+    this.vx += Math.cos(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+
+    let pos = local2global(this);
+    let p1 = pos(this.r * -0.45, this.r * 0);
+    let p2 = pos(this.r * -0.35, this.r * 0.32);
+    let p3 = pos(this.r * -0.35, this.r * -0.32);
+    return {
+      x1: p1.x,
+      y1: p1.y,
+      x2: p2.x,
+      y2: p2.y,
+      x3: p3.x,
+      y3: p3.y
+    };
+  }
+
   cw() {
     this.rotation += this.turnSpeed * this.responsiveness / 100 * this.engineOutput / 100;
 
+    if (this.rotation < 0) this.rotation += 360;
+    if (this.rotation > 360) this.rotation -= 360;
+
     let pos = local2global(this);
-    let p = pos(this.r * -0.38, this.r * -1.07)
+    let p = pos(this.r * -0.38, this.r * -1.07);
     return {x: p.x, y: p.y};
   }
 
   ccw() {
     this.rotation -= this.turnSpeed * this.responsiveness / 100 * this.engineOutput / 100;
 
-    let pos = local2global(this);
-    let p = pos(this.r * -0.38, this.r * 1.07)
-    return {x: p.x, y: p.y};
-  }
-
-  primaryThruster() {
-    this.vy += Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
-    this.vx += Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    if (this.rotation < 0) this.rotation += 360;
+    if (this.rotation > 360) this.rotation -= 360;
 
     let pos = local2global(this);
-    let p = pos(this.r * -0.45, this.r * 0)
+    let p = pos(this.r * -0.38, this.r * 1.07);
     return {x: p.x, y: p.y};
-  }
-
-  secondaryThruster() {
-
   }
 
   move() {
-    let landed = false;
+    this.states.landed = false;
+    this.states.parked = false;
+    this.states.landingpadcontact = false;
+    this.states.groundcontact = false;
+    this.states.landingpadproximity = false;
+    this.states.groundproximity = false;
+    this.states.flying = false;
 
-    if (this.y !== VH - this.r) this.vy += globals.gravity;
+    // this.vx += globals.wind / 200;
+    this.vx *= globals.drag;
+    // this.vy *= globals.drag;;
+
+    // if (this.y !== VH - this.r) this.vy += globals.gravity;
+    this.vy += globals.gravity;
+
+    if (this.y + this.vy > VH - this.r * 4) {
+      this.states.groundproximity = true;
+    }
+
+    if (landingpads[0].apparentX - 40 < this.x && this.x < landingpads[0].apparentX + 40 && this.y + this.vy > VH - 162 - this.r * 4 && this.y <= VH - 162 - this.r) {
+      this.states.landingpadproximity = true;
+    }
 
     if (this.y + this.vy > VH - this.r) {
       this.y = VH - this.r;
       this.vy *= -0.3;
       this.vx *= 0.3;
+
+      // Set state to parked if requirements are met
+      if (Math.abs(this.vx) < 0.1 &&  Math.abs(this.vy) < 0.1 && this.rotation % 360 < 280 && this.rotation % 360 > 260) {
+        this.states.parked = true;
+      }
+      this.states.groundcontact = true;
     }
 
     if (landingpads[0].apparentX - 40 < this.x && this.x < landingpads[0].apparentX + 40 && this.y + this.vy > VH - 162 - this.r && this.y <= VH - 162 - this.r) {
       // Maybe rotate to face up and set state to landed?
-      landed = true;
       this.y = VH - 162 - this.r;
       this.vy *= -0.3;
       this.vx *= 0.3;
+
+      // Set state to landed if requirements are met
+      if (Math.abs(this.vx) < 0.1 &&  Math.abs(this.vy) < 0.1 && this.rotation % 360 < 280 && this.rotation % 360 > 260) {
+        this.states.landed = true;
+      }
+      this.states.landingpadcontact = true;
     }
 
     this.vx = Math.round(this.vx * 1000) / 1000;
     this.vy = Math.round(this.vy * 1000) / 1000;
 
-    let dx = this.vx;
-    if (this.y !== VH - this.r && !landed) dx += globals.wind / 100;
+    // this.vx += this.vx > 0 ? globals.drag * -1 : globals.drag;
 
+    // console.log(this.vx, dx);
+    // console.log('after: ' + dx);
     // If I'm going to do this 👇, then parallax has to go. If not, I need another solution. Bounce back just outside screen?
     // if (this.x > VW) this.x = 0;
     // if (this.x < 0) this.x = VW;
 
-    this.x += dx;
+    if (!this.states.groundcontact && !this.states.landingpadcontact) {
+      this.states.flying = true;
+      this.vx += globals.wind / 300;
+    }
+    
+    this.x += this.vx;
     this.y += this.vy;
+
+    console.log(this.states.landed ? 'landed' : '', this.states.parked ? 'parked' : '', this.states.landingpadcontact ? 'landingpadcontact' : '', this.states.groundcontact ? 'groundcontact' : '', this.states.landingpadproximity ? 'landingpadproximity' : '', this.states.groundproximity ? 'groundproximity' : '', this.states.flying ? 'flying' : '');
   }
 
   draw(ctx) {

@@ -45,32 +45,42 @@ class Exhaust {
   }
 
   move() {
-    if (this.x < 0 || this.x > VW || this.y < 0 || this.y > VH) {
+    if (this.x < 0 || this.x > VW || this.y > VH) {
       return true;
     }
 
     this.y += Math.sin(rads(this.rotation)) * this.speed;
     this.x += Math.cos(rads(this.rotation)) * this.speed;
 
-    if (this.type === 'smoke') {
-      this.y -= globals.gravity * 5;
-      this.x += globals.wind / 10;
+    if (this.type === 'idle') {
+      this.y -= globals.gravity * 10;
+      this.x += globals.wind / 5;
     }
 
     return false;
   }
 
   fade() {
-    if (this.type === 'line') {
+    if (this.type === 'primary') {
       this.opacity -= 0.03;
       this.size += Math.random() * 2;
-    } else if (this.type === 'smoke') {
+
+    } else if (this.type === 'secondary') {
+      this.color.g -= 5;
+      this.color.b -= 10;
+      this.opacity -= 0.03;
+      this.size += Math.random() * 3;
+
+    } else if (this.type === 'tertiary') {
+      this.opacity -= 0.1;
+      // this.size += Math.random();
+      this.size += 0.2;
+
+    } else if (this.type === 'idle') {
       this.opacity -= 0.03;
       this.size += Math.random() * 0.5;
-    } else if (this.type === 'quick') {
-      this.opacity -= 0.1;
-      this.size += Math.random();
     }
+
     if (this.opacity <= 0) {
       return true;
     }
@@ -81,16 +91,35 @@ class Exhaust {
     let pos = local2global(this);
     let p;
 
-    if (this.type === 'line' || this.type === 'quick') {
+    if (this.type === 'primary') {
       ctx.beginPath();
       ctx.moveTo(this.x, this.y);
       p = pos(this.size * 2, 0);
       ctx.lineTo(p.x, p.y);
       ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
-      ctx.lineWidth = this.size / 5;
+      ctx.lineWidth = this.size / 10;
+      ctx.stroke();
+
+    } else if (this.type === 'secondary') {
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      p = pos(this.size * 2, 0);
+      ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
+      ctx.lineWidth = this.size / 10;
+      // ctx.lineWidth = 4;
+      ctx.stroke();
+
+    } else if (this.type === 'tertiary') {
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      p = pos(this.size * 2, 0);
+      ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
       ctx.lineWidth = 2;
       ctx.stroke();
-    } else if (this.type === 'smoke') {
+
+    } else if (this.type === 'idle') {
       ctx.beginPath();
       ctx.arc(this.x, this.y, Math.random() * this.size, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
@@ -472,8 +501,18 @@ class Ship {
     // Handling
     this.responsiveness = 100;
     this.moveSpeed = 0.07;
-    this.boostSpeed = 0.1;
+    this.boostSpeed = 0.14;
     this.turnSpeed = 2.5;
+
+    this.states = {
+      landed: false,
+      parked: false,
+      landingpadcontact: false,
+      groundcontact: false,
+      landingpadproximity: false,
+      groundproximity: false,
+      flying: false,
+    }
 
     // this.currentPowerMod = 0;
     // this.standardPowerMod = 1;
@@ -492,12 +531,12 @@ class Ship {
   }
 
   runEngine() {
-    // if (this.engineOutput < 100) this.engineOutput += 0.5;
-    if (this.engineOutput < 100) this.engineOutput += 5;
+    if (this.engineOutput < 100) this.engineOutput += 0.5;
+    // if (this.engineOutput < 100) this.engineOutput += 5;
     if (this.engineOutput > 101) this.engineOutput -= 1;
 
     let pos = local2global(this);
-    let p = pos(this.r * -0.45, this.r * 0)
+    let p = pos(this.r * -0.45, this.r * 0);
     return {x: p.x, y: p.y};
   }
 
@@ -505,66 +544,124 @@ class Ship {
     if (this.engineOutput > 0) this.engineOutput -= 0.5;
   }
 
+  primaryThruster() {
+    this.vy += Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    this.vx += Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+
+    let pos = local2global(this);
+    let p = pos(this.r * -0.45, this.r * 0);
+    return {x: p.x, y: p.y};
+  }
+
+  secondaryThruster() {
+    this.vy += Math.sin(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+    this.vx += Math.cos(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+
+    let pos = local2global(this);
+    let p1 = pos(this.r * -0.45, this.r * 0);
+    let p2 = pos(this.r * -0.35, this.r * 0.32);
+    let p3 = pos(this.r * -0.35, this.r * -0.32);
+    return {
+      x1: p1.x,
+      y1: p1.y,
+      x2: p2.x,
+      y2: p2.y,
+      x3: p3.x,
+      y3: p3.y
+    };
+  }
+
   cw() {
     this.rotation += this.turnSpeed * this.responsiveness / 100 * this.engineOutput / 100;
 
+    if (this.rotation < 0) this.rotation += 360;
+    if (this.rotation > 360) this.rotation -= 360;
+
     let pos = local2global(this);
-    let p = pos(this.r * -0.38, this.r * -1.07)
+    let p = pos(this.r * -0.38, this.r * -1.07);
     return {x: p.x, y: p.y};
   }
 
   ccw() {
     this.rotation -= this.turnSpeed * this.responsiveness / 100 * this.engineOutput / 100;
 
-    let pos = local2global(this);
-    let p = pos(this.r * -0.38, this.r * 1.07)
-    return {x: p.x, y: p.y};
-  }
-
-  primaryThruster() {
-    this.vy += Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
-    this.vx += Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    if (this.rotation < 0) this.rotation += 360;
+    if (this.rotation > 360) this.rotation -= 360;
 
     let pos = local2global(this);
-    let p = pos(this.r * -0.45, this.r * 0)
+    let p = pos(this.r * -0.38, this.r * 1.07);
     return {x: p.x, y: p.y};
-  }
-
-  secondaryThruster() {
-
   }
 
   move() {
-    let landed = false;
+    this.states.landed = false;
+    this.states.parked = false;
+    this.states.landingpadcontact = false;
+    this.states.groundcontact = false;
+    this.states.landingpadproximity = false;
+    this.states.groundproximity = false;
+    this.states.flying = false;
 
-    if (this.y !== VH - this.r) this.vy += globals.gravity;
+    // this.vx += globals.wind / 200;
+    this.vx *= globals.drag;
+    // this.vy *= globals.drag;;
+
+    // if (this.y !== VH - this.r) this.vy += globals.gravity;
+    this.vy += globals.gravity;
+
+    if (this.y + this.vy > VH - this.r * 4) {
+      this.states.groundproximity = true;
+    }
+
+    if (landingpads[0].apparentX - 40 < this.x && this.x < landingpads[0].apparentX + 40 && this.y + this.vy > VH - 162 - this.r * 4 && this.y <= VH - 162 - this.r) {
+      this.states.landingpadproximity = true;
+    }
 
     if (this.y + this.vy > VH - this.r) {
       this.y = VH - this.r;
       this.vy *= -0.3;
       this.vx *= 0.3;
+
+      // Set state to parked if requirements are met
+      if (Math.abs(this.vx) < 0.1 &&  Math.abs(this.vy) < 0.1 && this.rotation % 360 < 280 && this.rotation % 360 > 260) {
+        this.states.parked = true;
+      }
+      this.states.groundcontact = true;
     }
 
     if (landingpads[0].apparentX - 40 < this.x && this.x < landingpads[0].apparentX + 40 && this.y + this.vy > VH - 162 - this.r && this.y <= VH - 162 - this.r) {
       // Maybe rotate to face up and set state to landed?
-      landed = true;
       this.y = VH - 162 - this.r;
       this.vy *= -0.3;
       this.vx *= 0.3;
+
+      // Set state to landed if requirements are met
+      if (Math.abs(this.vx) < 0.1 &&  Math.abs(this.vy) < 0.1 && this.rotation % 360 < 280 && this.rotation % 360 > 260) {
+        this.states.landed = true;
+      }
+      this.states.landingpadcontact = true;
     }
 
     this.vx = Math.round(this.vx * 1000) / 1000;
     this.vy = Math.round(this.vy * 1000) / 1000;
 
-    let dx = this.vx;
-    if (this.y !== VH - this.r && !landed) dx += globals.wind / 100;
+    // this.vx += this.vx > 0 ? globals.drag * -1 : globals.drag;
 
+    // console.log(this.vx, dx);
+    // console.log('after: ' + dx);
     // If I'm going to do this 👇, then parallax has to go. If not, I need another solution. Bounce back just outside screen?
     // if (this.x > VW) this.x = 0;
     // if (this.x < 0) this.x = VW;
 
-    this.x += dx;
+    if (!this.states.groundcontact && !this.states.landingpadcontact) {
+      this.states.flying = true;
+      this.vx += globals.wind / 300;
+    }
+    
+    this.x += this.vx;
     this.y += this.vy;
+
+    console.log(this.states.landed ? 'landed' : '', this.states.parked ? 'parked' : '', this.states.landingpadcontact ? 'landingpadcontact' : '', this.states.groundcontact ? 'groundcontact' : '', this.states.landingpadproximity ? 'landingpadproximity' : '', this.states.groundproximity ? 'groundproximity' : '', this.states.flying ? 'flying' : '');
   }
 
   draw(ctx) {
@@ -988,6 +1085,7 @@ const globals = {
     previous: '',
   },
   wind: 0,
+  drag: 0,
   gravity: 0
 }
 
@@ -1010,17 +1108,19 @@ const controls = {
 window.addEventListener('keydown',(e) => {
   // console.log(e.which);
   let code = e.which;
-  if (code === 87) controls.primaryThruster = true;
-  if (code === 65) controls.turnCcw = true;
-  if (code === 68) controls.turnCw = true;
-  // if (code === 83) controls.boost = true;
-  // if (code === 69) controls.stabilize = true;
-  // if (code === 82) controls.turnReset = true;
-  // if (code === 84) controls.maintain = true;
 
   if (code === 81) {
     ships[0].engineOn = !ships[0].engineOn;
   }
+
+  if (code === 87) controls.primaryThruster = true;
+  if (code === 65) controls.turnCcw = true;
+  if (code === 68) controls.turnCw = true;
+  if (code === 83) controls.secondaryThruster = true;
+  // if (code === 69) controls.stabilize = true;
+  // if (code === 82) controls.turnReset = true;
+  // if (code === 84) controls.maintain = true;
+
 });
 
 window.addEventListener('keyup',(e) => {
@@ -1028,7 +1128,7 @@ window.addEventListener('keyup',(e) => {
   if (code === 87) controls.primaryThruster = false;
   if (code === 65) controls.turnCcw = false;
   if (code === 68) controls.turnCw = false;
-  // if (code === 83) controls.boost = false;
+  if (code === 83) controls.secondaryThruster = false;
   // if (code === 69) controls.stabilize = false;
   // if (code === 82) controls.turnReset = false;
   // if (code === 84) controls.maintain = false;
@@ -1074,6 +1174,8 @@ const tertiaryExhaust = [];
 let setStage = () => {
 
   globals.wind = Math.round(Math.random() * 20 - 10);
+
+  globals.drag = 0.995;
 
   globals.gravity = 0.03;
 
@@ -1184,15 +1286,7 @@ let handleShip = (s) => {
   if (s.engineOn) {
     let p = s.runEngine();
 
-    let c = {
-      r: 150,
-      g: 150,
-      b: 150
-    }
-    if (!controls.primaryThruster) {
-      let e = new Exhaust(p.x, p.y, s.rotation + 180, 0.01, 'smoke', 1, c, 1);
-      primaryExhaustIdle.push(e);
-    }
+    addExhaust('idle',s,p);
   }
 
   if (!s.engineOn && s.engineOutput > 0){
@@ -1202,44 +1296,84 @@ let handleShip = (s) => {
   // Controls
 
   if (s.engineOutput > 0) {
-    if (controls.primaryThruster) {
+    if (controls.secondaryThruster) {
+      let p = s.secondaryThruster();
+
+      addExhaust('primary',s,{x: p.x1, y: p.y1});
+      addExhaust('secondary',s,p);
+
+    } else if (controls.primaryThruster) {
       let p = s.primaryThruster();
 
-      let c = {
-        r: 200,
-        g: 200,
-        b: 200
-      }
-      let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'line', 10, c, 1);
-      primaryExhaust.push(e);
+      addExhaust('primary',s,p);
     }
+
     if (controls.turnCw) {
       let p = s.cw();
 
-      let c = {
-        r: 200,
-        g: 200,
-        b: 200
-      }
-      let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'quick', 2, c, 1);
-      tertiaryExhaust.push(e);
+      addExhaust('tertiaryCw',s,p);
     }
+
     if (controls.turnCcw) {
       let p = s.ccw();
 
-      let c = {
-        r: 200,
-        g: 200,
-        b: 200
-      }
-      let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'quick', 2, c, 1);
-      tertiaryExhaust.push(e);
+      addExhaust('tertiaryCcw',s,p);
     }
   }
 
   // Update position of ship
 
   s.move();
+}
+
+let addExhaust = (type, s, p) => {
+  if (type === 'idle') {
+    let c = {
+      r: 150,
+      g: 150,
+      b: 150
+    }
+    let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, c, 0.5);
+    primaryExhaustIdle.push(e);
+
+  } else if (type === 'primary') {
+    let c = {
+      r: 200,
+      g: 200,
+      b: 200
+    }
+    let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'primary', 10, c, 1);
+    primaryExhaust.push(e);
+
+  } else if (type === 'secondary') {
+    let c = {
+      r: Math.round(Math.random() * 55 + 200),
+      g: Math.round(Math.random() * 55 + 200),
+      b: Math.round(Math.random() * 55 + 200)
+    }
+    let e = new Exhaust(p.x2, p.y2, s.rotation + 180, 10, 'secondary', 10, c, 1);
+    secondaryExhaust.push(e);
+
+    e = new Exhaust(p.x3, p.y3, s.rotation + 180, 10, 'secondary', 10, c, 1);
+    secondaryExhaust.push(e);
+
+  } else if (type === 'tertiaryCw') {
+    let c = {
+      r: 200,
+      g: 200,
+      b: 200
+    }
+    let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'tertiary', 2, c, 1);
+    tertiaryExhaust.push(e);
+  } else if (type === 'tertiaryCcw') {
+    let c = {
+      r: 200,
+      g: 200,
+      b: 200
+    }
+    let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'tertiary', 2, c, 1);
+    tertiaryExhaust.push(e);
+  }
 }
 
 /*****************************************************************************
@@ -1281,6 +1415,17 @@ let update = () => {
   primaryExhaust.length = 0;
   a.forEach((e) => {
     primaryExhaust.push(e);
+  })
+
+  a = [];
+  secondaryExhaust.forEach((e) => {
+    if (!e.fade() && !e.move()) {
+      a.push(e);
+    }
+  })
+  secondaryExhaust.length = 0;
+  a.forEach((e) => {
+    secondaryExhaust.push(e);
   })
 
   a = [];
@@ -1342,6 +1487,10 @@ let draw = () => {
   })
 
   primaryExhaust.forEach((e) => {
+    e.draw(context2);
+  })
+
+  secondaryExhaust.forEach((e) => {
     e.draw(context2);
   })
 

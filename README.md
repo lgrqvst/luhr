@@ -51,6 +51,9 @@ R - Rotate to face up
 - [ ] Render a copy of the craft on the other side when crossing over horizontally
 - [ ] More details on the body (maybe red and green lights for port/starboard?)
 - [ ] Shading on body
+- [ ] Handle ship going off-screen
+- [ ] Clean up exhaust
+- [ ] Handle exhaust outside of handleShip()
 
 ### Controls
 
@@ -59,7 +62,7 @@ R - Rotate to face up
 - [x] A - Turn counter-clockwise
 - [x] D - Turn clockwise
 - [ ] S - Boost (Drains engine output quickly)
-- [ ] E - Stabilizers
+- [ ] E - Stabilizers (???)
 - [ ] F - Boost engine output (Drains fuel) (Boost too much and bad things happen)
 - [ ] R - Rotate to face up (Is this one really needed?)
 - [ ] C - Toggle harvesting (Decreases responsiveness) _(not yet implemented)_
@@ -68,15 +71,17 @@ R - Rotate to face up
 - [ ] space - Fire front cannon _(not yet implemented)_
 - [ ] mouse - Turn turret _(not yet implemented)_
 - [ ] left click - Fire turret _(not yet implemented)_
+- [ ] Fine tune control balance
 
 ### Environment
 
-- [ ] Air resistance slows down horizontal movement
-- [ ] Wind
+- [x] Air resistance slows down horizontal movement
+- [x] Wind
 - [x] Particle pulsation
 - [x] Particle flicker
 - [ ] Particles regenerate/reform after a certain time
 - [ ] Make number of particles depend on viewport size
+- [ ] Sparks when exhaust touches ground and landing pad
 - [ ] Obstacles
 - [ ] Enemies
 - [ ] Threats
@@ -114,6 +119,7 @@ R - Rotate to face up
 - [ ] Vertical speed
 - [ ] Horizontal speed
 - [ ] Thruster indication
+- [ ] Ground proximity alert
 - [ ] Box for subtitles, dialogue, etc.
 - [ ] Wind direction and strength
 - [ ] Add acronym meaning to the title screen

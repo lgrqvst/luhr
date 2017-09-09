@@ -6,6 +6,7 @@ const globals = {
     previous: '',
   },
   wind: 0,
+  drag: 0,
   gravity: 0
 }
 
@@ -28,17 +29,19 @@ const controls = {
 window.addEventListener('keydown',(e) => {
   // console.log(e.which);
   let code = e.which;
-  if (code === 87) controls.primaryThruster = true;
-  if (code === 65) controls.turnCcw = true;
-  if (code === 68) controls.turnCw = true;
-  // if (code === 83) controls.boost = true;
-  // if (code === 69) controls.stabilize = true;
-  // if (code === 82) controls.turnReset = true;
-  // if (code === 84) controls.maintain = true;
 
   if (code === 81) {
     ships[0].engineOn = !ships[0].engineOn;
   }
+
+  if (code === 87) controls.primaryThruster = true;
+  if (code === 65) controls.turnCcw = true;
+  if (code === 68) controls.turnCw = true;
+  if (code === 83) controls.secondaryThruster = true;
+  // if (code === 69) controls.stabilize = true;
+  // if (code === 82) controls.turnReset = true;
+  // if (code === 84) controls.maintain = true;
+
 });
 
 window.addEventListener('keyup',(e) => {
@@ -46,7 +49,7 @@ window.addEventListener('keyup',(e) => {
   if (code === 87) controls.primaryThruster = false;
   if (code === 65) controls.turnCcw = false;
   if (code === 68) controls.turnCw = false;
-  // if (code === 83) controls.boost = false;
+  if (code === 83) controls.secondaryThruster = false;
   // if (code === 69) controls.stabilize = false;
   // if (code === 82) controls.turnReset = false;
   // if (code === 84) controls.maintain = false;
@@ -92,6 +95,8 @@ const tertiaryExhaust = [];
 let setStage = () => {
 
   globals.wind = Math.round(Math.random() * 20 - 10);
+
+  globals.drag = 0.995;
 
   globals.gravity = 0.03;
 
@@ -202,15 +207,7 @@ let handleShip = (s) => {
   if (s.engineOn) {
     let p = s.runEngine();
 
-    let c = {
-      r: 150,
-      g: 150,
-      b: 150
-    }
-    if (!controls.primaryThruster) {
-      let e = new Exhaust(p.x, p.y, s.rotation + 180, 0.01, 'smoke', 1, c, 1);
-      primaryExhaustIdle.push(e);
-    }
+    addExhaust('idle',s,p);
   }
 
   if (!s.engineOn && s.engineOutput > 0){
@@ -220,44 +217,84 @@ let handleShip = (s) => {
   // Controls
 
   if (s.engineOutput > 0) {
-    if (controls.primaryThruster) {
+    if (controls.secondaryThruster) {
+      let p = s.secondaryThruster();
+
+      addExhaust('primary',s,{x: p.x1, y: p.y1});
+      addExhaust('secondary',s,p);
+
+    } else if (controls.primaryThruster) {
       let p = s.primaryThruster();
 
-      let c = {
-        r: 200,
-        g: 200,
-        b: 200
-      }
-      let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'line', 10, c, 1);
-      primaryExhaust.push(e);
+      addExhaust('primary',s,p);
     }
+
     if (controls.turnCw) {
       let p = s.cw();
 
-      let c = {
-        r: 200,
-        g: 200,
-        b: 200
-      }
-      let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'quick', 2, c, 1);
-      tertiaryExhaust.push(e);
+      addExhaust('tertiaryCw',s,p);
     }
+
     if (controls.turnCcw) {
       let p = s.ccw();
 
-      let c = {
-        r: 200,
-        g: 200,
-        b: 200
-      }
-      let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'quick', 2, c, 1);
-      tertiaryExhaust.push(e);
+      addExhaust('tertiaryCcw',s,p);
     }
   }
 
   // Update position of ship
 
   s.move();
+}
+
+let addExhaust = (type, s, p) => {
+  if (type === 'idle') {
+    let c = {
+      r: 150,
+      g: 150,
+      b: 150
+    }
+    let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, c, 0.5);
+    primaryExhaustIdle.push(e);
+
+  } else if (type === 'primary') {
+    let c = {
+      r: 200,
+      g: 200,
+      b: 200
+    }
+    let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'primary', 10, c, 1);
+    primaryExhaust.push(e);
+
+  } else if (type === 'secondary') {
+    let c = {
+      r: Math.round(Math.random() * 55 + 200),
+      g: Math.round(Math.random() * 55 + 200),
+      b: Math.round(Math.random() * 55 + 200)
+    }
+    let e = new Exhaust(p.x2, p.y2, s.rotation + 180, 10, 'secondary', 10, c, 1);
+    secondaryExhaust.push(e);
+
+    e = new Exhaust(p.x3, p.y3, s.rotation + 180, 10, 'secondary', 10, c, 1);
+    secondaryExhaust.push(e);
+
+  } else if (type === 'tertiaryCw') {
+    let c = {
+      r: 200,
+      g: 200,
+      b: 200
+    }
+    let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'tertiary', 2, c, 1);
+    tertiaryExhaust.push(e);
+  } else if (type === 'tertiaryCcw') {
+    let c = {
+      r: 200,
+      g: 200,
+      b: 200
+    }
+    let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'tertiary', 2, c, 1);
+    tertiaryExhaust.push(e);
+  }
 }
 
 /*****************************************************************************
@@ -299,6 +336,17 @@ let update = () => {
   primaryExhaust.length = 0;
   a.forEach((e) => {
     primaryExhaust.push(e);
+  })
+
+  a = [];
+  secondaryExhaust.forEach((e) => {
+    if (!e.fade() && !e.move()) {
+      a.push(e);
+    }
+  })
+  secondaryExhaust.length = 0;
+  a.forEach((e) => {
+    secondaryExhaust.push(e);
   })
 
   a = [];
@@ -360,6 +408,10 @@ let draw = () => {
   })
 
   primaryExhaust.forEach((e) => {
+    e.draw(context2);
+  })
+
+  secondaryExhaust.forEach((e) => {
     e.draw(context2);
   })
 
