@@ -32,6 +32,8 @@ R - Rotate to face up
 ### Ship
 - [x] Rewrite the old ship
 - [x] Ship starts on landing pad
+- [ ] Draw the wings separately from the main fuselage
+- [ ] Make wings fold backwards when boosting
 - [ ] When the ship starts up, have the cockpit lights flicker.
 - [x] The stabilizer ring from the previous design should extend when the ship starts, and retract when the engine is turned off.
 - [ ] Fuel
