@@ -210,9 +210,13 @@ let handleShip = (s) => {
   s.states.turningCcw = false;
 
   if (s.engineOn) {
-    let p = s.runEngine();
+    if (s.primaryFuel > 0) {
+      let p = s.runEngine();
 
-    addExhaust('idle',s,p);
+      addExhaust('idle',s,p);
+    } else {
+      s.engineOn = false;
+    }
   }
 
   if (!s.engineOn && s.engineOutput > 0){
@@ -252,6 +256,10 @@ let handleShip = (s) => {
 
       addExhaust('tertiaryCcw',s,p);
     }
+  }
+
+  if (s.engineOutput > 0) {
+    s.drainFuel();
   }
 
   // Update position of ship

@@ -498,6 +498,7 @@ class Ship {
     // Operation
     this.engineOn = false;
     this.engineOutput = 0;
+    this.primaryFuel = 1000000;
 
     // Handling
     this.responsiveness = 100;
@@ -505,6 +506,7 @@ class Ship {
     this.boostSpeed = 0.14;
     this.turnSpeed = 2.5;
 
+    // Status
     this.states = {
       landed: false,
       parked: false,
@@ -533,13 +535,6 @@ class Ship {
 
     // this.primaryFuel = 0;
     // this.secondaryFuel = 0;
-
-    // Status
-
-    // Ship state would be things like 'landed', 'stabilizing', 'boosting',
-    // 'thrusting', 'exploding', 'exploded', and so on, which would trigger a
-    // difference in the draw function
-    this.state = 'landed';
   }
 
   runEngine() {
@@ -550,6 +545,24 @@ class Ship {
     let pos = local2global(this);
     let p = pos(this.r * -0.45, this.r * 0);
     return {x: p.x, y: p.y};
+  }
+
+  drainFuel() {
+    let fuelConsumption = 0;
+
+    if (this.engineOn) {
+      fuelConsumption += 1;
+    } else {
+      fuelConsumption = Math.ceil(this.engineOutput / 100)
+    }
+
+    if (this.states.primaryThruster) fuelConsumption += 5 * this.engineOutput;
+    if (this.states.secondaryThruster) fuelConsumption += 10 * this.engineOutput;
+    if (this.states.turningCw) fuelConsumption += 1;
+    if (this.states.turningCcw) fuelConsumption += 1;
+
+    this.primaryFuel -= fuelConsumption;
+    if (this.primaryFuel < 0) this.primaryFuel = 0;
   }
 
   powerDownEngine() {
@@ -1330,9 +1343,13 @@ let handleShip = (s) => {
   s.states.turningCcw = false;
 
   if (s.engineOn) {
-    let p = s.runEngine();
+    if (s.primaryFuel > 0) {
+      let p = s.runEngine();
 
-    addExhaust('idle',s,p);
+      addExhaust('idle',s,p);
+    } else {
+      s.engineOn = false;
+    }
   }
 
   if (!s.engineOn && s.engineOutput > 0){
@@ -1372,6 +1389,10 @@ let handleShip = (s) => {
 
       addExhaust('tertiaryCcw',s,p);
     }
+  }
+
+  if (s.engineOutput > 0) {
+    s.drainFuel();
   }
 
   // Update position of ship
