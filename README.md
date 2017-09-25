@@ -36,13 +36,14 @@ R - Rotate to face up
 - [ ] Make wings fold backwards when boosting
 - [ ] When the ship starts up, have the cockpit lights flicker.
 - [x] The stabilizer ring from the previous design should extend when the ship starts, and retract when the engine is turned off.
+- [ ] The stabilizer ring should fold out in a more interesting fashion
 - [ ] Fuel
 - [ ] Particles restore fuel
 - [ ] Visible stabilizers
 - [ ] Stabilizer exhaust
 - [ ] Rudder or maneuvering thrusters when turning (maybe at the wingtips?)
 - [ ] Landing gear
-- [ ] Adjust behaviour when craft is in contact with the ground, like rolling, rather than stopping abruptly
+- [ ] Adjust behaviour when craft is in contact with the ground, like rocking gently or rolling, rather than stopping abruptly or rotating in the same spot
 - [ ] Slow-firing forward cannon
 - [ ] Quick-firing turret (controlled by mouse)
 - [ ] AoE weapon
@@ -70,7 +71,7 @@ R - Rotate to face up
 - [ ] R - Rotate to face up (Is this one really needed?)
 - [ ] C - Toggle harvesting (Decreases responsiveness) _(not yet implemented)_
 - [ ] X - Toggle landing gear _(not yet implemented)_
-- [ ] T (or maybe some other key) - Maintain current vector
+- [ ] T (or maybe some other key) - Maintain current vector (might skip this one, but it was in the first version)
 - [ ] space - Fire front cannon _(not yet implemented)_
 - [ ] mouse - Turn turret _(not yet implemented)_
 - [ ] left click - Fire turret _(not yet implemented)_
@@ -114,18 +115,23 @@ R - Rotate to face up
 ### UI
 
 - [ ] Engine status
-- [ ] Engine power
+- [ ] Engine output
 - [ ] Fuel
-- [ ] Fuel drain
+- [ ] Fuel consumption
 - [ ] Ship status/health/hull integrity
 - [ ] Ship rotation
 - [ ] Altitude
 - [ ] Vertical speed
 - [ ] Horizontal speed
-- [ ] Thruster indication
+- [ ] Ship states
+- [ ] Thruster indications
 - [ ] Ground proximity alert
 - [ ] Box for subtitles, dialogue, etc.
 - [ ] Wind direction and strength
+- [ ] Loaded macguffins / Cargo hold status
+- [ ] Score (Profit earned or total macguffins collected or whatever)
+- [ ] Leveling status
+- [ ] Wave number
 - [ ] Add acronym meaning to the title screen
 - [ ] Add phonetic reading to the title screen
 - [ ] Something something Japanese to the title screen?? Nice aesthetic maybe?
@@ -143,3 +149,10 @@ R - Rotate to face up
 - [ ] Wave-type levels. For every new wave, maybe something in the environment changes. Enemy-types, obstacle-types, background, music, power-ups, what-have-you
 - [ ] Check that math again.
 - [ ] Structure and clean up code. Make it conform to best practices.
+
+### Goals that probably won't happen but hey you never know
+
+- [ ] A store to buy upgrades with the stuff you collect
+- [ ] High score board
+- [ ] Multiplayer (yeah right)
+- [ ] Ship customization
