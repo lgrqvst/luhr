@@ -17,6 +17,54 @@ html(lang="en")
       a.about About
     .pausemenu
       h2 Game paused
-      a Resume
+      a.resume Resume
+    .hud.inactive
+      .engineOutput
+        .left
+          .track
+            .bar
+          .labels
+            .safe 安定
+            .danger 危険
+          .readout 0
+        .right
+          .track
+            .bar
+          .labels
+            .safe 安定
+            .danger 危険
+          .readout 0
+      .primaryFuel
+        .track
+          .bar
+        .labels
+        .readout
+      .secondaryFuel
+        .track
+          .bar
+        .labels
+        .readout
+      .hullIntegrity
+        .track
+          .bar
+        .labels
+        .readout
+      .cargoHold
+        .track
+          .bar
+        .labels
+        .readout
+      .shipStatusFrame
+        .shipStatus
+          .ship
+          .altitude
+          .rotation
+          .speedVertical
+            .track
+            .bar
+          .speedHorizontal
+            .track
+            .bar
+      
 
     script(src="assets/js/game.js")

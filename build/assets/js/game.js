@@ -540,7 +540,7 @@ class Ship {
   runEngine() {
     if (this.engineOutput < 100) this.engineOutput += 0.5;
     // if (this.engineOutput < 100) this.engineOutput += 5;
-    if (this.engineOutput > 101) this.engineOutput -= 1;
+    if (this.engineOutput > 101) this.engineOutput -= ((this.engineOutput - 100) / 75);
 
     let pos = local2global(this);
     let p = pos(this.r * -0.45, this.r * 0);
@@ -551,7 +551,7 @@ class Ship {
     let fuelConsumption = 0;
 
     if (this.engineOn) {
-      fuelConsumption += 1;
+      fuelConsumption += 1 * this.engineOutput;
     } else {
       fuelConsumption = Math.ceil(this.engineOutput / 100)
     }
@@ -586,6 +586,9 @@ class Ship {
     this.vy += Math.sin(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
     this.vx += Math.cos(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
 
+    this.engineOutput -= 0.75;
+    if (this.engineOutput < 0) this.engineOutput = 0;
+
     let pos = local2global(this);
     let p1 = pos(this.r * -0.45, this.r * 0);
     let p2 = pos(this.r * -0.35, this.r * 0.32);
@@ -601,7 +604,7 @@ class Ship {
   }
 
   cw() {
-    this.rotation += this.turnSpeed * this.responsiveness / 100 * this.engineOutput / 100;
+    this.rotation += this.turnSpeed * this.responsiveness / 100 * (this.engineOutput > 100 ? 100 : this.engineOutput) / 100;
 
     if (this.rotation < 0) this.rotation += 360;
     if (this.rotation > 360) this.rotation -= 360;
@@ -612,7 +615,7 @@ class Ship {
   }
 
   ccw() {
-    this.rotation -= this.turnSpeed * this.responsiveness / 100 * this.engineOutput / 100;
+    this.rotation -= this.turnSpeed * this.responsiveness / 100 * (this.engineOutput > 100 ? 100 : this.engineOutput) / 100;
 
     if (this.rotation < 0) this.rotation += 360;
     if (this.rotation > 360) this.rotation -= 360;
@@ -1162,11 +1165,6 @@ const controls = {
 window.addEventListener('keydown',(e) => {
   // console.log(e.which);
   let code = e.which;
-
-  if (code === 81) {
-    ships[0].engineOn = !ships[0].engineOn;
-  }
-
   if (code === 87) controls.primaryThruster = true;
   if (code === 65) controls.turnCcw = true;
   if (code === 68) controls.turnCw = true;
@@ -1186,6 +1184,14 @@ window.addEventListener('keyup',(e) => {
   // if (code === 69) controls.stabilize = false;
   // if (code === 82) controls.turnReset = false;
   // if (code === 84) controls.maintain = false;
+
+  if (code === 81) {
+    ships[0].engineOn = !ships[0].engineOn;
+  }
+
+  if (code === 70 && ships[0].engineOn) {
+    ships[0].engineOutput += 100;
+  }
 });
 
 /*****************************************************************************
@@ -1407,7 +1413,7 @@ let addExhaust = (type, s, p) => {
       g: 150,
       b: 150
     }
-    let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, s.engineOutput, c, 0.5);
+    let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, (s.engineOutput > 150 ? 150 : s.engineOutput), c, 0.5);
     primaryExhaustIdle.push(e);
 
   } else if (type === 'primary') {
@@ -1517,6 +1523,34 @@ let update = () => {
 
 /*****************************************************************************
 
+ HUD
+
+ *****************************************************************************/
+
+let renderHUD = (s) => {
+  if (s.engineOutput > 0) {
+    document.querySelector('.hud').classList.remove('inactive');
+    document.querySelector('.hud').classList.add('active');
+
+    document.querySelector('.hud .shipStatus').style.setProperty("--rotation", s.rotation - 270);
+
+    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutput", s.engineOutput);
+    let engineOutputColor = '#0c9';
+    if (s.engineOutput > 110) engineOutputColor = '#9c0';
+    if (s.engineOutput > 175) engineOutputColor = '#d00';
+    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutputColor", engineOutputColor);
+    document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.engineOutput);
+    document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.engineOutput);
+
+  } else {
+    document.querySelector('.hud').classList.remove('active');
+    document.querySelector('.hud').classList.add('inactive');
+  }
+  // console.log(s.rotation);
+}
+
+/*****************************************************************************
+
  DRAW
 
  *****************************************************************************/
@@ -1577,6 +1611,8 @@ let draw = () => {
   })
 
   ships[0].draw(context2);
+
+  renderHUD(ships[0]);
 }
 
 /*****************************************************************************

@@ -29,11 +29,6 @@ const controls = {
 window.addEventListener('keydown',(e) => {
   // console.log(e.which);
   let code = e.which;
-
-  if (code === 81) {
-    ships[0].engineOn = !ships[0].engineOn;
-  }
-
   if (code === 87) controls.primaryThruster = true;
   if (code === 65) controls.turnCcw = true;
   if (code === 68) controls.turnCw = true;
@@ -53,6 +48,14 @@ window.addEventListener('keyup',(e) => {
   // if (code === 69) controls.stabilize = false;
   // if (code === 82) controls.turnReset = false;
   // if (code === 84) controls.maintain = false;
+
+  if (code === 81) {
+    ships[0].engineOn = !ships[0].engineOn;
+  }
+
+  if (code === 70 && ships[0].engineOn) {
+    ships[0].engineOutput += 100;
+  }
 });
 
 /*****************************************************************************
@@ -274,7 +277,7 @@ let addExhaust = (type, s, p) => {
       g: 150,
       b: 150
     }
-    let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, s.engineOutput, c, 0.5);
+    let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, (s.engineOutput > 150 ? 150 : s.engineOutput), c, 0.5);
     primaryExhaustIdle.push(e);
 
   } else if (type === 'primary') {
@@ -384,6 +387,34 @@ let update = () => {
 
 /*****************************************************************************
 
+ HUD
+
+ *****************************************************************************/
+
+let renderHUD = (s) => {
+  if (s.engineOutput > 0) {
+    document.querySelector('.hud').classList.remove('inactive');
+    document.querySelector('.hud').classList.add('active');
+
+    document.querySelector('.hud .shipStatus').style.setProperty("--rotation", s.rotation - 270);
+
+    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutput", s.engineOutput);
+    let engineOutputColor = '#0c9';
+    if (s.engineOutput > 110) engineOutputColor = '#9c0';
+    if (s.engineOutput > 175) engineOutputColor = '#d00';
+    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutputColor", engineOutputColor);
+    document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.engineOutput);
+    document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.engineOutput);
+
+  } else {
+    document.querySelector('.hud').classList.remove('active');
+    document.querySelector('.hud').classList.add('inactive');
+  }
+  // console.log(s.rotation);
+}
+
+/*****************************************************************************
+
  DRAW
 
  *****************************************************************************/
@@ -444,6 +475,8 @@ let draw = () => {
   })
 
   ships[0].draw(context2);
+
+  renderHUD(ships[0]);
 }
 
 /*****************************************************************************

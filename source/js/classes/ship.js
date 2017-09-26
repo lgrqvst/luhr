@@ -53,7 +53,7 @@ class Ship {
   runEngine() {
     if (this.engineOutput < 100) this.engineOutput += 0.5;
     // if (this.engineOutput < 100) this.engineOutput += 5;
-    if (this.engineOutput > 101) this.engineOutput -= 1;
+    if (this.engineOutput > 101) this.engineOutput -= ((this.engineOutput - 100) / 75);
 
     let pos = local2global(this);
     let p = pos(this.r * -0.45, this.r * 0);
@@ -64,7 +64,7 @@ class Ship {
     let fuelConsumption = 0;
 
     if (this.engineOn) {
-      fuelConsumption += 1;
+      fuelConsumption += 1 * this.engineOutput;
     } else {
       fuelConsumption = Math.ceil(this.engineOutput / 100)
     }
@@ -99,6 +99,9 @@ class Ship {
     this.vy += Math.sin(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
     this.vx += Math.cos(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
 
+    this.engineOutput -= 0.75;
+    if (this.engineOutput < 0) this.engineOutput = 0;
+
     let pos = local2global(this);
     let p1 = pos(this.r * -0.45, this.r * 0);
     let p2 = pos(this.r * -0.35, this.r * 0.32);
@@ -114,7 +117,7 @@ class Ship {
   }
 
   cw() {
-    this.rotation += this.turnSpeed * this.responsiveness / 100 * this.engineOutput / 100;
+    this.rotation += this.turnSpeed * this.responsiveness / 100 * (this.engineOutput > 100 ? 100 : this.engineOutput) / 100;
 
     if (this.rotation < 0) this.rotation += 360;
     if (this.rotation > 360) this.rotation -= 360;
@@ -125,7 +128,7 @@ class Ship {
   }
 
   ccw() {
-    this.rotation -= this.turnSpeed * this.responsiveness / 100 * this.engineOutput / 100;
+    this.rotation -= this.turnSpeed * this.responsiveness / 100 * (this.engineOutput > 100 ? 100 : this.engineOutput) / 100;
 
     if (this.rotation < 0) this.rotation += 360;
     if (this.rotation > 360) this.rotation -= 360;

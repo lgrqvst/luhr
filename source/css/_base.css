@@ -33,8 +33,176 @@ canvas {
   }
 }
 
-.ui {
+.hud {
+  $transitionTime: 2s;
+
   z-index: 300;
+  transition: 0.25s;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95vw;
+  border-top: 10px solid white;
+  &:before, &:after {
+    position: absolute;
+    top: -10px;
+    display: block;
+    content: "";
+    border-top: 10px solid white;;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+  }
+  &:before {
+    left: -10px;
+  }
+  &:after {
+    right: -10px;
+  }
+  &.inactive {
+    top: -10px;
+    --interfaceBackground1: #000;
+    --interfaceColor1: #333;
+  }
+  &.active {
+    top: 0;
+    --interfaceBackground1: #061405;
+    --interfaceBackground1: #060514;
+    --interfaceColor1: #85DC8E;
+    --interfaceColor1: #858EDC;
+  }
+  .engineOutput {
+    position: relative;
+    z-index: 1;
+    --engineOutput: 0;
+    --engineOutputColor: #0c9;
+
+    .track {
+      position: absolute;
+      top: 0;
+      width: calc(45vw - 85px);
+      height: 20px;
+      background: var(--interfaceBackground1);
+      border-bottom: 1px solid white;
+    }
+    .right .track {
+      left: calc(50% + 85px);
+      background: linear-gradient(to right, var(--interfaceBackground1) 50%, rgba(0,0,0,0) 100%);
+    }
+    .left .track {
+      right: calc(50% + 85px);
+      background: linear-gradient(to left, var(--interfaceBackground1) 50%, rgba(0,0,0,0) 100%);
+    }
+    .bar {
+      position: absolute;
+      top: 3px;
+      height: 13px;
+      width: calc(var(--engineOutput) * 0.5%);
+    }
+    .right .bar {
+      left: 0;
+      /*background: linear-gradient(to right, var(--engineOutputColor) 0%, white 100%);*/
+      background: repeating-linear-gradient(to right, transparent 0%, transparent 5px, #000 5px, #000 8px),linear-gradient(to right, var(--interfaceBackground1) 0%, var(--engineOutputColor) 100%);
+      border-right: 2px solid #fff;
+    }
+    .left .bar {
+      right: 0;
+      /*background: linear-gradient(to left, var(--engineOutputColor) 0%, white 100%);*/
+      background: repeating-linear-gradient(to left, transparent 0%, transparent 5px, #000 5px, #000 8px),linear-gradient(to left, var(--interfaceBackground1) 0%, var(--engineOutputColor) 100%);
+      border-left: 2px solid #fff;
+    }
+    .labels div {
+      position: absolute;
+      top: 22px;
+      color: #ccc;
+      font-size: 8px;
+      height: 30px;
+      letter-spacing: 2px;
+      writing-mode: vertical-lr;
+      text-orientation: upright;
+    }
+    .right .labels .safe {
+      left: 76vw;
+      left: calc(50% + 85px + 24.75vw - 47px);
+    }
+    .right .labels .danger {
+      left: 85vw;
+      left: calc(50% + 85px + 39.375vw - 74.375px);
+    }
+    .left .labels .safe {
+      right: 76vw;
+      right: calc(50% + 85px + 24.75vw - 47px);
+    }
+    .left .labels .danger {
+      right: 85vw;
+      right: calc(50% + 85px + 39.375vw - 74.375px);
+    }
+    .readout {
+      position: absolute;
+      top: 10px;
+      transform: translateY(-50%);
+      color: #fff;
+      font-size: 10px;
+    }
+    .right .readout {
+      text-align: right;
+      left: calc(50% + 105px);
+    }
+    .left .readout {
+      text-align: left;
+      right: calc(50% + 105px);
+    }
+
+  }
+  .shipStatusFrame {
+    z-index: 5;
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%);
+    width: 208px;
+    height: 82px;
+    background: white;
+    clip-path: polygon(0 0, 100% 0, 75% 100%, 25% 100%);
+  }
+  .shipStatus {
+    --rotation: 0;
+
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%);
+    width: 200px;
+    height: 80px;
+    background: var(--interfaceBackground1);
+    clip-path: polygon(0 0, 100% 0, 75% 100%, 25% 100%);
+    transition: $transitionTime;
+    .rotation {
+      transform: translate(-50%, -50%) rotate(calc(var(--rotation) * 1deg));
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60px;
+      height: 60px;
+      border: 1px solid var(--interfaceColor1);
+      border-radius: 50%;
+      transition: $transitionTime border-color;
+      &:after {
+        display: block;
+        transition: $transitionTime border-color;
+        content: "";
+        width: 0;
+        height: 0;
+        border-bottom: 5px solid var(--interfaceColor1);
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        position: absolute;
+        top: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+  }
 }
 
 .mainmenu {

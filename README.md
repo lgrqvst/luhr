@@ -58,6 +58,7 @@ R - Rotate to face up
 - [x] Clean up exhaust
 - [x] Handle exhaust outside of handleShip()
 - [ ] Animate more parts of the ship
+- [ ] Add some flame when the engines are firing
 
 ### Controls
 
@@ -112,12 +113,14 @@ R - Rotate to face up
 - [ ] Some stars in the sky near the top of the screen
 - [ ] Add a bit of ground at the bottom. Not aesthetically pleasing to have the trees right at the bottom of the screen.
 
-### UI
+### UI / HUD
 
 - [ ] Engine status
 - [ ] Engine output
 - [ ] Fuel
 - [ ] Fuel consumption
+- [ ] Ammunition
+- [ ] Weapon indicator
 - [ ] Ship status/health/hull integrity
 - [ ] Ship rotation
 - [ ] Altitude
@@ -125,7 +128,8 @@ R - Rotate to face up
 - [ ] Horizontal speed
 - [ ] Ship states
 - [ ] Thruster indications
-- [ ] Ground proximity alert
+- [ ] Ground proximity alert and other warnings/indications
+- [ ] Distance to landingpad
 - [ ] Box for subtitles, dialogue, etc.
 - [ ] Wind direction and strength
 - [ ] Loaded macguffins / Cargo hold status
