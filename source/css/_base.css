@@ -73,6 +73,9 @@ canvas {
   .engineOutput {
     position: relative;
     z-index: 1;
+    width: 100%;
+    height: 100px;
+    overflow-x: hidden;
     --engineOutput: 0;
     --engineOutputColor: #0c9;
 
@@ -119,21 +122,18 @@ canvas {
       letter-spacing: 2px;
       writing-mode: vertical-lr;
       text-orientation: upright;
+      transform: translateX(-50%);
     }
     .right .labels .safe {
-      left: 76vw;
       left: calc(50% + 85px + 24.75vw - 47px);
     }
     .right .labels .danger {
-      left: 85vw;
       left: calc(50% + 85px + 39.375vw - 74.375px);
     }
     .left .labels .safe {
-      right: 76vw;
       right: calc(50% + 85px + 24.75vw - 47px);
     }
     .left .labels .danger {
-      right: 85vw;
       right: calc(50% + 85px + 39.375vw - 74.375px);
     }
     .readout {
@@ -161,48 +161,250 @@ canvas {
     left: 50%;
     transform: translate(-50%);
     width: 208px;
-    height: 82px;
+    height: 87px;
     background: white;
     clip-path: polygon(0 0, 100% 0, 75% 100%, 25% 100%);
   }
   .shipStatus {
     --rotation: 0;
+    --altitude: 0;
+    --speedHorizontalPositive: 0;
+    --speedHorizontalNegative: 0;
+    --speedVerticalPositive: 0;
+    --speedVerticalNegative: 0;
+    --accelerationHorizontal: 50;
+    --accelerationVertical: 50;
 
     position: absolute;
     top: 0;
     left: 50%;
     transform: translate(-50%);
     width: 200px;
-    height: 80px;
+    height: 85px;
     background: var(--interfaceBackground1);
     clip-path: polygon(0 0, 100% 0, 75% 100%, 25% 100%);
     transition: $transitionTime;
+    .speedVertical {}
+    .speedHorizontal {}
+    .altitude {}
     .rotation {
-      transform: translate(-50%, -50%) rotate(calc(var(--rotation) * 1deg));
       position: absolute;
-      top: 50%;
+      top: 10px;
       left: 50%;
       width: 60px;
       height: 60px;
-      border: 1px solid var(--interfaceColor1);
-      border-radius: 50%;
-      transition: $transitionTime border-color;
-      &:after {
-        display: block;
+      transform: translateX(-50%);
+      .meter {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        transform: rotate(calc(var(--rotation) * 1deg));
+        border: 1px solid var(--interfaceColor1);
+        border-radius: 50%;
         transition: $transitionTime border-color;
-        content: "";
-        width: 0;
-        height: 0;
-        border-bottom: 5px solid var(--interfaceColor1);
-        border-left: 5px solid transparent;
-        border-right: 5px solid transparent;
+        &:after {
+          display: block;
+          transition: $transitionTime border-color;
+          content: "";
+          width: 0;
+          height: 0;
+          border-bottom: 5px solid var(--interfaceColor1);
+          border-left: 5px solid transparent;
+          border-right: 5px solid transparent;
+          position: absolute;
+          top: -5px;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+      } /* .meter */
+      .readout {
         position: absolute;
-        top: -5px;
+        top: 0;
         left: 50%;
         transform: translateX(-50%);
+        font-size: 8px;
+        color: var(--interfaceColor1);
+        transition: $transitionTime;
+        &:after {
+          content: "°";
+        }
+      } /* .readout */
+    } /* .rotation */
+    .speedVertical {
+      &.critical {
+        --interfaceColor1: #d40;
+        .track, .track:before, .track:after, .track .barPositive, .track .barNegative {
+          transition: 0s;
+        }
+      }
+      .track {
+        position: absolute;
+        right: 27%;
+        top: 10px;
+        height: 60px;
+        width: 5px;
+        border: 1px solid var(--interfaceColor1);
+        transition: $transitionTime;
+        &:before {
+          display: block;
+          content: "";
+          height: 0px;
+          width: 3px;
+          position: absolute;
+          border-top: 1px solid var(--interfaceColor1);
+          transition: $transitionTime;
+          top: 50%;
+          left: 0;
+        }
+        &:after {
+          display: block;
+          content: "";
+          width: 0;
+          height: 0;
+          position: absolute;
+          bottom: calc(var(--accelerationVertical) * 1% - 2px);
+          right: -4px;
+          border-right: 4px solid var(--interfaceColor1);
+          border-top: 2px solid transparent;
+          border-bottom: 2px solid transparent;
+          transition: $transitionTime border-color;
+        }
+        .barPositive, .barNegative {
+          position: absolute;
+          left: 0;
+          width: 3px;
+          display: block;
+          background: var(--interfaceColor1);
+          transition: $transitionTime background-color;
+        }
+        .barPositive {
+          bottom: 50%;
+          height: calc(var(--speedVerticalPositive) * 1%);
+        }
+        .barNegative {
+          top: 50%;
+          height: calc(var(--speedVerticalNegative) * 1%);
+        }
       }
     }
-  }
+    .speedHorizontal {
+      &.critical {
+        --interfaceColor1: #d40;
+        .track, .track:before, .track:after, .track .barPositive, .track .barNegative {
+          transition: 0s;
+        }
+      }
+      .track {
+        position: absolute;
+        left: 50%;
+        bottom: 5px;
+        width: 60px;
+        height: 5px;
+        transform: translateX(-50%);
+        border: 1px solid var(--interfaceColor1);
+        transition: $transitionTime;
+        &:before {
+          display: block;
+          content: "";
+          height: 3px;
+          width: 0px;
+          position: absolute;
+          border-left: 1px solid var(--interfaceColor1);
+          transition: $transitionTime;
+          top: 0;
+          left: 50%;
+        }
+        &:after {
+          display: block;
+          content: "";
+          width: 0;
+          height: 0;
+          position: absolute;
+          left: calc(var(--accelerationHorizontal) * 1% - 2px);
+          top: -4px;
+          border-top: 4px solid var(--interfaceColor1);
+          border-left: 2px solid transparent;
+          border-right: 2px solid transparent;
+          transition: $transitionTime border-color;
+        }
+        .barPositive, .barNegative {
+          position: absolute;
+          top: 0;
+          height: 100%;
+          display: block;
+          background: var(--interfaceColor1);
+          transition: $transitionTime background-color;
+        }
+        .barPositive {
+          left: 50%;
+          width: calc(var(--speedHorizontalPositive) * 1%);
+        }
+        .barNegative {
+          right: 50%;
+          width: calc(var(--speedHorizontalNegative) * 1%);
+        }
+      }
+    }
+    .altitude {
+      &.critical {
+        --interfaceColor1: #f74;
+        transition: 0s;
+        &:before, &:after, .tick {
+          transition: 0s;
+        }
+      }
+      position: absolute;
+      left: 27%;
+      top: 10px;
+      height: 60px;
+      width: 5px;
+      border: 1px solid var(--interfaceColor1);
+      transition: $transitionTime;
+      border-left: 0;
+      &:before {
+        display: block;
+        content: "";
+        height: 0px;
+        width: 4px;
+        position: absolute;
+        border-top: 1px solid var(--interfaceColor1);
+        transition: $transitionTime;
+        top: 50%;
+        right: 0;
+      }
+      &:after {
+        display: block;
+        content: "";
+        height: 0;
+        width: 0;
+        border-right: 5px solid var(--interfaceColor1);
+        border-top: 3px solid transparent;
+        border-bottom: 3px solid transparent;
+        position: absolute;
+        right: -5px;
+        bottom: calc(var(--altitude) * 1% - 3px);
+        transition: $transitionTime border-color;
+      }
+      .tick {
+        display: block;
+        content: "";
+        height: 0px;
+        width: 2px;
+        position: absolute;
+        border-top: 1px solid var(--interfaceColor1);
+        transition: $transitionTime;
+        right: 0;
+        &.tick1 { bottom: 10%; }
+        &.tick2 { bottom: 20%; }
+        &.tick3 { bottom: 30%; }
+        &.tick4 { bottom: 40%; }
+        &.tick6 { bottom: 60%; }
+        &.tick7 { bottom: 70%; }
+        &.tick8 { bottom: 80%; }
+        &.tick9 { bottom: 90%; }
+      }
+    }
+  } /* .shipStatus */
 }
 
 .mainmenu {

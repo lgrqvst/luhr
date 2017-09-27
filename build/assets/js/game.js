@@ -493,6 +493,8 @@ class Ship {
     this.r = 15;
     this.vx = 0;
     this.vy = 0;
+    this.ax = 0;
+    this.ay = 0;
     this.rotation = 270;
 
     // Operation
@@ -541,6 +543,10 @@ class Ship {
     if (this.engineOutput < 100) this.engineOutput += 0.5;
     // if (this.engineOutput < 100) this.engineOutput += 5;
     if (this.engineOutput > 101) this.engineOutput -= ((this.engineOutput - 100) / 75);
+    // if (this.engineOutput > 101) this.engineOutput -= ((this.engineOutput - 100) / 150);
+
+    this.ax = 0;
+    this.ay = 0;
 
     let pos = local2global(this);
     let p = pos(this.r * -0.45, this.r * 0);
@@ -574,8 +580,12 @@ class Ship {
   }
 
   primaryThruster() {
-    this.vy += Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
-    this.vx += Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    // this.vx += Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    // this.vy += Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    this.ax = Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    this.ay = Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    this.vx += this.ax;
+    this.vy += this.ay;
 
     let pos = local2global(this);
     let p = pos(this.r * -0.45, this.r * 0);
@@ -583,8 +593,12 @@ class Ship {
   }
 
   secondaryThruster() {
-    this.vy += Math.sin(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
-    this.vx += Math.cos(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+    // this.vx += Math.cos(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+    // this.vy += Math.sin(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+    this.ax = Math.cos(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+    this.ay = Math.sin(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+    this.vx += this.ax;
+    this.vy += this.ay;
 
     this.engineOutput -= 0.75;
     if (this.engineOutput < 0) this.engineOutput = 0;
@@ -1527,12 +1541,15 @@ let update = () => {
 
  *****************************************************************************/
 
-let renderHUD = (s) => {
+let updateHUD = (s) => {
   if (s.engineOutput > 0) {
     document.querySelector('.hud').classList.remove('inactive');
     document.querySelector('.hud').classList.add('active');
 
-    document.querySelector('.hud .shipStatus').style.setProperty("--rotation", s.rotation - 270);
+    let r = Math.floor(s.rotation) - 270;
+    if (r < 0) r+= 360;
+    document.querySelector('.hud .shipStatus').style.setProperty("--rotation", r);
+    document.querySelector('.hud .shipStatus .rotation .readout').innerHTML = r;
 
     document.querySelector('.hud .engineOutput').style.setProperty("--engineOutput", s.engineOutput);
     let engineOutputColor = '#0c9';
@@ -1542,11 +1559,85 @@ let renderHUD = (s) => {
     document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.engineOutput);
     document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.engineOutput);
 
+    let a = Math.floor(((s.y - VH + s.r) * -1) / VH * 100 / 2);
+    if (a > 100) {
+      a = 100;
+      document.querySelector('.hud .shipStatus .altitude').classList.add('critical');
+    } else {
+      document.querySelector('.hud .shipStatus .altitude').classList.remove('critical');
+    }
+    document.querySelector('.hud .shipStatus').style.setProperty("--altitude", a);
+
+    let ax = Math.round(s.ax * 800);
+    let ay = Math.round(s.ay * 800 * -1);
+    if (ax > 200) ax = 200;
+    if (ax < -200) ax = -200;
+    if (ay > 200) ay = 200;
+    if (ay < -200) ay = -200;
+    ax += 200;
+    ay += 200;
+    ax /= 4;
+    ay /= 4;
+    document.querySelector('.hud .shipStatus').style.setProperty('--accelerationHorizontal',ax);
+    document.querySelector('.hud .shipStatus').style.setProperty('--accelerationVertical',ay);
+
+    let vx = Math.round(s.vx / 14 * 100);
+    let vy = Math.round(s.vy * -1 / 14 * 100);
+    let vxp = 0;
+    let vxn = 0;
+    let vxc = false;
+    if (vx > 50) {
+      vx = 50;
+      vxc = true;
+    }
+    if (vx < -50) {
+      vx = -50;
+      vxc = true;
+    }
+    if (vx > 0) {
+      vxp = vx;
+    } else if (vx < 0) {
+      vxn = vx * -1;
+    }
+    let vyp = 0;
+    let vyn = 0;
+    let vyc = false;
+    if (vy > 50) {
+      vy = 50;
+      vyc = true;
+    }
+    if (vy < -50) {
+      vy = -50;
+      vyc = true;
+    }
+    if (vy > 0) {
+      vyp = vy;
+    } else if (vy < 0) {
+      vyn = vy * -1;
+    }
+    if (vxc) {
+      document.querySelector('.hud .shipStatus .speedHorizontal').classList.add('critical');
+    } else {
+      document.querySelector('.hud .shipStatus .speedHorizontal').classList.remove('critical');
+    }
+    if (vyc) {
+      document.querySelector('.hud .shipStatus .speedVertical').classList.add('critical');
+    } else {
+      document.querySelector('.hud .shipStatus .speedVertical').classList.remove('critical');
+    }
+    document.querySelector('.hud .shipStatus').style.setProperty('--speedHorizontalPositive',vxp);
+    document.querySelector('.hud .shipStatus').style.setProperty('--speedHorizontalNegative',vxn);
+    document.querySelector('.hud .shipStatus').style.setProperty('--speedVerticalPositive',vyp);
+    document.querySelector('.hud .shipStatus').style.setProperty('--speedVerticalNegative',vyn);
+
   } else {
     document.querySelector('.hud').classList.remove('active');
     document.querySelector('.hud').classList.add('inactive');
+    let criticals = document.querySelectorAll('.hud *')
+    criticals.forEach((e) => {
+      e.classList.remove('critical');
+    });
   }
-  // console.log(s.rotation);
 }
 
 /*****************************************************************************
@@ -1612,7 +1703,7 @@ let draw = () => {
 
   ships[0].draw(context2);
 
-  renderHUD(ships[0]);
+  updateHUD(ships[0]);
 }
 
 /*****************************************************************************

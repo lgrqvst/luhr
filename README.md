@@ -116,16 +116,17 @@ R - Rotate to face up
 ### UI / HUD
 
 - [ ] Engine status
-- [ ] Engine output
+- [x] Engine output
 - [ ] Fuel
 - [ ] Fuel consumption
 - [ ] Ammunition
 - [ ] Weapon indicator
 - [ ] Ship status/health/hull integrity
-- [ ] Ship rotation
-- [ ] Altitude
-- [ ] Vertical speed
-- [ ] Horizontal speed
+- [x] Ship rotation
+- [x] Altitude
+- [x] Vertical speed
+- [x] Horizontal speed
+- [x] Current acceleration
 - [ ] Ship states
 - [ ] Thruster indications
 - [ ] Ground proximity alert and other warnings/indications

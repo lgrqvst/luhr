@@ -6,6 +6,8 @@ class Ship {
     this.r = 15;
     this.vx = 0;
     this.vy = 0;
+    this.ax = 0;
+    this.ay = 0;
     this.rotation = 270;
 
     // Operation
@@ -54,6 +56,10 @@ class Ship {
     if (this.engineOutput < 100) this.engineOutput += 0.5;
     // if (this.engineOutput < 100) this.engineOutput += 5;
     if (this.engineOutput > 101) this.engineOutput -= ((this.engineOutput - 100) / 75);
+    // if (this.engineOutput > 101) this.engineOutput -= ((this.engineOutput - 100) / 150);
+
+    this.ax = 0;
+    this.ay = 0;
 
     let pos = local2global(this);
     let p = pos(this.r * -0.45, this.r * 0);
@@ -87,8 +93,12 @@ class Ship {
   }
 
   primaryThruster() {
-    this.vy += Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
-    this.vx += Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    // this.vx += Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    // this.vy += Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    this.ax = Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    this.ay = Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
+    this.vx += this.ax;
+    this.vy += this.ay;
 
     let pos = local2global(this);
     let p = pos(this.r * -0.45, this.r * 0);
@@ -96,8 +106,12 @@ class Ship {
   }
 
   secondaryThruster() {
-    this.vy += Math.sin(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
-    this.vx += Math.cos(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+    // this.vx += Math.cos(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+    // this.vy += Math.sin(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+    this.ax = Math.cos(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+    this.ay = Math.sin(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
+    this.vx += this.ax;
+    this.vy += this.ay;
 
     this.engineOutput -= 0.75;
     if (this.engineOutput < 0) this.engineOutput = 0;
