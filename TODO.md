@@ -51,6 +51,7 @@
 - [ ] left click - Fire turret _(not yet implemented)_
 - [ ] Prevent right click
 - [ ] Fine tune control balance
+- [ ] Control to open and close the dome on the landing pad (if the dome is closed the ship can't land, and the landing pad will be treated like background)
 
 ## Environment
 
@@ -125,6 +126,7 @@
 - [ ] Pause screen
 - [ ] Help screen
 - [ ] Wave-type levels. For every new wave, maybe something in the environment changes. Enemy-types, obstacle-types, background, music, power-ups, what-have-you
+- [ ] Landings are fun, so give the player a reason to have to (or to want to) make landings not just on the landing pad but out in the forest as well.
 - [ ] Check that math again.
 - [ ] Structure and clean up code. Make it conform to best practices.
 
