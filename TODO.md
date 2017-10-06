@@ -32,6 +32,8 @@
 - [ ] Add some flame when the engines are firing
 - [ ] Possibly rewrite the workings of the ship engine? Doesn't feel quite the way I want it to right now.
 - [ ] Make engine boosting dangerous
+- [ ] Figure out how the heck I want the engines to work
+- [ ] Shields
 
 ## Controls
 
