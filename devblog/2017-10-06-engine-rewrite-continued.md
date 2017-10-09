@@ -22,7 +22,7 @@ Here's my first idea.
                    (bright, line-like exhaust)
 ```
 
-Fig. 1. Fuel and oxidizer are pumped into the engine, where they are converted to energy and waste. Waste is expelled as smoke. A static amount of energy is used to power the ship. Excess energy converts to thrust. Simply having the engine running generates just enough to power the ship. Hitting W or S means increasing the amount of fuel and oxidizer fed into the engine, thereby increasing thrust.
+_Fig. 1. Fuel and oxidizer are pumped into the engine, where they are converted to energy and waste. Waste is expelled as smoke. A static amount of energy is used to power the ship. Excess energy converts to thrust. Simply having the engine running generates just enough to power the ship. Hitting W or S means increasing the amount of fuel and oxidizer fed into the engine, thereby increasing thrust._
 
 This isn't bad, necessarily, but I feel like it lacks something. I'm usually very much on board the whole less is more train, but I want this to be a bit more complex. And I want to put some sort of customization aspects into it as well. Give the player some interesting choices.
 
