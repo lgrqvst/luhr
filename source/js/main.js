@@ -17,9 +17,9 @@ const globals = {
  *****************************************************************************/
 
 const controls = {
-  primaryThruster: false,
-  turnCw: false,
-  turnCcw: false,
+  // primaryThruster: false,
+  // turnCw: false,
+  // turnCcw: false,
   // boost: false,
   // stabilize: false,
   // turnReset: false,
@@ -27,35 +27,62 @@ const controls = {
 }
 
 window.addEventListener('keydown',(e) => {
-  // console.log(e.which);
   let code = e.which;
-  if (code === 87) controls.primaryThruster = true;
-  if (code === 65) controls.turnCcw = true;
-  if (code === 68) controls.turnCw = true;
-  if (code === 83) controls.secondaryThruster = true;
+  // console.log(code);
+
+  if (ships[0].shipOn) {
+
+  }
+
+  // if (code === 87) controls.primaryThruster = true;
+  // if (code === 65) controls.turnCcw = true;
+  // if (code === 68) controls.turnCw = true;
+  // if (code === 83) controls.secondaryThruster = true;
   // if (code === 69) controls.stabilize = true;
   // if (code === 82) controls.turnReset = true;
-  // if (code === 84) controls.maintain = true;
-
 });
 
 window.addEventListener('keyup',(e) => {
   let code = e.which;
-  if (code === 87) controls.primaryThruster = false;
-  if (code === 65) controls.turnCcw = false;
-  if (code === 68) controls.turnCw = false;
-  if (code === 83) controls.secondaryThruster = false;
+  let s = ships[0];
+  console.log(code);
+
+  if (code === 84) {
+    if (s.shipOn) {
+      s.generatorOn = false;
+      s.shieldsOn = false;
+      s.weaponsOn = false;
+    }
+    s.shipOn = !s.shipOn;
+  }
+
+  if (ships[0].shipOn) {
+    if (code === 89) s.generatorOn = !s.generatorOn;
+  }
+
+  if (ships[0].shipOn) {
+    if (code === 85) s.shieldsOn = !s.shieldsOn;
+  }
+
+  if (ships[0].shipOn) {
+    if (code === 73) s.weaponsOn = !s.weaponsOn;
+  }
+
+  // if (code === 87) controls.primaryThruster = false;
+  // if (code === 65) controls.turnCcw = false;
+  // if (code === 68) controls.turnCw = false;
+  // if (code === 83) controls.secondaryThruster = false;
   // if (code === 69) controls.stabilize = false;
   // if (code === 82) controls.turnReset = false;
-  // if (code === 84) controls.maintain = false;
 
-  if (code === 81) {
-    ships[0].engineOn = !ships[0].engineOn;
-  }
 
-  if (code === 70 && ships[0].engineOn) {
-    ships[0].engineOutput += 100;
-  }
+  // if (code === 81) {
+  //   ships[0].engineOn = !ships[0].engineOn;
+  // }
+  //
+  // if (code === 70 && ships[0].engineOn) {
+  //   ships[0].engineOutput += 100;
+  // }
 });
 
 /*****************************************************************************
@@ -212,58 +239,59 @@ let handleShip = (s) => {
   s.states.turningCw = false;
   s.states.turningCcw = false;
 
-  if (s.engineOn) {
-    if (s.primaryFuel > 0) {
-      let p = s.runEngine();
+  // console.log(s.shipOn, s.generatorOn, s.shieldsOn, s.weaponsOn);
 
-      addExhaust('idle',s,p);
-    } else {
-      s.engineOn = false;
-    }
-  }
+  // if (s.engineOn) {
+  //   if (s.primaryFuel > 0) {
+  //     let p = s.runEngine();
+  //
+  //     addExhaust('idle',s,p);
+  //   } else {
+  //     s.engineOn = false;
+  //   }
+  // }
 
-  if (!s.engineOn && s.engineOutput > 0){
-    let p = s.powerDownEngine();
-
-    addExhaust('idle',s,p);
-  }
+  // if (!s.engineOn && s.engineOutput > 0){
+  //   let p = s.powerDownEngine();
+  //   addExhaust('idle',s,p);
+  // }
 
   // Controls
 
-  if (s.engineOutput > 0) {
-    if (controls.secondaryThruster) {
-      let p = s.secondaryThruster();
-      s.states.primaryThruster = true;
-      s.states.secondaryThruster = true;
+  // if (s.engineOutput > 0) {
+  //   if (controls.secondaryThruster) {
+  //     let p = s.secondaryThruster();
+  //     s.states.primaryThruster = true;
+  //     s.states.secondaryThruster = true;
+  //
+  //     addExhaust('primary',s,{x: p.x1, y: p.y1});
+  //     addExhaust('secondary',s,p);
+  //
+  //   } else if (controls.primaryThruster) {
+  //     let p = s.primaryThruster();
+  //     s.states.primaryThruster = true;
+  //
+  //     addExhaust('primary',s,p);
+  //   }
+  //
+  //   if (controls.turnCw) {
+  //     let p = s.cw();
+  //     s.states.turningCw = true;
+  //
+  //     addExhaust('tertiaryCw',s,p);
+  //   }
+  //
+  //   if (controls.turnCcw) {
+  //     let p = s.ccw();
+  //     s.states.turningCcw = true;
+  //
+  //     addExhaust('tertiaryCcw',s,p);
+  //   }
+  // }
 
-      addExhaust('primary',s,{x: p.x1, y: p.y1});
-      addExhaust('secondary',s,p);
-
-    } else if (controls.primaryThruster) {
-      let p = s.primaryThruster();
-      s.states.primaryThruster = true;
-
-      addExhaust('primary',s,p);
-    }
-
-    if (controls.turnCw) {
-      let p = s.cw();
-      s.states.turningCw = true;
-
-      addExhaust('tertiaryCw',s,p);
-    }
-
-    if (controls.turnCcw) {
-      let p = s.ccw();
-      s.states.turningCcw = true;
-
-      addExhaust('tertiaryCcw',s,p);
-    }
-  }
-
-  if (s.engineOutput > 0) {
-    s.drainFuel();
-  }
+  // if (s.engineOutput > 0) {
+  //   s.drainFuel();
+  // }
 
   // Update position of ship
 
@@ -401,13 +429,13 @@ let updateHUD = (s) => {
     document.querySelector('.hud .shipStatus').style.setProperty("--rotation", r);
     document.querySelector('.hud .shipStatus .rotation .readout').innerHTML = r;
 
-    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutput", s.engineOutput);
-    let engineOutputColor = '#0c9';
-    if (s.engineOutput > 110) engineOutputColor = '#9c0';
-    if (s.engineOutput > 175) engineOutputColor = '#d00';
-    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutputColor", engineOutputColor);
-    document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.engineOutput);
-    document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.engineOutput);
+    // document.querySelector('.hud .engineOutput').style.setProperty("--engineOutput", s.engineOutput);
+    // let engineOutputColor = '#0c9';
+    // if (s.engineOutput > 110) engineOutputColor = '#9c0';
+    // if (s.engineOutput > 175) engineOutputColor = '#d00';
+    // document.querySelector('.hud .engineOutput').style.setProperty("--engineOutputColor", engineOutputColor);
+    // document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.engineOutput);
+    // document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.engineOutput);
 
     let a = Math.floor(((s.y - VH + s.r) * -1) / VH * 100 / 2);
     if (a > 100) {

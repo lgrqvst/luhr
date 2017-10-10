@@ -45,7 +45,7 @@ This is more like it. Now I feel like where getting somewhere. Interesting amoun
 - Landing on the landing pad will quickly replenish stocks and repair the ship. (Have some tubes and hoses extend from the platform to connect with the ship. Maybe this shouldn't be automatic - the player must engage docking clamps.)
 - In between the lines of Exhaust II, throw in some particles representing bits of propellant that hasn't properly sublimated.
 - Taking damage can mean that e.g. the coolant tank starts leaking, with predictable effects.
-- The amount of power going into the engine determines how much fuel and oxidier is injected and how much propellant, thrust and heast is produced.
+- The amount of power going into the engine determines how much fuel and oxidizer is injected and how much propellant, thrust and heat is produced.
 - The game starts with batteries at 0.
 - The generator takes a few seconds before it generates power at 100%.
 - It should be possible to push the generator beyond what's good for it.
@@ -53,5 +53,6 @@ This is more like it. Now I feel like where getting somewhere. Interesting amoun
 - Running the engine draws power first from the batteries. Normal thrust with the generator at 100 should never drain the batteries. Boosting uses more power. After batteries are drained, it should take power from the generator, at the (possible) expense of ship functions.
 - If the generator produces more power than is used by the ship, what happens? There's something to think about. Does the fuel cut off? Does Exhaust I increase? Should there be some other function to get rid of excess energy? Excess energy produces Exhaust IV? Channeled into engine for thrust whether you want it or not? Think about this one a bit.
 - Turning on the ship means turning on ship functions, and does not automatically turn on the generator.
+- Turning on the generator requires the ship to be on
 
 [to be continued]

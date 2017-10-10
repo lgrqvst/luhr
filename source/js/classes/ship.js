@@ -11,9 +11,27 @@ class Ship {
     this.rotation = 270;
 
     // Operation
-    this.engineOn = false;
-    this.engineOutput = 0;
-    this.primaryFuel = 1000000;
+    this.shipOn = false;
+
+    this.generatorOn = false;
+    this.generatorOutput = 0;
+    this.generatorTemperature = 0;
+
+    this.engineTemperature = 0;
+
+    this.shieldsOn = false;
+    this.shieldStrength = 0;
+
+    this.weaponsOn = false;
+    this.weaponStrength = 0;
+
+    this.primaryFuel = 100;
+    this.secondaryFuel = 100;
+    this.oxidizer = 100;
+    this.propellant = 0;
+    this.emergencyPropellant = 100;
+    this.coolant = 100;
+    this.battery = 0;
 
     // Handling
     this.responsiveness = 100;
