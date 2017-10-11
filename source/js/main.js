@@ -10,6 +10,8 @@ const globals = {
   gravity: 0
 }
 
+const messageLog = [];
+
 /*****************************************************************************
 
  CONTROLS
@@ -17,72 +19,90 @@ const globals = {
  *****************************************************************************/
 
 const controls = {
-  // primaryThruster: false,
-  // turnCw: false,
-  // turnCcw: false,
-  // boost: false,
-  // stabilize: false,
-  // turnReset: false,
-  // maintain: false,
+  increaseGeneratorLoad: false,
+  decreaseGeneratorLoad: false,
 }
 
 window.addEventListener('keydown',(e) => {
   let code = e.which;
+  let s = ships[0];
   // console.log(code);
 
-  if (ships[0].shipOn) {
-
+  if (s.generatorOn) {
+    if (code === 80) {
+      controls.increaseGeneratorLoad = true;
+    }
+    if (code === 76) {
+      controls.decreaseGeneratorLoad = true;
+    }
   }
-
-  // if (code === 87) controls.primaryThruster = true;
-  // if (code === 65) controls.turnCcw = true;
-  // if (code === 68) controls.turnCw = true;
-  // if (code === 83) controls.secondaryThruster = true;
-  // if (code === 69) controls.stabilize = true;
-  // if (code === 82) controls.turnReset = true;
 });
 
 window.addEventListener('keyup',(e) => {
   let code = e.which;
   let s = ships[0];
-  console.log(code);
+  // console.log(code);
 
   if (code === 84) {
     if (s.shipOn) {
       s.generatorOn = false;
       s.shieldsOn = false;
       s.weaponsOn = false;
+      messageLog.push('Ship: Powering down');
+    } else {
+      messageLog.push('Ship: Powering up')
     }
     s.shipOn = !s.shipOn;
   }
 
-  if (ships[0].shipOn) {
-    if (code === 89) s.generatorOn = !s.generatorOn;
+  if (s.shipOn) {
+    if (code === 89) {
+      if (!s.generatorOn) {
+        messageLog.push('Generator: Start up sequence initiated');
+      } else {
+        messageLog.push('Generator: Shut down sequence initiated');
+      }
+      s.generatorOn = !s.generatorOn;
+    }
+
+    if (code === 85) {
+      if (!s.shieldsOn) {
+        messageLog.push('Shields: Activated');
+      } else {
+        messageLog.push('Shields: Deactivated');
+      }
+      s.shieldsOn = !s.shieldsOn;
+    }
+
+    if (code === 73) {
+      if (!s.weaponsOn) {
+        messageLog.push('Weapons: Activated');
+      } else {
+        messageLog.push('Weapons: Deactivated');
+      }
+      s.weaponsOn = !s.weaponsOn;
+    }
   }
 
-  if (ships[0].shipOn) {
-    if (code === 85) s.shieldsOn = !s.shieldsOn;
+  if (s.generatorOn) {
+    if (code === 79) {
+      s.generatorLoad = 100;
+      messageLog.push('Generator: Load set to: 100');
+    }
+    if (code === 75) {
+      s.generatorLoad = 0;
+      messageLog.push('Generator: Load set to: 0');
+    }
+    if (code === 80) {
+      controls.increaseGeneratorLoad = false;
+      messageLog.push('Generator: Increasing load to: ' + s.generatorLoad);
+    }
+    if (code === 76) {
+      controls.decreaseGeneratorLoad = false;
+      messageLog.push('Generator: Decreasing load to: ' + s.generatorLoad);
+    }
   }
 
-  if (ships[0].shipOn) {
-    if (code === 73) s.weaponsOn = !s.weaponsOn;
-  }
-
-  // if (code === 87) controls.primaryThruster = false;
-  // if (code === 65) controls.turnCcw = false;
-  // if (code === 68) controls.turnCw = false;
-  // if (code === 83) controls.secondaryThruster = false;
-  // if (code === 69) controls.stabilize = false;
-  // if (code === 82) controls.turnReset = false;
-
-
-  // if (code === 81) {
-  //   ships[0].engineOn = !ships[0].engineOn;
-  // }
-  //
-  // if (code === 70 && ships[0].engineOn) {
-  //   ships[0].engineOutput += 100;
-  // }
 });
 
 /*****************************************************************************
@@ -239,7 +259,30 @@ let handleShip = (s) => {
   s.states.turningCw = false;
   s.states.turningCcw = false;
 
+  // console.log(messageLog[messageLog.length - 1]);
+
   // console.log(s.shipOn, s.generatorOn, s.shieldsOn, s.weaponsOn);
+
+  if (controls.increaseGeneratorLoad) {
+    s.increaseGeneratorLoad();
+  }
+  if (controls.decreaseGeneratorLoad) {
+    s.decreaseGeneratorLoad();
+  }
+
+  if (s.generatorOn) {
+    let p = s.runGenerator();
+    s.handlePower(p);
+  }
+
+  if (!s.generatorOn && s.generatorOutput > 0) {
+    let p = s.powerDownGenerator();
+    s.handlePower(p);
+  }
+
+  if (s.on) {
+
+  }
 
   // if (s.engineOn) {
   //   if (s.primaryFuel > 0) {
