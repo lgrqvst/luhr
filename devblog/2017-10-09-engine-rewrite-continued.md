@@ -16,13 +16,13 @@ Here's a new flowchart.
             /
            Power --\-----------------\
             \       \                 \
-             \       --> Batteries ------->  Ship Functions
-              \             |                --------------
-               \            |                General
-                \           /                Shields
-                 \         /                 Weapons
-                  \       /                  Emergency thrusters
-                   \     /                   Harvesting coils
+             \       --> Batteries ------->  Ship Systems
+              \             |                ------------
+               \            |                1. General
+                \           /                2. Shields
+                 \         /                 3. Weapons
+                  \       /                  4. Harvesting coils
+                   \     /                   5. Emergency thrusters
      Oxidizer --\   \   /
                  \   \ /
      Fuel II -----> Engine ---> Propellant --> Thrust --> Exhaust II (lines)

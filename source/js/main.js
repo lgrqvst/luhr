@@ -50,7 +50,7 @@ window.addEventListener('keyup',(e) => {
       s.weaponsOn = false;
       messageLog.push('Ship: Powering down');
     } else {
-      messageLog.push('Ship: Powering up')
+      messageLog.push('Ship: Powering up');
     }
     s.shipOn = !s.shipOn;
   }
@@ -259,9 +259,7 @@ let handleShip = (s) => {
   s.states.turningCw = false;
   s.states.turningCcw = false;
 
-  // console.log(messageLog[messageLog.length - 1]);
-
-  // console.log(s.shipOn, s.generatorOn, s.shieldsOn, s.weaponsOn);
+  messageLog.length > 0 ? console.log(messageLog[messageLog.length - 1]) : '';
 
   if (controls.increaseGeneratorLoad) {
     s.increaseGeneratorLoad();
@@ -272,15 +270,15 @@ let handleShip = (s) => {
 
   if (s.generatorOn) {
     let p = s.runGenerator();
-    s.handlePower(p);
+    s.managePower(p);
   }
 
   if (!s.generatorOn && s.generatorOutput > 0) {
     let p = s.powerDownGenerator();
-    s.handlePower(p);
+    s.managePower(p);
   }
 
-  if (s.on) {
+  if (s.shipOn) {
 
   }
 

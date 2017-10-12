@@ -504,16 +504,24 @@ class Ship {
     this.generatorEfficiency = 1; // How well the generator converts fuel to power. 1 fuel unit converts to this many power units.
     this.generatorLoad = 0; // Desired output from the generator. 100 is standard
     this.generatorOutput = 0; // Current power output from the generator
-    this.generatorResponsiveness = 50; // How quickly the generator responds to load changes
+    this.generatorResponsiveness = 50; // How quickly the generator responds to load changes. Higher means slower
     this.generatorTemperature = 0; // Generator temperature above "room temperature"
 
+    this.generalPower = 0;
+
+    this.enginePower = 0;
     this.engineTemperature = 0;
 
     this.shieldsOn = false;
+    this.shieldsPower = 0;
     this.shieldStrength = 0;
 
     this.weaponsOn = false;
+    this.weaponsPower = 0;
     this.weaponStrength = 0;
+
+    this.harvestingOn = false;
+    this.harvestingPower = 0;
 
     this.primaryFuel = 1000;
     this.primaryFuelMax = 1000;
@@ -556,14 +564,6 @@ class Ship {
         max: 100,
       }
     }
-
-    // this.currentPowerMod = 0;
-    // this.standardPowerMod = 1;
-    // this.boostPowerMod = 1.5;
-    // this.stabilizerPowerMod = 0.5;
-
-    // this.primaryFuel = 0;
-    // this.secondaryFuel = 0;
   }
 
   runGenerator() {
@@ -577,11 +577,24 @@ class Ship {
       }
       this.generatorOutput = Math.round(this.generatorOutput * 100) / 100;
 
+      if (this.generatorLoad > 100) {
+        let a = this.generatorLoad - 100;
+        this.generatorTemperature += Math.round(a / 500 * 100) / 100;
+      } else if (this.generatorTemperature > 0) {
+        this.generatorTemperature -= 1;
+      } else if (this.generatorTemperature < 0) {
+        this.generatorTemperature = 0;
+      }
+
       this.primaryFuel -= 1 * this.generatorOutput / 100
+
       let power = this.generatorEfficiency * this.generatorOutput;
       return power;
     } else {
       this.generatorOn = false;
+      this.generatorLoad = 0;
+      controls.increaseGeneratorLoad = false;
+      controls.decreaseGeneratorLoad = false;
       messageLog.push('Generator: Failure: Shut down initiated. Error code 0001');
     }
   }
@@ -595,9 +608,17 @@ class Ship {
     if (this.generatorLoad < 0) this.generatorLoad = 0;
   }
 
+  coolDownGenerator() {}
+
   powerDownGenerator() {
     this.generatorOutput -= 0.5;
     this.generatorOutput = Math.round(this.generatorOutput * 100) / 100;
+
+    if (this.generatorTemperature > 0) {
+      this.generatorTemperature -= 1;
+    } else if (this.generatorTemperature < 0) {
+      this.generatorTemperature = 0;
+    }
 
     if (this.generatorOutput <= 0) messageLog.push('Generator: Shut down complete');
 
@@ -605,9 +626,18 @@ class Ship {
     return power;
   }
 
-  handlePower(p) {
-    // Do stuff with p
-    // hur hur hur
+  managePower(p) {
+    // Power should be portioned out to ship systems according to this priority list
+    // 1. General
+    // 2. Shields
+    // 3. Weapons
+    // 4. Harvesting coils
+    // 5. Engine
+    // 6. Battergy charging
+    // 7. Emergency power
+    // This function should set certain ship states, like powered
+
+
   }
 
   chargeBatteries() {}
@@ -1179,7 +1209,7 @@ window.addEventListener('keyup',(e) => {
       s.weaponsOn = false;
       messageLog.push('Ship: Powering down');
     } else {
-      messageLog.push('Ship: Powering up')
+      messageLog.push('Ship: Powering up');
     }
     s.shipOn = !s.shipOn;
   }
@@ -1388,9 +1418,7 @@ let handleShip = (s) => {
   s.states.turningCw = false;
   s.states.turningCcw = false;
 
-  // console.log(messageLog[messageLog.length - 1]);
-
-  // console.log(s.shipOn, s.generatorOn, s.shieldsOn, s.weaponsOn);
+  messageLog.length > 0 ? console.log(messageLog[messageLog.length - 1]) : '';
 
   if (controls.increaseGeneratorLoad) {
     s.increaseGeneratorLoad();
@@ -1401,15 +1429,15 @@ let handleShip = (s) => {
 
   if (s.generatorOn) {
     let p = s.runGenerator();
-    s.handlePower(p);
+    s.managePower(p);
   }
 
   if (!s.generatorOn && s.generatorOutput > 0) {
     let p = s.powerDownGenerator();
-    s.handlePower(p);
+    s.managePower(p);
   }
 
-  if (s.on) {
+  if (s.shipOn) {
 
   }
 
