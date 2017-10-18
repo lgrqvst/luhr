@@ -22,9 +22,6 @@ class Ship {
 
     this.generalPower = 0;
 
-    this.enginePower = 0;
-    this.engineTemperature = 0;
-
     this.shieldsOn = false;
     this.shieldsPower = 0;
     this.shieldStrength = 0;
@@ -35,6 +32,14 @@ class Ship {
 
     this.harvestingOn = false;
     this.harvestingPower = 0;
+
+    this.enginePower = 0;
+    this.engineEfficiency = 1;
+    this.engineTemperature = 0;
+
+    this.batteryChargingPower = 0;
+    this.emergencyChargingPower = 0;
+    this.ventPower = 0;
 
     this.primaryFuel = 1000;
     this.primaryFuelMax = 1000;
@@ -139,7 +144,7 @@ class Ship {
     return power;
   }
 
-  managePower(p) {
+  distributePower(p) {
     // Power should be portioned out to ship systems according to this priority list
     // 1. General
     // 2. Shields
@@ -150,16 +155,87 @@ class Ship {
     // 7. Emergency power
     // This function should set certain ship states, like powered
 
+    // console.log(p);
+
+    let distributedPower = {
+      general: 0,
+      shields: 0,
+      weapons: 0,
+      harvestingCoils: 0,
+      engine: 0,
+      batteryCharging: 0,
+      emergencyCharging: 0,
+      vent: 0
+    }
+
+    let distributePower = (available, channel, required) => {
+      if (channel === 'engine') {
+        distributedPower[channel] = Math.round(available / required * 100)
+        return 0;
+      } else {
+        if (available > required) {
+          distributedPower[channel] = 100;
+          return available - required;
+        } else {
+          distributedPower[channel] = Math.round(available / required * 100);
+          return 0;
+        }
+      }
+    }
+
+    if (this.shipOn) {
+
+      p = distributePower(p,'general',1);
+
+      if (this.shieldsOn && p > 0) p = distributePower(p,'shields',25);
+
+      if (this.weaponsOn && p > 0) p = distributePower(p,'weapons',25);
+
+      if (this.harvestingOn && p > 0) p = distributePower(p,'harvestingCoils',10);
+
+      if (this.engineOn && p > 0) p = distributePower(p,'engine',49);
+
+      if (p > 0) p = distributePower(p,'batteryCharging',5);
+
+      if (p > 0) p = distributePower(p,'emergencyCharging',5);
+
+      if (p > 0) distributedPower.vent = p;
+
+    } else {
+
+      distributedPower.vent = p;
+
+    }
+
+    // this.generalPower = distributedPower.general;
+    // this.shieldsPower = distributedPower.shields;
+    // this.weaponsPower = distributedPower.weapons;
+    // this.harvestingPower = distributedPower.harvestingCoils;
+    // this.enginePower = distributedPower.engine;
+
+    console.log(distributedPower.general,distributedPower.shields,distributedPower.weapons,distributedPower.harvestingCoils,distributedPower.engine,distributedPower.batteryCharging,distributedPower.emergencyCharging,distributedPower.vent);
+
+    return distributedPower;
 
   }
 
   chargeBatteries() {}
 
-  runShields() {}
+  runShields() {
+    // Generate shields
+  }
 
-  runWeapons() {}
+  runWeapons() {
+    // Power weapons
+  }
 
-  runEngine() {}
+  runEngine() {
+    this.engineOn = true;
+  }
+
+  ventExcessPower() {
+
+  }
 
   move() {
     this.states.landed = false;

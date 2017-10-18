@@ -21,6 +21,7 @@ const messageLog = [];
 const controls = {
   increaseGeneratorLoad: false,
   decreaseGeneratorLoad: false,
+  runEngine: false
 }
 
 window.addEventListener('keydown',(e) => {
@@ -36,6 +37,12 @@ window.addEventListener('keydown',(e) => {
       controls.decreaseGeneratorLoad = true;
     }
   }
+
+  if (s.shipOn) {
+    if (code === 87) {
+      controls.runEngine = true;
+    }
+  }
 });
 
 window.addEventListener('keyup',(e) => {
@@ -48,6 +55,7 @@ window.addEventListener('keyup',(e) => {
       s.generatorOn = false;
       s.shieldsOn = false;
       s.weaponsOn = false;
+      s.harvestingOn = false;
       messageLog.push('Ship: Powering down');
     } else {
       messageLog.push('Ship: Powering up');
@@ -82,6 +90,15 @@ window.addEventListener('keyup',(e) => {
       }
       s.weaponsOn = !s.weaponsOn;
     }
+
+    if (code === 72) {
+      if (!s.harvestingOn) {
+        messageLog.push('Harvesting Coils: Activated');
+      } else {
+        messageLog.push('Harvesting Coils: Deactivated');
+      }
+      s.harvestingOn = !s.harvestingOn;
+    }
   }
 
   if (s.generatorOn) {
@@ -101,6 +118,10 @@ window.addEventListener('keyup',(e) => {
       controls.decreaseGeneratorLoad = false;
       messageLog.push('Generator: Decreasing load to: ' + s.generatorLoad);
     }
+  }
+
+  if (code === 87) {
+    controls.runEngine = false;
   }
 
 });
@@ -269,17 +290,25 @@ let handleShip = (s) => {
   }
 
   if (s.generatorOn) {
-    let p = s.runGenerator();
-    s.managePower(p);
+    let generatedPower = s.runGenerator();
+    let distributedPower = s.distributePower(generatedPower);
+    powerShip(distributedPower,s);
   }
 
   if (!s.generatorOn && s.generatorOutput > 0) {
-    let p = s.powerDownGenerator();
-    s.managePower(p);
+    let generatedPower = s.powerDownGenerator();
+    let distributedPower = s.distributePower(generatedPower);
+    powerShip(distributedPower,s);
   }
 
   if (s.shipOn) {
+    if (controls.runEngine) {
+      s.runEngine();
+    }
+  }
 
+  if (s.ventPower > 0) {
+    s.ventExcessPower();
   }
 
   // if (s.engineOn) {
@@ -330,13 +359,18 @@ let handleShip = (s) => {
   //   }
   // }
 
-  // if (s.engineOutput > 0) {
-  //   s.drainFuel();
-  // }
-
-  // Update position of ship
-
   s.move();
+}
+
+let powerShip = (distributedPower,s) => {
+  s.generalPower = distributedPower.general;
+  s.shieldsPower = distributedPower.shields;
+  s.weaponsPower = distributedPower.weapons;
+  s.harvestingPower = distributedPower.harvestingCoils;
+  s.enginePower = distributedPower.engine;
+  s.batteryChargingPower = distributedPower.batteryCharging;
+  s.emergencyChargingPower = distributedPower.emergencyCharging;
+  s.ventPower = distributedPower.vent;
 }
 
 let addExhaust = (type, s, p) => {
