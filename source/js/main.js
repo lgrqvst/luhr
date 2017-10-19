@@ -21,7 +21,9 @@ const messageLog = [];
 const controls = {
   increaseGeneratorLoad: false,
   decreaseGeneratorLoad: false,
-  runEngine: false
+  runEngine: false,
+  turnCw: false,
+  turnCcw: false,
 }
 
 window.addEventListener('keydown',(e) => {
@@ -39,8 +41,18 @@ window.addEventListener('keydown',(e) => {
   }
 
   if (s.shipOn) {
+
+  }
+
+  if (s.states.powered) {
     if (code === 87) {
       controls.runEngine = true;
+    }
+    if (code === 68) {
+      controls.turnCw = true;
+    }
+    if (code === 65) {
+      controls.turnCcw = true;
     }
   }
 });
@@ -122,6 +134,13 @@ window.addEventListener('keyup',(e) => {
 
   if (code === 87) {
     controls.runEngine = false;
+    s.engineOn = false;
+  }
+  if (code === 68) {
+    controls.turnCw = false;
+  }
+  if (code === 65) {
+    controls.turnCcw = false;
   }
 
 });
@@ -158,10 +177,12 @@ const landingpads = [];
 const trees = [];
 const buildings = [];
 const ships = [];
-const primaryExhaustIdle = [];
-const primaryExhaust = [];
-const secondaryExhaust = [];
-const tertiaryExhaust = [];
+const exhaustGenerator = [];
+const exhaustVenting = [];
+const exhaustPropellant1 = [];
+const exhaustPropellant2 = [];
+const exhaustCondensate = [];
+const exhaustRotation = [];
 
 let setStage = () => {
 
@@ -275,6 +296,7 @@ let local2global = (self) => {
  *****************************************************************************/
 
 let handleShip = (s) => {
+  s.states.powered = false;
   s.states.primaryThruster = false;
   s.states.secondaryThruster = false;
   s.states.turningCw = false;
@@ -290,25 +312,39 @@ let handleShip = (s) => {
   }
 
   if (s.generatorOn) {
-    let generatedPower = s.runGenerator();
-    let distributedPower = s.distributePower(generatedPower);
-    powerShip(distributedPower,s);
+    let g = s.runGenerator();
+    s.distributePower(g.power);
+    addExhaust('generator', g.p1, g.intensity, s);
+    addExhaust('generator', g.p2, g.intensity, s);
   }
 
   if (!s.generatorOn && s.generatorOutput > 0) {
-    let generatedPower = s.powerDownGenerator();
-    let distributedPower = s.distributePower(generatedPower);
-    powerShip(distributedPower,s);
+    let g = s.powerDownGenerator();
+    s.distributePower(g.power);
+    addExhaust('generator', g.p1, g.intensity, s);
+    addExhaust('generator', g.p2, g.intensity, s);
   }
 
   if (s.shipOn) {
     if (controls.runEngine) {
-      s.runEngine();
+      let p = s.runEngine();
+    }
+    if (controls.turnCw) {
+      let p = s.rotateCw();
+      s.states.turningCw = true;
+      addExhaust('rotation', p, 1, s);
+    }
+    if (controls.turnCcw) {
+      let p = s.rotateCcw();
+      s.states.turningCcw = true;
+      addExhaust('rotation', p, 1, s);
     }
   }
 
   if (s.ventPower > 0) {
-    s.ventExcessPower();
+    let p = s.ventExcessPower();
+    addExhaust('venting', p.p1, p.intensity, s, s.rotation + 45);
+    addExhaust('venting', p.p2, p.intensity, s, s.rotation + 315);
   }
 
   // if (s.engineOn) {
@@ -362,66 +398,120 @@ let handleShip = (s) => {
   s.move();
 }
 
-let powerShip = (distributedPower,s) => {
-  s.generalPower = distributedPower.general;
-  s.shieldsPower = distributedPower.shields;
-  s.weaponsPower = distributedPower.weapons;
-  s.harvestingPower = distributedPower.harvestingCoils;
-  s.enginePower = distributedPower.engine;
-  s.batteryChargingPower = distributedPower.batteryCharging;
-  s.emergencyChargingPower = distributedPower.emergencyCharging;
-  s.ventPower = distributedPower.vent;
-}
+let addExhaust = (type, p, i, s, r) => {
+  let c,e;
+  switch (type) {
+    case 'generator':
+      c = {
+        r: 255,
+        g: 255,
+        b: 255
+      }
+      e = new Exhaust(p.x, p.y, s.rotation + 180, 0.5, type, 1.5, i, c, 0.5);
+      exhaustGenerator.push(e);
+    break;
 
-let addExhaust = (type, s, p) => {
-  if (type === 'idle') {
-    let c = {
-      r: 150,
-      g: 150,
-      b: 150
-    }
-    let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, (s.engineOutput > 150 ? 150 : s.engineOutput), c, 0.5);
-    primaryExhaustIdle.push(e);
+    case 'venting':
+      c = {
+        r: 170,
+        g: 255,
+        b: 250
+      }
+      e = new Exhaust(p.x, p.y, r, 1.5, type, 1.5, i, c, 0.9);
+      exhaustVenting.push(e);
+    break;
 
-  } else if (type === 'primary') {
-    let c = {
-      r: 200,
-      g: 200,
-      b: 200
-    }
-    let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'primary', 10, s.engineOutput, c, 1);
-    primaryExhaust.push(e);
+    case 'propellant1':
+      c = {
+        r: 255,
+        g: 255,
+        b: 255
+      }
+      e = new Exhaust(p.x, p.y, s.rotation + 180, 1, type, 1, i, c, 1);
+      exhaustPropellant1.push(e);
+    break;
 
-  } else if (type === 'secondary') {
-    let c = {
-      r: Math.round(Math.random() * 55 + 200),
-      g: Math.round(Math.random() * 55 + 200),
-      b: Math.round(Math.random() * 55 + 200)
-    }
-    let e = new Exhaust(p.x2, p.y2, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
-    secondaryExhaust.push(e);
+    case 'propellant2':
+      c = {
+        r: 255,
+        g: 255,
+        b: 255
+      }
+      e = new Exhaust(p.x, p.y, s.rotation + 180, 1, type, 1, i, c, 1);
+      exhaustPropellant2.push(e);
+    break;
 
-    e = new Exhaust(p.x3, p.y3, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
-    secondaryExhaust.push(e);
+    case 'condensate':
+      c = {
+        r: 255,
+        g: 255,
+        b: 255
+      }
+      e = new Exhaust(p.x, p.y, s.rotation + 180, 1, type, 1, i, c, 1);
+      exhaustCondensate.push(e);
+    break;
 
-  } else if (type === 'tertiaryCw') {
-    let c = {
-      r: 200,
-      g: 200,
-      b: 200
-    }
-    let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'tertiary', 2, s.engineOutput, c, 1);
-    tertiaryExhaust.push(e);
-  } else if (type === 'tertiaryCcw') {
-    let c = {
-      r: 200,
-      g: 200,
-      b: 200
-    }
-    let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'tertiary', 2, s.engineOutput, c, 1);
-    tertiaryExhaust.push(e);
+    case 'rotation':
+      c = {
+        r: 255,
+        g: 255,
+        b: 255
+      }
+      e = new Exhaust(p.x, p.y, s.rotation + 180, 1, type, 1, i, c, 1);
+      exhaustRotation.push(e);
+    break;
   }
 }
+
+// let addExhaust = (type, s, p) => {
+//   if (type === 'idle') {
+//     let c = {
+//       r: 150,
+//       g: 150,
+//       b: 150
+//     }
+//     let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, (s.engineOutput > 150 ? 150 : s.engineOutput), c, 0.5);
+//     primaryExhaustIdle.push(e);
+//
+//   } else if (type === 'primary') {
+//     let c = {
+//       r: 200,
+//       g: 200,
+//       b: 200
+//     }
+//     let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'primary', 10, s.engineOutput, c, 1);
+//     primaryExhaust.push(e);
+//
+//   } else if (type === 'secondary') {
+//     let c = {
+//       r: Math.round(Math.random() * 55 + 200),
+//       g: Math.round(Math.random() * 55 + 200),
+//       b: Math.round(Math.random() * 55 + 200)
+//     }
+//     let e = new Exhaust(p.x2, p.y2, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
+//     secondaryExhaust.push(e);
+//
+//     e = new Exhaust(p.x3, p.y3, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
+//     secondaryExhaust.push(e);
+//
+//   } else if (type === 'tertiaryCw') {
+//     let c = {
+//       r: 200,
+//       g: 200,
+//       b: 200
+//     }
+//     let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'tertiary', 2, s.engineOutput, c, 1);
+//     tertiaryExhaust.push(e);
+//   } else if (type === 'tertiaryCcw') {
+//     let c = {
+//       r: 200,
+//       g: 200,
+//       b: 200
+//     }
+//     let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'tertiary', 2, s.engineOutput, c, 1);
+//     tertiaryExhaust.push(e);
+//   }
+// }
 
 /*****************************************************************************
 
@@ -443,47 +533,69 @@ let update = () => {
   handleShip(ships[0]);
 
   let a = [];
-  primaryExhaustIdle.forEach((e) => {
+  exhaustGenerator.forEach((e) => {
     if (!e.fade() && !e.move()) {
       a.push(e);
     }
   })
-  primaryExhaustIdle.length = 0;
+  exhaustGenerator.length = 0;
   a.forEach((e) => {
-    primaryExhaustIdle.push(e);
+    exhaustGenerator.push(e);
   })
 
   a = [];
-  primaryExhaust.forEach((e) => {
+  exhaustVenting.forEach((e) => {
     if (!e.fade() && !e.move()) {
       a.push(e);
     }
   })
-  primaryExhaust.length = 0;
+  exhaustVenting.length = 0;
   a.forEach((e) => {
-    primaryExhaust.push(e);
+    exhaustVenting.push(e);
   })
 
   a = [];
-  secondaryExhaust.forEach((e) => {
+  exhaustPropellant1.forEach((e) => {
     if (!e.fade() && !e.move()) {
       a.push(e);
     }
   })
-  secondaryExhaust.length = 0;
+  exhaustPropellant1.length = 0;
   a.forEach((e) => {
-    secondaryExhaust.push(e);
+    exhaustPropellant1.push(e);
   })
 
   a = [];
-  tertiaryExhaust.forEach((e) => {
+  exhaustPropellant2.forEach((e) => {
     if (!e.fade() && !e.move()) {
       a.push(e);
     }
   })
-  tertiaryExhaust.length = 0;
+  exhaustPropellant2.length = 0;
   a.forEach((e) => {
-    tertiaryExhaust.push(e);
+    exhaustPropellant2.push(e);
+  })
+
+  a = [];
+  exhaustCondensate.forEach((e) => {
+    if (!e.fade() && !e.move()) {
+      a.push(e);
+    }
+  })
+  exhaustCondensate.length = 0;
+  a.forEach((e) => {
+    exhaustCondensate.push(e);
+  })
+
+  a = [];
+  exhaustRotation.forEach((e) => {
+    if (!e.fade() && !e.move()) {
+      a.push(e);
+    }
+  })
+  exhaustRotation.length = 0;
+  a.forEach((e) => {
+    exhaustRotation.push(e);
   })
 
 }
@@ -634,19 +746,27 @@ let draw = () => {
     }
   })
 
-  primaryExhaustIdle.forEach((e) => {
+  exhaustGenerator.forEach((e) => {
     e.draw(context2);
   })
 
-  primaryExhaust.forEach((e) => {
+  exhaustVenting.forEach((e) => {
     e.draw(context2);
   })
 
-  secondaryExhaust.forEach((e) => {
+  exhaustPropellant1.forEach((e) => {
     e.draw(context2);
   })
 
-  tertiaryExhaust.forEach((e) => {
+  exhaustPropellant2.forEach((e) => {
+    e.draw(context2);
+  })
+
+  exhaustCondensate.forEach((e) => {
+    e.draw(context2);
+  })
+
+  exhaustRotation.forEach((e) => {
     e.draw(context2);
   })
 

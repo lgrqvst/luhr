@@ -24,15 +24,17 @@ class Ship {
 
     this.shieldsOn = false;
     this.shieldsPower = 0;
-    this.shieldStrength = 0;
+    this.shieldsStrength = 0;
+    this.shieldsCondition = 100;
 
     this.weaponsOn = false;
     this.weaponsPower = 0;
-    this.weaponStrength = 0;
+    this.weaponsStrength = 0;
 
     this.harvestingOn = false;
     this.harvestingPower = 0;
 
+    this.engineOn = false;
     this.enginePower = 0;
     this.engineEfficiency = 1;
     this.engineTemperature = 0;
@@ -43,11 +45,10 @@ class Ship {
 
     this.primaryFuel = 1000;
     this.primaryFuelMax = 1000;
-    this.secondaryFuel = 100;
-    this.secondaryFuelMax = 100;
-    this.oxidizer = 100;
-    this.oxidizerMax = 100;
-    this.propellant = 0;
+    this.secondaryFuel = 1000;
+    this.secondaryFuelMax = 1000;
+    this.oxidizer = 1000;
+    this.oxidizerMax = 1000;
     this.coolant = 100;
     this.coolantMax = 100;
     this.battery = 0;
@@ -63,6 +64,12 @@ class Ship {
     // Status
     this.states = {
       powered: false,
+      shielded: false,
+      armed: false,
+      harvesting: false,
+      engineRunning: false,
+      chargingBatteries: false,
+      chargingEmergencyPower: false,
       landed: false,
       parked: false,
       landingPadContact: false,
@@ -107,7 +114,24 @@ class Ship {
       this.primaryFuel -= 1 * this.generatorOutput / 100
 
       let power = this.generatorEfficiency * this.generatorOutput;
-      return power;
+
+      let pos = local2global(this);
+      let p1 = pos(this.r * -0.35, this.r * 0.32);
+      let p2 = pos(this.r * -0.35, this.r * -0.32);
+
+      return {
+        power: power,
+        p1: {
+          x: p1.x,
+          y: p1.y,
+        },
+        p2: {
+          x: p2.x,
+          y: p2.y,
+        },
+        intensity: this.generatorLoad
+      };
+
     } else {
       this.generatorOn = false;
       this.generatorLoad = 0;
@@ -141,7 +165,23 @@ class Ship {
     if (this.generatorOutput <= 0) messageLog.push('Generator: Shut down complete');
 
     let power = this.generatorEfficiency * this.generatorOutput;
-    return power;
+
+    let pos = local2global(this);
+    let p1 = pos(this.r * -0.35, this.r * 0.32);
+    let p2 = pos(this.r * -0.35, this.r * -0.32);
+
+    return {
+      power: power,
+      p1: {
+        x: p1.x,
+        y: p1.y,
+      },
+      p2: {
+        x: p2.x,
+        y: p2.y,
+      },
+      intensity: this.generatorLoad
+    };
   }
 
   distributePower(p) {
@@ -153,9 +193,6 @@ class Ship {
     // 5. Engine
     // 6. Battergy charging
     // 7. Emergency power
-    // This function should set certain ship states, like powered
-
-    // console.log(p);
 
     let distributedPower = {
       general: 0,
@@ -167,6 +204,8 @@ class Ship {
       emergencyCharging: 0,
       vent: 0
     }
+
+    // Portion
 
     let distributePower = (available, channel, required) => {
       if (channel === 'engine') {
@@ -185,7 +224,7 @@ class Ship {
 
     if (this.shipOn) {
 
-      p = distributePower(p,'general',1);
+      p = distributePower(p,'general',5);
 
       if (this.shieldsOn && p > 0) p = distributePower(p,'shields',25);
 
@@ -193,7 +232,7 @@ class Ship {
 
       if (this.harvestingOn && p > 0) p = distributePower(p,'harvestingCoils',10);
 
-      if (this.engineOn && p > 0) p = distributePower(p,'engine',49);
+      if (this.engineOn && p > 0) p = distributePower(p,'engine',50);
 
       if (p > 0) p = distributePower(p,'batteryCharging',5);
 
@@ -207,34 +246,112 @@ class Ship {
 
     }
 
-    // this.generalPower = distributedPower.general;
-    // this.shieldsPower = distributedPower.shields;
-    // this.weaponsPower = distributedPower.weapons;
-    // this.harvestingPower = distributedPower.harvestingCoils;
-    // this.enginePower = distributedPower.engine;
+    // Distribute
 
-    console.log(distributedPower.general,distributedPower.shields,distributedPower.weapons,distributedPower.harvestingCoils,distributedPower.engine,distributedPower.batteryCharging,distributedPower.emergencyCharging,distributedPower.vent);
+    this.generalPower = distributedPower.general;
+    this.shieldsPower = distributedPower.shields;
+    this.weaponsPower = distributedPower.weapons;
+    this.harvestingPower = distributedPower.harvestingCoils;
+    this.enginePower = distributedPower.engine;
+    this.batteryChargingPower = distributedPower.batteryCharging;
+    this.emergencyChargingPower = distributedPower.emergencyCharging;
+    this.ventPower = distributedPower.vent;
 
-    return distributedPower;
+    // Set states
 
+    if (this.generalPower === 100) this.states.powered = true;
+    if (this.shieldsPower > 0) this.states.shielded = true;
+    if (this.weaponsPower > 0) this.states.armed = true;
+    if (this.harvestingPower > 0) this.states.harvesting = true;
+    if (this.enginePower > 0) this.states.engineRunning = true;
+    if (this.batteryChargingPower > 0) this.states.chargingBatteries = true;
+    if (this.emergencyChargingPower > 0) this.states.chargingEmergencyPower = true;
+
+    console.log(this.generalPower,this.shieldsPower,this.weaponsPower,this.harvestingPower,this.enginePower,this.batteryChargingPower,this.emergencyChargingPower,this.ventPower);
   }
 
-  chargeBatteries() {}
+  chargeBatteries() {
+    // Should charge the batteries using batteryChargingPower
+  }
 
   runShields() {
-    // Generate shields
+    // Generate shields using shieldsPower
   }
 
   runWeapons() {
-    // Power weapons
+    // Power weapons using weaponsPower
   }
 
   runEngine() {
-    this.engineOn = true;
+    // Drain secondaryFuel and oxidizer to eject propellant and increase ax and ay. Should return position and intensity of exhaust
+    if (this.secondaryFuel > 0 && this.oxidizer > 0) {
+      this.engineOn = true;
+      let engineEffect = this.enginePower * this.engineEfficiency / 100;
+      let fuelDrain = this.enginePower / 100;
+
+      this.ax = Math.cos(rads(this.rotation)) * this.moveSpeed * engineEffect;
+      this.ay = Math.sin(rads(this.rotation)) * this.moveSpeed * engineEffect;
+      this.vx += this.ax;
+      this.vy += this.ay;
+
+      this.secondaryFuel -= engineEffect;
+      this.oxidizer -= engineEffect;
+
+      console.log(engineEffect);
+
+    } else {
+      this.secondaryFuel = 0;
+      this.oxidizer = 0;
+    }
   }
 
   ventExcessPower() {
+    // Should zero ventPower and return a point and intensity for the power animation
 
+    let pos = local2global(this);
+    // let p1 = pos(this.r * -0.35, this.r * 0.32);
+    let p1 = pos(this.r * 0.25, this.r * 0.425);
+    // let p2 = pos(this.r * -0.35, this.r * -0.32);
+    let p2 = pos(this.r * 0.25, this.r * -0.425);
+
+    let r = {
+      p1: {
+        x: p1.x,
+        y: p1.y,
+      },
+      p2: {
+        x: p2.x,
+        y: p2.y,
+      },
+      intensity: this.ventPower
+    };
+
+    this.ventPower = 0;
+
+    return r;
+
+  }
+
+  rotateCw() {
+    this.rotation += this.turnSpeed * this.responsiveness / 100;
+
+    if (this.rotation < 0) this.rotation += 360;
+    if (this.rotation > 360) this.rotation -= 360;
+
+    let pos = local2global(this);
+    let p = pos(this.r * -0.38, this.r * -1.07);
+    return {x: p.x, y: p.y};
+  }
+
+  rotateCcw() {
+    this.rotation -= this.turnSpeed * this.responsiveness / 100;
+
+    if (this.rotation < 0) this.rotation += 360;
+    if (this.rotation > 360) this.rotation -= 360;
+
+    let pos = local2global(this);
+    let p = pos(this.r * -0.38, this.r * 1.07);
+    return {x: p.x, y: p.y};
   }
 
   move() {
@@ -366,7 +483,7 @@ class Ship {
     // This should only render for certain ship states -- or should it??? Have a think about this.
 
     if ((!this.states.landed && !this.states.parked)) {
-      if (this.engineOn) {
+      if (this.states.powered) {
         this.animationProps.stabilizerRing.current += this.animationProps.stabilizerRing.current < this.animationProps.stabilizerRing.max ? 2 : 0;
       } else {
         this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
@@ -606,7 +723,7 @@ class Ship {
     ctx.closePath();
 
     ctx.fillStyle = "#447";
-    if (this.engineOn) ctx.fillStyle = "#88a";
+    if (this.states.powered) ctx.fillStyle = "#88a";
     ctx.fill();
 
     ctx.beginPath();
@@ -627,7 +744,7 @@ class Ship {
     ctx.closePath();
 
     ctx.fillStyle = "#447";
-    if (this.engineOn) ctx.fillStyle = "#bbd";
+    if (this.states.powered) ctx.fillStyle = "#bbd";
     ctx.fill();
   }
 }
