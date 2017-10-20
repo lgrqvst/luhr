@@ -36,11 +36,13 @@ class Exhaust {
   constructor(x,y,rotation,speed,type,size,intensity,color,opacity) {
     this.x = x;
     this.y = y;
-    this.speed = speed * intensity / 100;
+    this.vx = Math.cos(rads(rotation)) * speed;
+    this.vy = Math.sin(rads(rotation)) * speed;
+    this.speed = speed;
     this.rotation = rotation;
     this.type = type;
-    this.size = size * intensity / 100;
-    // this.intensity = intensity;
+    this.size = size;
+    this.intensity = intensity;
     this.color = color;
     this.opacity = opacity;
   }
@@ -50,12 +52,60 @@ class Exhaust {
       // return true;
     }
 
-    this.y += Math.sin(rads(this.rotation)) * this.speed;
-    this.x += Math.cos(rads(this.rotation)) * this.speed;
+    switch (this.type) {
+      case 'generator':
+        this.x += this.vx;
+        this.y += this.vy
+        this.x += globals.wind / 20;
+        this.y -= globals.gravity * 2;
+      break;
+      case 'propellant2':
+        this.vy += globals.gravity;
+        this.vx *= globals.drag;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.y + this.vy > VH) {
+          this.y = VH;
+          this.vy *= -0.35;
+          this.vx *= 0.35;
+        }
+
+        if (landingpads[0].apparentX - 40 < this.x && this.x < landingpads[0].apparentX + 40 && this.y + this.vy > VH - 162 && this.y <= VH - 162) {
+          // Maybe rotate to face up and set state to landed?
+          this.y = VH - 162;
+          this.vy *= -0.2;
+          this.vx *= 0.5;
+        }
+      break;
+      case 'condensate':
+        this.vy += globals.gravity;
+        this.vx *= globals.drag;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.y + this.vy > VH) {
+          this.y = VH;
+          this.vy *= 0;
+          this.vx *= 0;
+        }
+
+        if (landingpads[0].apparentX - 40 < this.x && this.x < landingpads[0].apparentX + 40 && this.y + this.vy > VH - 162 && this.y <= VH - 162) {
+          // Maybe rotate to face up and set state to landed?
+          this.y = VH - 162;
+          this.vy *= 0;
+          this.vx *= 0.5;
+        }
+      break;
+      default:
+        this.y += Math.sin(rads(this.rotation)) * this.speed;
+        this.x += Math.cos(rads(this.rotation)) * this.speed;
+    }
+
+
 
     if (this.type === 'generator') {
-      this.y -= globals.gravity * 2;
-      this.x += globals.wind / 20;
+
     }
 
     return false;
@@ -68,19 +118,33 @@ class Exhaust {
         this.opacity -= 0.015;
       break;
       case 'venting':
-        this.opacity -= 0.1;
+        this.opacity -= 0.04;
+
+        this.size *= (1 + Math.random() * 0.12);
+
+        this.color.r < 0 ? this.color.r = 0 : this.color.r -= 16;
+        this.color.g < 0 ? this.color.g = 0 : this.color.g -= 8;
+        this.color.b < 0 ? this.color.b = 0 : this.color.b -= 4;
+
+        if (this.color.r + this.color.g + this.color.b === 0) return true;
       break;
       case 'propellant1':
+        this.opacity -= 0.05;
 
+        this.color.r < 0 ? this.color.r = 0 : this.color.r -= 4;
+        this.color.g < 0 ? this.color.g = 0 : this.color.g -= 8;
+        this.color.b < 0 ? this.color.b = 0 : this.color.b -= 16;
+
+        this.size += 1;
       break;
       case 'propellant2':
-
+        this.opacity -= 0.005;
       break;
       case 'condensate':
-
+        this.opacity -= 0.005;
       break;
       case 'rotation':
-
+        this.opacity -= 0.05;
       break;
     }
 
@@ -104,24 +168,51 @@ class Exhaust {
       case 'venting':
         ctx.beginPath();
         ctx.moveTo(this.x, this.y);
-        p = pos(this.size * 3, 0);
+        p = pos(this.size * this.intensity / 100 * 1, 0);
         ctx.lineTo(p.x, p.y);
         ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
-        ctx.lineWidth = this.size;
-        // ctx.lineWidth = 4;
+        ctx.lineWidth = this.size * this.intensity / 100;
         ctx.stroke();
       break;
       case 'propellant1':
-
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        p = pos(this.size * 2 * this.intensity / 100, 0);
+        ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
+        // ctx.lineWidth = this.size * this.intensity / 100;
+        ctx.lineWidth = 2;
+        ctx.stroke();
       break;
       case 'propellant2':
-
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        p = pos(this.size, 0);
+        ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},1)`;
+        // ctx.lineWidth = this.size * this.intensity / 100;
+        ctx.lineWidth = this.size;
+        ctx.stroke();
       break;
       case 'condensate':
-
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        p = pos(1, 0);
+        ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},1)`;
+        // ctx.lineWidth = this.size * this.intensity / 100;
+        ctx.lineWidth = 1;
+        ctx.stroke();
       break;
       case 'rotation':
-
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        p = pos(this.size * 3, 0);
+        ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
+        // ctx.lineWidth = this.size * this.intensity / 100;
+        ctx.lineWidth = 1;
+        ctx.stroke();
       break;
     }
 
@@ -635,8 +726,9 @@ class Ship {
     this.coolant = 100;
     this.coolantMax = 100;
     this.battery = 0;
-    this.batteryMax = 100;
-    this.emergencyPropellant = 100;
+    this.batteryMax = 1000;
+    this.emergencyPower = 100;
+    this.emergencyPowerMax = 100;
 
     // Handling
     this.responsiveness = 100;
@@ -651,6 +743,7 @@ class Ship {
       armed: false,
       harvesting: false,
       engineRunning: false,
+      boosting: false,
       chargingBatteries: false,
       chargingEmergencyPower: false,
       landed: false,
@@ -660,8 +753,6 @@ class Ship {
       landingPadProximity: false,
       groundProximity: false,
       flying: false,
-      primaryThruster: false,
-      secondaryThruster: false,
       turningCw: false,
       turningCcw: false,
     }
@@ -721,6 +812,7 @@ class Ship {
       controls.increaseGeneratorLoad = false;
       controls.decreaseGeneratorLoad = false;
       messageLog.push('Generator: Failure: Shut down initiated. Error code 0001');
+      return false;
     }
   }
 
@@ -733,11 +825,19 @@ class Ship {
     if (this.generatorLoad < 0) this.generatorLoad = 0;
   }
 
-  coolDownGenerator() {}
+  coolDownGenerator() {
+    // Should use coolant to lower generatorTemperature
+    if (this.coolant > 0) {
+      this.generatorTemperature -= 1;
+      this.coolant -= 1;
+    }
+    if (this.generatorTemperature < 0) this.generatorTemperature = 0;
+  }
 
   powerDownGenerator() {
     this.generatorOutput -= 0.5;
     this.generatorOutput = Math.round(this.generatorOutput * 100) / 100;
+    if (this.generatorOutput < 0) this.generatorOutput = 0;
 
     if (this.generatorTemperature > 0) {
       this.generatorTemperature -= 1;
@@ -767,7 +867,18 @@ class Ship {
     };
   }
 
-  distributePower(p) {
+  resetPower() {
+    this.generalPower = 0;
+    this.shieldsPower = 0;
+    this.weaponsPower = 0;
+    this.harvestingPower = 0;
+    this.enginePower = 0;
+    this.batteryChargingPower = 0;
+    this.emergencyChargingPower = 0;
+    this.ventPower = 0;
+  }
+
+  distributePower(p,onBatteryPower) {
     // Power should be portioned out to ship systems according to this priority list
     // 1. General
     // 2. Shields
@@ -815,13 +926,16 @@ class Ship {
 
       if (this.harvestingOn && p > 0) p = distributePower(p,'harvestingCoils',10);
 
-      if (this.engineOn && p > 0) p = distributePower(p,'engine',50);
+      if (this.engineOn && p > 0) p = distributePower(p,'engine',45);
 
-      if (p > 0) p = distributePower(p,'batteryCharging',5);
+      if (p > 0 && this.battery < this.batteryMax && !onBatteryPower) p = distributePower(p,'batteryCharging',5);
 
-      if (p > 0) p = distributePower(p,'emergencyCharging',5);
+      if (p > 0 && this.emergencyPower < this.emergencyPowerMax && !onBatteryPower) p = distributePower(p,'emergencyCharging',5);
 
-      if (p > 0) distributedPower.vent = p;
+      if (p > 0 && !onBatteryPower) distributedPower.vent = p;
+
+      if (onBatteryPower) this.battery -= (100 - p) / 100;
+      if (this.battery < 0) this.battery = 0;
 
     } else {
 
@@ -849,12 +963,16 @@ class Ship {
     if (this.enginePower > 0) this.states.engineRunning = true;
     if (this.batteryChargingPower > 0) this.states.chargingBatteries = true;
     if (this.emergencyChargingPower > 0) this.states.chargingEmergencyPower = true;
-
-    console.log(this.generalPower,this.shieldsPower,this.weaponsPower,this.harvestingPower,this.enginePower,this.batteryChargingPower,this.emergencyChargingPower,this.ventPower);
   }
 
   chargeBatteries() {
-    // Should charge the batteries using batteryChargingPower
+    this.battery += Math.round(this.batteryChargingPower / 100 * 4) / 4;
+    if (this.battery > this.batteryMax) this.battery = this.batteryMax;
+  }
+
+  chargeEmergencyPower() {
+    this.emergencyPower += Math.round(this.emergencyChargingPower / 100 * 4) / 4;
+    if (this.emergencyPower > this.emergencyPowerMax) this.emergencyPower = this.emergencyPowerMax;
   }
 
   runShields() {
@@ -867,8 +985,10 @@ class Ship {
 
   runEngine() {
     // Drain secondaryFuel and oxidizer to eject propellant and increase ax and ay. Should return position and intensity of exhaust
+    this.engineOn = true;
+
     if (this.secondaryFuel > 0 && this.oxidizer > 0) {
-      this.engineOn = true;
+      if (this.enginePower <= 0) return false;
       let engineEffect = this.enginePower * this.engineEfficiency / 100;
       let fuelDrain = this.enginePower / 100;
 
@@ -880,12 +1000,88 @@ class Ship {
       this.secondaryFuel -= engineEffect;
       this.oxidizer -= engineEffect;
 
-      console.log(engineEffect);
+      let pos = local2global(this);
+      let p = pos(this.r * -0.45, this.r * 0);
+      return {
+        p: {
+          x: p.x,
+          y: p.y
+        },
+        intensity: this.enginePower
+      };
 
     } else {
       this.secondaryFuel = 0;
       this.oxidizer = 0;
+      return false;
     }
+  }
+
+  boostEngine() {
+    // Drain secondaryFuel and oxidizer to eject propellant and increase ax and ay. Should return position and intensity of exhaust
+    this.engineOn = true;
+
+    if (this.secondaryFuel > 0 && this.oxidizer > 0) {
+      if (this.enginePower <= 0) return false;
+      let engineEffect = this.enginePower * this.engineEfficiency / 100;
+      let fuelDrain = this.enginePower / 100;
+
+      this.ax = Math.cos(rads(this.rotation)) * this.moveSpeed * engineEffect * 2;
+      this.ay = Math.sin(rads(this.rotation)) * this.moveSpeed * engineEffect * 2;
+      this.vx += this.ax;
+      this.vy += this.ay;
+
+      this.secondaryFuel -= engineEffect * 2;
+      this.oxidizer -= engineEffect * 2;
+
+      this.engineTemperature += 0.25;
+
+      this.states.boosting = true;
+
+      let pos = local2global(this);
+      let p1 = pos(this.r * -0.45, this.r * 0);
+      let p2 = pos(this.r * -0.35, this.r * 0.32);
+      let p3 = pos(this.r * -0.35, this.r * -0.32);
+      let p4 = pos(this.r * -0.38, this.r * 1.07);
+      let p5 = pos(this.r * -0.38, this.r * -1.07);
+      return {
+        p1: {
+          x: p1.x,
+          y: p1.y
+        },
+        p2: {
+          x: p2.x,
+          y: p2.y
+        },
+        p3: {
+          x: p3.x,
+          y: p3.y
+        },
+        p4: {
+          x: p4.x,
+          y: p4.y
+        },
+        p5: {
+          x: p5.x,
+          y: p5.y
+        },
+        intensity: this.enginePower * 2
+      };
+
+    } else {
+      this.secondaryFuel = 0;
+      this.oxidizer = 0;
+      return false;
+    }
+  }
+
+  coolDownEngine() {
+    // Should use coolant to lower generatorTemperature
+    if (this.coolant > 0) {
+      this.engineTemperature -= 1;
+      this.coolant -= 1;
+    }
+    if (this.engineTemperature < 0) this.engineTemperature = 0;
   }
 
   ventExcessPower() {
@@ -935,6 +1131,10 @@ class Ship {
     let pos = local2global(this);
     let p = pos(this.r * -0.38, this.r * 1.07);
     return {x: p.x, y: p.y};
+  }
+
+  evaluateStatus() {
+    // Check things like engine temperature, generator temperature and stuff to decide if something should explode
   }
 
   move() {
@@ -989,10 +1189,6 @@ class Ship {
     this.vx = Math.round(this.vx * 1000) / 1000;
     this.vy = Math.round(this.vy * 1000) / 1000;
 
-    // this.vx += this.vx > 0 ? globals.drag * -1 : globals.drag;
-
-    // console.log(this.vx, dx);
-    // console.log('after: ' + dx);
     // If I'm going to do this 👇, then parallax has to go. If not, I need another solution. Bounce back just outside screen?
     // if (this.x > VW) this.x = 0;
     // if (this.x < 0) this.x = VW;
@@ -1064,23 +1260,25 @@ class Ship {
 
     // STABILIZER RING
     // This should only render for certain ship states -- or should it??? Have a think about this.
+    // Also, this animation needs to be better.
+    // Hiding this for now
 
-    if ((!this.states.landed && !this.states.parked)) {
-      if (this.states.powered) {
-        this.animationProps.stabilizerRing.current += this.animationProps.stabilizerRing.current < this.animationProps.stabilizerRing.max ? 2 : 0;
-      } else {
-        this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
-      }
-    } else {
-      this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
-    }
-
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, r * this.animationProps.stabilizerRing.current / 100, 0, 2 * Math.PI);
-    ctx.closePath();
-    ctx.strokeStyle = "#FFF";
-    ctx.lineWidth = r / 10;
-    ctx.stroke();
+    // if ((!this.states.landed && !this.states.parked)) {
+    //   if (this.states.powered) {
+    //     this.animationProps.stabilizerRing.current += this.animationProps.stabilizerRing.current < this.animationProps.stabilizerRing.max ? 2 : 0;
+    //   } else {
+    //     this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
+    //   }
+    // } else {
+    //   this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
+    // }
+    //
+    // ctx.beginPath();
+    // ctx.arc(this.x, this.y, r * this.animationProps.stabilizerRing.current / 100, 0, 2 * Math.PI);
+    // ctx.closePath();
+    // ctx.strokeStyle = "#FFF";
+    // ctx.lineWidth = r / 10;
+    // ctx.stroke();
 
     // PRIMARY THRUSTER
 
@@ -1241,7 +1439,7 @@ class Ship {
       pos(r * -0.85, r * 1.1),
       pos(r * -0.65, r * 0.7),
     ];
-    if (this.states.secondaryThruster) {
+    if (this.states.boosting | this.states.turningCcw) {
       p = [
         pos(r * -0.95, r * 1.02),
         pos(r * -1, r * 0.9),
@@ -1265,7 +1463,7 @@ class Ship {
       pos(r * -0.85, r * -1.1),
       pos(r * -0.65, r * -0.7),
     ];
-    if (this.states.secondaryThruster) {
+    if (this.states.boosting || this.states.turningCw) {
       p = [
         pos(r * -0.95, r * -1.02),
         pos(r * -1, r * -0.9),
@@ -1470,6 +1668,7 @@ const controls = {
   increaseGeneratorLoad: false,
   decreaseGeneratorLoad: false,
   runEngine: false,
+  boostEngine: false,
   turnCw: false,
   turnCcw: false,
 }
@@ -1502,6 +1701,9 @@ window.addEventListener('keydown',(e) => {
     if (code === 65) {
       controls.turnCcw = true;
     }
+    if (code === 83) {
+      controls.boostEngine = true;
+    }
   }
 });
 
@@ -1516,6 +1718,7 @@ window.addEventListener('keyup',(e) => {
       s.shieldsOn = false;
       s.weaponsOn = false;
       s.harvestingOn = false;
+      s.generatorLoad = 0;
       messageLog.push('Ship: Powering down');
     } else {
       messageLog.push('Ship: Powering up');
@@ -1582,6 +1785,10 @@ window.addEventListener('keyup',(e) => {
 
   if (code === 87) {
     controls.runEngine = false;
+    s.engineOn = false;
+  }
+  if (code === 83) {
+    controls.boostEngine = false;
     s.engineOn = false;
   }
   if (code === 68) {
@@ -1745,10 +1952,17 @@ let local2global = (self) => {
 
 let handleShip = (s) => {
   s.states.powered = false;
-  s.states.primaryThruster = false;
-  s.states.secondaryThruster = false;
+  s.states.shielded = false;
+  s.states.armed = false;
+  s.states.harvesting = false;
+  s.states.engineRunning = false;
+  s.states.boosting = false;
+  s.states.chargingBatteries = false;
+  s.states.chargingEmergencyPower = false;
   s.states.turningCw = false;
   s.states.turningCcw = false;
+
+  s.resetPower();
 
   messageLog.length > 0 ? console.log(messageLog[messageLog.length - 1]) : '';
 
@@ -1761,31 +1975,77 @@ let handleShip = (s) => {
 
   if (s.generatorOn) {
     let g = s.runGenerator();
-    s.distributePower(g.power);
-    addExhaust('generator', g.p1, g.intensity, s);
-    addExhaust('generator', g.p2, g.intensity, s);
+    if (g !== false) {
+      s.distributePower(g.power, false);
+      addExhaust('generator', g.p1, g.intensity, s);
+      addExhaust('generator', g.p2, g.intensity, s);
+    }
   }
 
   if (!s.generatorOn && s.generatorOutput > 0) {
     let g = s.powerDownGenerator();
-    s.distributePower(g.power);
-    addExhaust('generator', g.p1, g.intensity, s);
-    addExhaust('generator', g.p2, g.intensity, s);
+    if (g !== false) {
+      s.distributePower(g.power, false);
+      addExhaust('generator', g.p1, g.intensity, s);
+      addExhaust('generator', g.p2, g.intensity, s);
+    }
   }
 
   if (s.shipOn) {
+    if (s.battery > 0 && !s.generatorOn && s.generatorOutput === 0) {
+      s.distributePower(100,true);
+    }
+
     if (controls.runEngine) {
       let p = s.runEngine();
+      if (p !== false) {
+        addExhaust('propellant1', p.p, p.intensity, s);
+        if (Math.random() < 0.08) addExhaust('propellant2', p.p, p.intensity, s);
+      }
     }
+
+    if (controls.boostEngine) {
+      let p = s.boostEngine();
+      if (p !== false) {
+        addExhaust('propellant1', p.p1, p.intensity * 2, s);
+        addExhaust('propellant1', p.p2, p.intensity * 0.25, s);
+        addExhaust('propellant1', p.p3, p.intensity * 0.25, s);
+        addExhaust('venting', p.p4, p.intensity, s, s.rotation + 180)
+        addExhaust('venting', p.p5, p.intensity, s, s.rotation + 180)
+        if (Math.random() < 0.08) addExhaust('propellant2', p.p1, p.intensity, s);
+        if (Math.random() < 0.08) addExhaust('propellant2', p.p2, p.intensity, s);
+        if (Math.random() < 0.08) addExhaust('propellant2', p.p3, p.intensity, s);
+      }
+    }
+
     if (controls.turnCw) {
       let p = s.rotateCw();
       s.states.turningCw = true;
-      addExhaust('rotation', p, 1, s);
+      addExhaust('rotation', p, 1, s, s.rotation + 170);
     }
+
     if (controls.turnCcw) {
       let p = s.rotateCcw();
       s.states.turningCcw = true;
-      addExhaust('rotation', p, 1, s);
+      addExhaust('rotation', p, 1, s, s.rotation + 190);
+    }
+
+    if (s.batteryChargingPower > 0) {
+      s.chargeBatteries();
+    }
+
+    if (s.emergencyChargingPower > 0) {
+      s.chargeEmergencyPower();
+    }
+
+    if (s.generatorTemperature > 10) {
+      s.coolDownGenerator();
+      if (Math.random() < 0.25) addExhaust('condensate', {x: s.x, y: s.y}, 1, s);
+    }
+
+    if (s.engineTemperature > 10) {
+      s.coolDownEngine();
+      if (Math.random() < 0.25) addExhaust('condensate', {x: s.x, y: s.y}, 1, s);
     }
   }
 
@@ -1795,54 +2055,7 @@ let handleShip = (s) => {
     addExhaust('venting', p.p2, p.intensity, s, s.rotation + 315);
   }
 
-  // if (s.engineOn) {
-  //   if (s.primaryFuel > 0) {
-  //     let p = s.runEngine();
-  //
-  //     addExhaust('idle',s,p);
-  //   } else {
-  //     s.engineOn = false;
-  //   }
-  // }
-
-  // if (!s.engineOn && s.engineOutput > 0){
-  //   let p = s.powerDownEngine();
-  //   addExhaust('idle',s,p);
-  // }
-
-  // Controls
-
-  // if (s.engineOutput > 0) {
-  //   if (controls.secondaryThruster) {
-  //     let p = s.secondaryThruster();
-  //     s.states.primaryThruster = true;
-  //     s.states.secondaryThruster = true;
-  //
-  //     addExhaust('primary',s,{x: p.x1, y: p.y1});
-  //     addExhaust('secondary',s,p);
-  //
-  //   } else if (controls.primaryThruster) {
-  //     let p = s.primaryThruster();
-  //     s.states.primaryThruster = true;
-  //
-  //     addExhaust('primary',s,p);
-  //   }
-  //
-  //   if (controls.turnCw) {
-  //     let p = s.cw();
-  //     s.states.turningCw = true;
-  //
-  //     addExhaust('tertiaryCw',s,p);
-  //   }
-  //
-  //   if (controls.turnCcw) {
-  //     let p = s.ccw();
-  //     s.states.turningCcw = true;
-  //
-  //     addExhaust('tertiaryCcw',s,p);
-  //   }
-  // }
-
+  s.evaluateStatus();
   s.move();
 }
 
@@ -1865,7 +2078,8 @@ let addExhaust = (type, p, i, s, r) => {
         g: 255,
         b: 250
       }
-      e = new Exhaust(p.x, p.y, r, 1.5, type, 1.5, i, c, 0.9);
+      e = new Exhaust(p.x, p.y, r, 0.5, type, 1.25, i, c, 1);
+      // e = new Exhaust(p.x, p.y, s.rotation + 180, 1.5, type, 3.25, i, c, 1);
       exhaustVenting.push(e);
     break;
 
@@ -1875,17 +2089,18 @@ let addExhaust = (type, p, i, s, r) => {
         g: 255,
         b: 255
       }
-      e = new Exhaust(p.x, p.y, s.rotation + 180, 1, type, 1, i, c, 1);
+      e = new Exhaust(p.x, p.y, s.rotation + 180, 4, type, 2, i, c, 1);
       exhaustPropellant1.push(e);
     break;
 
     case 'propellant2':
-      c = {
-        r: 255,
-        g: 255,
-        b: 255
-      }
-      e = new Exhaust(p.x, p.y, s.rotation + 180, 1, type, 1, i, c, 1);
+      c = Math.random() < 0.5 ? {r: 0,g: 0,b: 0} : {r: 200,g: 200,b: 200};
+      // c = {
+      //   r: Math.ceil(150 * Math.random()),
+      //   g: Math.ceil(150 * Math.random()),
+      //   b: Math.ceil(150 * Math.random())
+      // }
+      e = new Exhaust(p.x, p.y, s.rotation + 180, 5, type, 1, i, c, 0.9);
       exhaustPropellant2.push(e);
     break;
 
@@ -1895,7 +2110,7 @@ let addExhaust = (type, p, i, s, r) => {
         g: 255,
         b: 255
       }
-      e = new Exhaust(p.x, p.y, s.rotation + 180, 1, type, 1, i, c, 1);
+      e = new Exhaust(p.x, p.y, s.rotation + 180, Math.hypot(s.vx,s.vy), type, 1, i, c, 1);
       exhaustCondensate.push(e);
     break;
 
@@ -1905,61 +2120,11 @@ let addExhaust = (type, p, i, s, r) => {
         g: 255,
         b: 255
       }
-      e = new Exhaust(p.x, p.y, s.rotation + 180, 1, type, 1, i, c, 1);
+      e = new Exhaust(p.x, p.y, r, 3, type, 2, i, c, 0.8);
       exhaustRotation.push(e);
     break;
   }
 }
-
-// let addExhaust = (type, s, p) => {
-//   if (type === 'idle') {
-//     let c = {
-//       r: 150,
-//       g: 150,
-//       b: 150
-//     }
-//     let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, (s.engineOutput > 150 ? 150 : s.engineOutput), c, 0.5);
-//     primaryExhaustIdle.push(e);
-//
-//   } else if (type === 'primary') {
-//     let c = {
-//       r: 200,
-//       g: 200,
-//       b: 200
-//     }
-//     let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'primary', 10, s.engineOutput, c, 1);
-//     primaryExhaust.push(e);
-//
-//   } else if (type === 'secondary') {
-//     let c = {
-//       r: Math.round(Math.random() * 55 + 200),
-//       g: Math.round(Math.random() * 55 + 200),
-//       b: Math.round(Math.random() * 55 + 200)
-//     }
-//     let e = new Exhaust(p.x2, p.y2, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
-//     secondaryExhaust.push(e);
-//
-//     e = new Exhaust(p.x3, p.y3, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
-//     secondaryExhaust.push(e);
-//
-//   } else if (type === 'tertiaryCw') {
-//     let c = {
-//       r: 200,
-//       g: 200,
-//       b: 200
-//     }
-//     let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'tertiary', 2, s.engineOutput, c, 1);
-//     tertiaryExhaust.push(e);
-//   } else if (type === 'tertiaryCcw') {
-//     let c = {
-//       r: 200,
-//       g: 200,
-//       b: 200
-//     }
-//     let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'tertiary', 2, s.engineOutput, c, 1);
-//     tertiaryExhaust.push(e);
-//   }
-// }
 
 /*****************************************************************************
 

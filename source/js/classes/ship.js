@@ -52,8 +52,9 @@ class Ship {
     this.coolant = 100;
     this.coolantMax = 100;
     this.battery = 0;
-    this.batteryMax = 100;
-    this.emergencyPropellant = 100;
+    this.batteryMax = 1000;
+    this.emergencyPower = 100;
+    this.emergencyPowerMax = 100;
 
     // Handling
     this.responsiveness = 100;
@@ -68,6 +69,7 @@ class Ship {
       armed: false,
       harvesting: false,
       engineRunning: false,
+      boosting: false,
       chargingBatteries: false,
       chargingEmergencyPower: false,
       landed: false,
@@ -77,8 +79,6 @@ class Ship {
       landingPadProximity: false,
       groundProximity: false,
       flying: false,
-      primaryThruster: false,
-      secondaryThruster: false,
       turningCw: false,
       turningCcw: false,
     }
@@ -138,6 +138,7 @@ class Ship {
       controls.increaseGeneratorLoad = false;
       controls.decreaseGeneratorLoad = false;
       messageLog.push('Generator: Failure: Shut down initiated. Error code 0001');
+      return false;
     }
   }
 
@@ -150,11 +151,19 @@ class Ship {
     if (this.generatorLoad < 0) this.generatorLoad = 0;
   }
 
-  coolDownGenerator() {}
+  coolDownGenerator() {
+    // Should use coolant to lower generatorTemperature
+    if (this.coolant > 0) {
+      this.generatorTemperature -= 1;
+      this.coolant -= 1;
+    }
+    if (this.generatorTemperature < 0) this.generatorTemperature = 0;
+  }
 
   powerDownGenerator() {
     this.generatorOutput -= 0.5;
     this.generatorOutput = Math.round(this.generatorOutput * 100) / 100;
+    if (this.generatorOutput < 0) this.generatorOutput = 0;
 
     if (this.generatorTemperature > 0) {
       this.generatorTemperature -= 1;
@@ -184,7 +193,18 @@ class Ship {
     };
   }
 
-  distributePower(p) {
+  resetPower() {
+    this.generalPower = 0;
+    this.shieldsPower = 0;
+    this.weaponsPower = 0;
+    this.harvestingPower = 0;
+    this.enginePower = 0;
+    this.batteryChargingPower = 0;
+    this.emergencyChargingPower = 0;
+    this.ventPower = 0;
+  }
+
+  distributePower(p,onBatteryPower) {
     // Power should be portioned out to ship systems according to this priority list
     // 1. General
     // 2. Shields
@@ -232,13 +252,16 @@ class Ship {
 
       if (this.harvestingOn && p > 0) p = distributePower(p,'harvestingCoils',10);
 
-      if (this.engineOn && p > 0) p = distributePower(p,'engine',50);
+      if (this.engineOn && p > 0) p = distributePower(p,'engine',45);
 
-      if (p > 0) p = distributePower(p,'batteryCharging',5);
+      if (p > 0 && this.battery < this.batteryMax && !onBatteryPower) p = distributePower(p,'batteryCharging',5);
 
-      if (p > 0) p = distributePower(p,'emergencyCharging',5);
+      if (p > 0 && this.emergencyPower < this.emergencyPowerMax && !onBatteryPower) p = distributePower(p,'emergencyCharging',5);
 
-      if (p > 0) distributedPower.vent = p;
+      if (p > 0 && !onBatteryPower) distributedPower.vent = p;
+
+      if (onBatteryPower) this.battery -= (100 - p) / 100;
+      if (this.battery < 0) this.battery = 0;
 
     } else {
 
@@ -266,12 +289,16 @@ class Ship {
     if (this.enginePower > 0) this.states.engineRunning = true;
     if (this.batteryChargingPower > 0) this.states.chargingBatteries = true;
     if (this.emergencyChargingPower > 0) this.states.chargingEmergencyPower = true;
-
-    console.log(this.generalPower,this.shieldsPower,this.weaponsPower,this.harvestingPower,this.enginePower,this.batteryChargingPower,this.emergencyChargingPower,this.ventPower);
   }
 
   chargeBatteries() {
-    // Should charge the batteries using batteryChargingPower
+    this.battery += Math.round(this.batteryChargingPower / 100 * 4) / 4;
+    if (this.battery > this.batteryMax) this.battery = this.batteryMax;
+  }
+
+  chargeEmergencyPower() {
+    this.emergencyPower += Math.round(this.emergencyChargingPower / 100 * 4) / 4;
+    if (this.emergencyPower > this.emergencyPowerMax) this.emergencyPower = this.emergencyPowerMax;
   }
 
   runShields() {
@@ -284,8 +311,10 @@ class Ship {
 
   runEngine() {
     // Drain secondaryFuel and oxidizer to eject propellant and increase ax and ay. Should return position and intensity of exhaust
+    this.engineOn = true;
+
     if (this.secondaryFuel > 0 && this.oxidizer > 0) {
-      this.engineOn = true;
+      if (this.enginePower <= 0) return false;
       let engineEffect = this.enginePower * this.engineEfficiency / 100;
       let fuelDrain = this.enginePower / 100;
 
@@ -297,12 +326,88 @@ class Ship {
       this.secondaryFuel -= engineEffect;
       this.oxidizer -= engineEffect;
 
-      console.log(engineEffect);
+      let pos = local2global(this);
+      let p = pos(this.r * -0.45, this.r * 0);
+      return {
+        p: {
+          x: p.x,
+          y: p.y
+        },
+        intensity: this.enginePower
+      };
 
     } else {
       this.secondaryFuel = 0;
       this.oxidizer = 0;
+      return false;
     }
+  }
+
+  boostEngine() {
+    // Drain secondaryFuel and oxidizer to eject propellant and increase ax and ay. Should return position and intensity of exhaust
+    this.engineOn = true;
+
+    if (this.secondaryFuel > 0 && this.oxidizer > 0) {
+      if (this.enginePower <= 0) return false;
+      let engineEffect = this.enginePower * this.engineEfficiency / 100;
+      let fuelDrain = this.enginePower / 100;
+
+      this.ax = Math.cos(rads(this.rotation)) * this.moveSpeed * engineEffect * 2;
+      this.ay = Math.sin(rads(this.rotation)) * this.moveSpeed * engineEffect * 2;
+      this.vx += this.ax;
+      this.vy += this.ay;
+
+      this.secondaryFuel -= engineEffect * 2;
+      this.oxidizer -= engineEffect * 2;
+
+      this.engineTemperature += 0.25;
+
+      this.states.boosting = true;
+
+      let pos = local2global(this);
+      let p1 = pos(this.r * -0.45, this.r * 0);
+      let p2 = pos(this.r * -0.35, this.r * 0.32);
+      let p3 = pos(this.r * -0.35, this.r * -0.32);
+      let p4 = pos(this.r * -0.38, this.r * 1.07);
+      let p5 = pos(this.r * -0.38, this.r * -1.07);
+      return {
+        p1: {
+          x: p1.x,
+          y: p1.y
+        },
+        p2: {
+          x: p2.x,
+          y: p2.y
+        },
+        p3: {
+          x: p3.x,
+          y: p3.y
+        },
+        p4: {
+          x: p4.x,
+          y: p4.y
+        },
+        p5: {
+          x: p5.x,
+          y: p5.y
+        },
+        intensity: this.enginePower * 2
+      };
+
+    } else {
+      this.secondaryFuel = 0;
+      this.oxidizer = 0;
+      return false;
+    }
+  }
+
+  coolDownEngine() {
+    // Should use coolant to lower generatorTemperature
+    if (this.coolant > 0) {
+      this.engineTemperature -= 1;
+      this.coolant -= 1;
+    }
+    if (this.engineTemperature < 0) this.engineTemperature = 0;
   }
 
   ventExcessPower() {
@@ -352,6 +457,10 @@ class Ship {
     let pos = local2global(this);
     let p = pos(this.r * -0.38, this.r * 1.07);
     return {x: p.x, y: p.y};
+  }
+
+  evaluateStatus() {
+    // Check things like engine temperature, generator temperature and stuff to decide if something should explode
   }
 
   move() {
@@ -406,10 +515,6 @@ class Ship {
     this.vx = Math.round(this.vx * 1000) / 1000;
     this.vy = Math.round(this.vy * 1000) / 1000;
 
-    // this.vx += this.vx > 0 ? globals.drag * -1 : globals.drag;
-
-    // console.log(this.vx, dx);
-    // console.log('after: ' + dx);
     // If I'm going to do this 👇, then parallax has to go. If not, I need another solution. Bounce back just outside screen?
     // if (this.x > VW) this.x = 0;
     // if (this.x < 0) this.x = VW;
@@ -481,23 +586,25 @@ class Ship {
 
     // STABILIZER RING
     // This should only render for certain ship states -- or should it??? Have a think about this.
+    // Also, this animation needs to be better.
+    // Hiding this for now
 
-    if ((!this.states.landed && !this.states.parked)) {
-      if (this.states.powered) {
-        this.animationProps.stabilizerRing.current += this.animationProps.stabilizerRing.current < this.animationProps.stabilizerRing.max ? 2 : 0;
-      } else {
-        this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
-      }
-    } else {
-      this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
-    }
-
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, r * this.animationProps.stabilizerRing.current / 100, 0, 2 * Math.PI);
-    ctx.closePath();
-    ctx.strokeStyle = "#FFF";
-    ctx.lineWidth = r / 10;
-    ctx.stroke();
+    // if ((!this.states.landed && !this.states.parked)) {
+    //   if (this.states.powered) {
+    //     this.animationProps.stabilizerRing.current += this.animationProps.stabilizerRing.current < this.animationProps.stabilizerRing.max ? 2 : 0;
+    //   } else {
+    //     this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
+    //   }
+    // } else {
+    //   this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
+    // }
+    //
+    // ctx.beginPath();
+    // ctx.arc(this.x, this.y, r * this.animationProps.stabilizerRing.current / 100, 0, 2 * Math.PI);
+    // ctx.closePath();
+    // ctx.strokeStyle = "#FFF";
+    // ctx.lineWidth = r / 10;
+    // ctx.stroke();
 
     // PRIMARY THRUSTER
 
@@ -658,7 +765,7 @@ class Ship {
       pos(r * -0.85, r * 1.1),
       pos(r * -0.65, r * 0.7),
     ];
-    if (this.states.secondaryThruster) {
+    if (this.states.boosting | this.states.turningCcw) {
       p = [
         pos(r * -0.95, r * 1.02),
         pos(r * -1, r * 0.9),
@@ -682,7 +789,7 @@ class Ship {
       pos(r * -0.85, r * -1.1),
       pos(r * -0.65, r * -0.7),
     ];
-    if (this.states.secondaryThruster) {
+    if (this.states.boosting || this.states.turningCw) {
       p = [
         pos(r * -0.95, r * -1.02),
         pos(r * -1, r * -0.9),

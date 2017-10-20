@@ -22,6 +22,7 @@ const controls = {
   increaseGeneratorLoad: false,
   decreaseGeneratorLoad: false,
   runEngine: false,
+  boostEngine: false,
   turnCw: false,
   turnCcw: false,
 }
@@ -54,6 +55,9 @@ window.addEventListener('keydown',(e) => {
     if (code === 65) {
       controls.turnCcw = true;
     }
+    if (code === 83) {
+      controls.boostEngine = true;
+    }
   }
 });
 
@@ -68,6 +72,7 @@ window.addEventListener('keyup',(e) => {
       s.shieldsOn = false;
       s.weaponsOn = false;
       s.harvestingOn = false;
+      s.generatorLoad = 0;
       messageLog.push('Ship: Powering down');
     } else {
       messageLog.push('Ship: Powering up');
@@ -134,6 +139,10 @@ window.addEventListener('keyup',(e) => {
 
   if (code === 87) {
     controls.runEngine = false;
+    s.engineOn = false;
+  }
+  if (code === 83) {
+    controls.boostEngine = false;
     s.engineOn = false;
   }
   if (code === 68) {
@@ -297,10 +306,17 @@ let local2global = (self) => {
 
 let handleShip = (s) => {
   s.states.powered = false;
-  s.states.primaryThruster = false;
-  s.states.secondaryThruster = false;
+  s.states.shielded = false;
+  s.states.armed = false;
+  s.states.harvesting = false;
+  s.states.engineRunning = false;
+  s.states.boosting = false;
+  s.states.chargingBatteries = false;
+  s.states.chargingEmergencyPower = false;
   s.states.turningCw = false;
   s.states.turningCcw = false;
+
+  s.resetPower();
 
   messageLog.length > 0 ? console.log(messageLog[messageLog.length - 1]) : '';
 
@@ -313,31 +329,77 @@ let handleShip = (s) => {
 
   if (s.generatorOn) {
     let g = s.runGenerator();
-    s.distributePower(g.power);
-    addExhaust('generator', g.p1, g.intensity, s);
-    addExhaust('generator', g.p2, g.intensity, s);
+    if (g !== false) {
+      s.distributePower(g.power, false);
+      addExhaust('generator', g.p1, g.intensity, s);
+      addExhaust('generator', g.p2, g.intensity, s);
+    }
   }
 
   if (!s.generatorOn && s.generatorOutput > 0) {
     let g = s.powerDownGenerator();
-    s.distributePower(g.power);
-    addExhaust('generator', g.p1, g.intensity, s);
-    addExhaust('generator', g.p2, g.intensity, s);
+    if (g !== false) {
+      s.distributePower(g.power, false);
+      addExhaust('generator', g.p1, g.intensity, s);
+      addExhaust('generator', g.p2, g.intensity, s);
+    }
   }
 
   if (s.shipOn) {
+    if (s.battery > 0 && !s.generatorOn && s.generatorOutput === 0) {
+      s.distributePower(100,true);
+    }
+
     if (controls.runEngine) {
       let p = s.runEngine();
+      if (p !== false) {
+        addExhaust('propellant1', p.p, p.intensity, s);
+        if (Math.random() < 0.08) addExhaust('propellant2', p.p, p.intensity, s);
+      }
     }
+
+    if (controls.boostEngine) {
+      let p = s.boostEngine();
+      if (p !== false) {
+        addExhaust('propellant1', p.p1, p.intensity * 2, s);
+        addExhaust('propellant1', p.p2, p.intensity * 0.25, s);
+        addExhaust('propellant1', p.p3, p.intensity * 0.25, s);
+        addExhaust('venting', p.p4, p.intensity, s, s.rotation + 180)
+        addExhaust('venting', p.p5, p.intensity, s, s.rotation + 180)
+        if (Math.random() < 0.08) addExhaust('propellant2', p.p1, p.intensity, s);
+        if (Math.random() < 0.08) addExhaust('propellant2', p.p2, p.intensity, s);
+        if (Math.random() < 0.08) addExhaust('propellant2', p.p3, p.intensity, s);
+      }
+    }
+
     if (controls.turnCw) {
       let p = s.rotateCw();
       s.states.turningCw = true;
-      addExhaust('rotation', p, 1, s);
+      addExhaust('rotation', p, 1, s, s.rotation + 170);
     }
+
     if (controls.turnCcw) {
       let p = s.rotateCcw();
       s.states.turningCcw = true;
-      addExhaust('rotation', p, 1, s);
+      addExhaust('rotation', p, 1, s, s.rotation + 190);
+    }
+
+    if (s.batteryChargingPower > 0) {
+      s.chargeBatteries();
+    }
+
+    if (s.emergencyChargingPower > 0) {
+      s.chargeEmergencyPower();
+    }
+
+    if (s.generatorTemperature > 10) {
+      s.coolDownGenerator();
+      if (Math.random() < 0.25) addExhaust('condensate', {x: s.x, y: s.y}, 1, s);
+    }
+
+    if (s.engineTemperature > 10) {
+      s.coolDownEngine();
+      if (Math.random() < 0.25) addExhaust('condensate', {x: s.x, y: s.y}, 1, s);
     }
   }
 
@@ -347,54 +409,7 @@ let handleShip = (s) => {
     addExhaust('venting', p.p2, p.intensity, s, s.rotation + 315);
   }
 
-  // if (s.engineOn) {
-  //   if (s.primaryFuel > 0) {
-  //     let p = s.runEngine();
-  //
-  //     addExhaust('idle',s,p);
-  //   } else {
-  //     s.engineOn = false;
-  //   }
-  // }
-
-  // if (!s.engineOn && s.engineOutput > 0){
-  //   let p = s.powerDownEngine();
-  //   addExhaust('idle',s,p);
-  // }
-
-  // Controls
-
-  // if (s.engineOutput > 0) {
-  //   if (controls.secondaryThruster) {
-  //     let p = s.secondaryThruster();
-  //     s.states.primaryThruster = true;
-  //     s.states.secondaryThruster = true;
-  //
-  //     addExhaust('primary',s,{x: p.x1, y: p.y1});
-  //     addExhaust('secondary',s,p);
-  //
-  //   } else if (controls.primaryThruster) {
-  //     let p = s.primaryThruster();
-  //     s.states.primaryThruster = true;
-  //
-  //     addExhaust('primary',s,p);
-  //   }
-  //
-  //   if (controls.turnCw) {
-  //     let p = s.cw();
-  //     s.states.turningCw = true;
-  //
-  //     addExhaust('tertiaryCw',s,p);
-  //   }
-  //
-  //   if (controls.turnCcw) {
-  //     let p = s.ccw();
-  //     s.states.turningCcw = true;
-  //
-  //     addExhaust('tertiaryCcw',s,p);
-  //   }
-  // }
-
+  s.evaluateStatus();
   s.move();
 }
 
@@ -417,7 +432,8 @@ let addExhaust = (type, p, i, s, r) => {
         g: 255,
         b: 250
       }
-      e = new Exhaust(p.x, p.y, r, 1.5, type, 1.5, i, c, 0.9);
+      e = new Exhaust(p.x, p.y, r, 0.5, type, 1.25, i, c, 1);
+      // e = new Exhaust(p.x, p.y, s.rotation + 180, 1.5, type, 3.25, i, c, 1);
       exhaustVenting.push(e);
     break;
 
@@ -427,17 +443,18 @@ let addExhaust = (type, p, i, s, r) => {
         g: 255,
         b: 255
       }
-      e = new Exhaust(p.x, p.y, s.rotation + 180, 1, type, 1, i, c, 1);
+      e = new Exhaust(p.x, p.y, s.rotation + 180, 4, type, 2, i, c, 1);
       exhaustPropellant1.push(e);
     break;
 
     case 'propellant2':
-      c = {
-        r: 255,
-        g: 255,
-        b: 255
-      }
-      e = new Exhaust(p.x, p.y, s.rotation + 180, 1, type, 1, i, c, 1);
+      c = Math.random() < 0.5 ? {r: 0,g: 0,b: 0} : {r: 200,g: 200,b: 200};
+      // c = {
+      //   r: Math.ceil(150 * Math.random()),
+      //   g: Math.ceil(150 * Math.random()),
+      //   b: Math.ceil(150 * Math.random())
+      // }
+      e = new Exhaust(p.x, p.y, s.rotation + 180, 5, type, 1, i, c, 0.9);
       exhaustPropellant2.push(e);
     break;
 
@@ -447,7 +464,7 @@ let addExhaust = (type, p, i, s, r) => {
         g: 255,
         b: 255
       }
-      e = new Exhaust(p.x, p.y, s.rotation + 180, 1, type, 1, i, c, 1);
+      e = new Exhaust(p.x, p.y, s.rotation + 180, Math.hypot(s.vx,s.vy), type, 1, i, c, 1);
       exhaustCondensate.push(e);
     break;
 
@@ -457,61 +474,11 @@ let addExhaust = (type, p, i, s, r) => {
         g: 255,
         b: 255
       }
-      e = new Exhaust(p.x, p.y, s.rotation + 180, 1, type, 1, i, c, 1);
+      e = new Exhaust(p.x, p.y, r, 3, type, 2, i, c, 0.8);
       exhaustRotation.push(e);
     break;
   }
 }
-
-// let addExhaust = (type, s, p) => {
-//   if (type === 'idle') {
-//     let c = {
-//       r: 150,
-//       g: 150,
-//       b: 150
-//     }
-//     let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, (s.engineOutput > 150 ? 150 : s.engineOutput), c, 0.5);
-//     primaryExhaustIdle.push(e);
-//
-//   } else if (type === 'primary') {
-//     let c = {
-//       r: 200,
-//       g: 200,
-//       b: 200
-//     }
-//     let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'primary', 10, s.engineOutput, c, 1);
-//     primaryExhaust.push(e);
-//
-//   } else if (type === 'secondary') {
-//     let c = {
-//       r: Math.round(Math.random() * 55 + 200),
-//       g: Math.round(Math.random() * 55 + 200),
-//       b: Math.round(Math.random() * 55 + 200)
-//     }
-//     let e = new Exhaust(p.x2, p.y2, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
-//     secondaryExhaust.push(e);
-//
-//     e = new Exhaust(p.x3, p.y3, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
-//     secondaryExhaust.push(e);
-//
-//   } else if (type === 'tertiaryCw') {
-//     let c = {
-//       r: 200,
-//       g: 200,
-//       b: 200
-//     }
-//     let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'tertiary', 2, s.engineOutput, c, 1);
-//     tertiaryExhaust.push(e);
-//   } else if (type === 'tertiaryCcw') {
-//     let c = {
-//       r: 200,
-//       g: 200,
-//       b: 200
-//     }
-//     let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'tertiary', 2, s.engineOutput, c, 1);
-//     tertiaryExhaust.push(e);
-//   }
-// }
 
 /*****************************************************************************
 
