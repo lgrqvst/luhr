@@ -414,10 +414,10 @@ class Ship {
     // Should zero ventPower and return a point and intensity for the power animation
 
     let pos = local2global(this);
-    // let p1 = pos(this.r * -0.35, this.r * 0.32);
-    let p1 = pos(this.r * 0.25, this.r * 0.425);
-    // let p2 = pos(this.r * -0.35, this.r * -0.32);
-    let p2 = pos(this.r * 0.25, this.r * -0.425);
+    let p1 = pos(this.r * -0.35, this.r * 0.32);
+    // let p1 = pos(this.r * 0.25, this.r * 0.425);
+    let p2 = pos(this.r * -0.35, this.r * -0.32);
+    // let p2 = pos(this.r * 0.25, this.r * -0.425);
 
     let r = {
       p1: {

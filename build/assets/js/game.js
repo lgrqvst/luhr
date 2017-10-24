@@ -54,8 +54,8 @@ class Exhaust {
 
     switch (this.type) {
       case 'generator':
-        this.x += this.vx;
-        this.y += this.vy
+        this.x += this.vx * this.intensity / 50;
+        this.y += this.vy * this.intensity / 50;
         this.x += globals.wind / 20;
         this.y -= globals.gravity * 2;
       break;
@@ -161,17 +161,19 @@ class Exhaust {
     switch (this.type) {
       case 'generator':
         ctx.beginPath();
-        ctx.arc(this.x, this.y, Math.random() * this.size, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, Math.random() * this.size * this.intensity / 100, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
         ctx.fill();
       break;
       case 'venting':
         ctx.beginPath();
         ctx.moveTo(this.x, this.y);
-        p = pos(this.size * this.intensity / 100 * 1, 0);
+        p = pos(this.size * this.intensity / 100 * 4, 0);
         ctx.lineTo(p.x, p.y);
         ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
-        ctx.lineWidth = this.size * this.intensity / 100;
+        // ctx.lineWidth = this.size * this.intensity / 100;
+        ctx.lineWidth = 3;
+        ctx.lineWidth = 3 * 1 / this.size;
         ctx.stroke();
       break;
       case 'propellant1':
@@ -1088,10 +1090,10 @@ class Ship {
     // Should zero ventPower and return a point and intensity for the power animation
 
     let pos = local2global(this);
-    // let p1 = pos(this.r * -0.35, this.r * 0.32);
-    let p1 = pos(this.r * 0.25, this.r * 0.425);
-    // let p2 = pos(this.r * -0.35, this.r * -0.32);
-    let p2 = pos(this.r * 0.25, this.r * -0.425);
+    let p1 = pos(this.r * -0.35, this.r * 0.32);
+    // let p1 = pos(this.r * 0.25, this.r * 0.425);
+    let p2 = pos(this.r * -0.35, this.r * -0.32);
+    // let p2 = pos(this.r * 0.25, this.r * -0.425);
 
     let r = {
       p1: {
@@ -2051,8 +2053,10 @@ let handleShip = (s) => {
 
   if (s.ventPower > 0) {
     let p = s.ventExcessPower();
-    addExhaust('venting', p.p1, p.intensity, s, s.rotation + 45);
-    addExhaust('venting', p.p2, p.intensity, s, s.rotation + 315);
+    // addExhaust('venting', p.p1, p.intensity, s, s.rotation + 45);
+    // addExhaust('venting', p.p2, p.intensity, s, s.rotation + 315);
+    addExhaust('venting', p.p1, p.intensity, s, s.rotation + 180);
+    addExhaust('venting', p.p2, p.intensity, s, s.rotation + 180);
   }
 
   s.evaluateStatus();
@@ -2078,8 +2082,8 @@ let addExhaust = (type, p, i, s, r) => {
         g: 255,
         b: 250
       }
-      e = new Exhaust(p.x, p.y, r, 0.5, type, 1.25, i, c, 1);
-      // e = new Exhaust(p.x, p.y, s.rotation + 180, 1.5, type, 3.25, i, c, 1);
+      // e = new Exhaust(p.x, p.y, r, 0.5, type, 1.25, i, c, 1);
+      e = new Exhaust(p.x, p.y, r, 0.25, type, 1, i, c, 1);
       exhaustVenting.push(e);
     break;
 
@@ -2220,7 +2224,7 @@ let update = () => {
  *****************************************************************************/
 
 let updateHUD = (s) => {
-  if (s.engineOutput > 0) {
+  if (s.states.powered > 0) {
     document.querySelector('.hud').classList.remove('inactive');
     document.querySelector('.hud').classList.add('active');
 

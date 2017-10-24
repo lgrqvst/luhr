@@ -20,8 +20,8 @@ class Exhaust {
 
     switch (this.type) {
       case 'generator':
-        this.x += this.vx;
-        this.y += this.vy
+        this.x += this.vx * this.intensity / 50;
+        this.y += this.vy * this.intensity / 50;
         this.x += globals.wind / 20;
         this.y -= globals.gravity * 2;
       break;
@@ -127,17 +127,19 @@ class Exhaust {
     switch (this.type) {
       case 'generator':
         ctx.beginPath();
-        ctx.arc(this.x, this.y, Math.random() * this.size, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, Math.random() * this.size * this.intensity / 100, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
         ctx.fill();
       break;
       case 'venting':
         ctx.beginPath();
         ctx.moveTo(this.x, this.y);
-        p = pos(this.size * this.intensity / 100 * 1, 0);
+        p = pos(this.size * this.intensity / 100 * 4, 0);
         ctx.lineTo(p.x, p.y);
         ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
-        ctx.lineWidth = this.size * this.intensity / 100;
+        // ctx.lineWidth = this.size * this.intensity / 100;
+        ctx.lineWidth = 3;
+        ctx.lineWidth = 3 * 1 / this.size;
         ctx.stroke();
       break;
       case 'propellant1':
