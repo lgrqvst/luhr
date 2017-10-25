@@ -106,7 +106,7 @@ class Ship {
         let a = this.generatorLoad - 100;
         this.generatorTemperature += Math.round(a / 500 * 100) / 100;
       } else if (this.generatorTemperature > 0) {
-        this.generatorTemperature -= 1;
+        this.generatorTemperature -= 0.1;
       } else if (this.generatorTemperature < 0) {
         this.generatorTemperature = 0;
       }
@@ -326,6 +326,11 @@ class Ship {
       this.secondaryFuel -= engineEffect;
       this.oxidizer -= engineEffect;
 
+      if (this.enginePower > 100) {
+        let a = this.enginePower - 100;
+        this.engineTemperature += Math.round(a / 500 * 100) / 50;
+      }
+
       let pos = local2global(this);
       let p = pos(this.r * -0.45, this.r * 0);
       return {
@@ -360,7 +365,7 @@ class Ship {
       this.secondaryFuel -= engineEffect * 2;
       this.oxidizer -= engineEffect * 2;
 
-      this.engineTemperature += 0.25;
+      this.engineTemperature += 0.5;
 
       this.states.boosting = true;
 

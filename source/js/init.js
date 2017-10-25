@@ -14,3 +14,4 @@ let getContext = (w, h, c) => {
 
 const context1 = getContext(VW, VH, 'layer1');
 const context2 = getContext(VW, VH, 'layer2');
+const context3 = getContext(VW, VH, 'layer3');

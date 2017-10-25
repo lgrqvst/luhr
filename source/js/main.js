@@ -121,19 +121,23 @@ window.addEventListener('keyup',(e) => {
   if (s.generatorOn) {
     if (code === 79) {
       s.generatorLoad = 100;
-      messageLog.push('Generator: Load set to: 100');
+      messageLog.push('Generator: Load set to: 100%');
     }
     if (code === 75) {
       s.generatorLoad = 0;
-      messageLog.push('Generator: Load set to: 0');
+      messageLog.push('Generator: Load set to: 0%');
+    }
+    if (code === 77) {
+      s.generatorLoad = 50;
+      messageLog.push('Generator: Load set to: 50%');
     }
     if (code === 80) {
       controls.increaseGeneratorLoad = false;
-      messageLog.push('Generator: Increasing load to: ' + s.generatorLoad);
+      messageLog.push('Generator: Increasing load to: ' + s.generatorLoad + '%');
     }
     if (code === 76) {
       controls.decreaseGeneratorLoad = false;
-      messageLog.push('Generator: Decreasing load to: ' + s.generatorLoad);
+      messageLog.push('Generator: Decreasing load to: ' + s.generatorLoad + '%');
     }
   }
 
@@ -390,6 +394,16 @@ let handleShip = (s) => {
 
     if (s.emergencyChargingPower > 0) {
       s.chargeEmergencyPower();
+    }
+
+    if (s.engineTemperature > 0) {
+      if (!s.engineOn) s.engineTemperature -= 0.2;
+      if (s.engineTemperature < 0) s.engineTemperature = 0;
+    }
+
+    if (s.generatorTemperature > 0) {
+      if (!s.generatorOn) s.generatorTemperature -= 0.2;
+      if (s.generatorTemperature < 0) s.generatorTemperature = 0;
     }
 
     if (s.generatorTemperature > 10) {
@@ -684,6 +698,7 @@ let draw = () => {
   // Clear the canvases
   context1.clearRect(0,0,VW,VH);
   context2.clearRect(0,0,VW,VH);
+  context3.clearRect(0,0,VW,VH);
 
   let parallax = 50 * Math.round((VW / 2 - ships[0].x) / (VW / 2) * 1000) / 1000;
 
@@ -743,7 +758,7 @@ let draw = () => {
     e.draw(context2);
   })
 
-  ships[0].draw(context2);
+  ships[0].draw(context3);
 
   updateHUD(ships[0]);
 }

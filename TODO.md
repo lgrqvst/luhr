@@ -15,16 +15,17 @@
 - [ ] Rudder or maneuvering thrusters when turning (maybe at the wingtips?)
 - [ ] Landing gear
 - [ ] Adjust behaviour when craft is in contact with the ground, like rocking gently or rolling, rather than stopping abruptly or rotating in the same spot
-- [ ] Slow-firing forward cannon
-- [ ] Quick-firing turret (controlled by mouse)
+- [ ] Forward cannon
+- [ ] Turret (controlled by mouse)
+- [ ] Have different weapons be individually powered
 - [ ] AoE weapon
 - [ ] Ammunition types
-- [ ] Make flight dependent on presence of particles
+- [ ] Make flight dependent on presence of particles??? Maybe not
 - [ ] Health / HP
 - [ ] Explosion upon death
 - [ ] Craft breaks apart on crash
-- [ ] More details on the body (maybe red and green lights for port/starboard?)
-- [ ] Shading on body
+- [ ] More details on the body (maybe red and green lights for port/starboard?) (or maybe some sort of markings on the wings?)
+- [ ] Shading on body (difficult maybe)
 - [ ] Handle ship going off-screen
 - [x] Clean up exhaust
 - [x] Handle exhaust outside of handleShip()

@@ -14,6 +14,7 @@ let getContext = (w, h, c) => {
 
 const context1 = getContext(VW, VH, 'layer1');
 const context2 = getContext(VW, VH, 'layer2');
+const context3 = getContext(VW, VH, 'layer3');
 
 class Building {
   constructor(x, type, height, color) {
@@ -782,7 +783,7 @@ class Ship {
         let a = this.generatorLoad - 100;
         this.generatorTemperature += Math.round(a / 500 * 100) / 100;
       } else if (this.generatorTemperature > 0) {
-        this.generatorTemperature -= 1;
+        this.generatorTemperature -= 0.1;
       } else if (this.generatorTemperature < 0) {
         this.generatorTemperature = 0;
       }
@@ -1002,6 +1003,11 @@ class Ship {
       this.secondaryFuel -= engineEffect;
       this.oxidizer -= engineEffect;
 
+      if (this.enginePower > 100) {
+        let a = this.enginePower - 100;
+        this.engineTemperature += Math.round(a / 500 * 100) / 50;
+      }
+
       let pos = local2global(this);
       let p = pos(this.r * -0.45, this.r * 0);
       return {
@@ -1036,7 +1042,7 @@ class Ship {
       this.secondaryFuel -= engineEffect * 2;
       this.oxidizer -= engineEffect * 2;
 
-      this.engineTemperature += 0.25;
+      this.engineTemperature += 0.5;
 
       this.states.boosting = true;
 
@@ -1769,19 +1775,23 @@ window.addEventListener('keyup',(e) => {
   if (s.generatorOn) {
     if (code === 79) {
       s.generatorLoad = 100;
-      messageLog.push('Generator: Load set to: 100');
+      messageLog.push('Generator: Load set to: 100%');
     }
     if (code === 75) {
       s.generatorLoad = 0;
-      messageLog.push('Generator: Load set to: 0');
+      messageLog.push('Generator: Load set to: 0%');
+    }
+    if (code === 77) {
+      s.generatorLoad = 50;
+      messageLog.push('Generator: Load set to: 50%');
     }
     if (code === 80) {
       controls.increaseGeneratorLoad = false;
-      messageLog.push('Generator: Increasing load to: ' + s.generatorLoad);
+      messageLog.push('Generator: Increasing load to: ' + s.generatorLoad + '%');
     }
     if (code === 76) {
       controls.decreaseGeneratorLoad = false;
-      messageLog.push('Generator: Decreasing load to: ' + s.generatorLoad);
+      messageLog.push('Generator: Decreasing load to: ' + s.generatorLoad + '%');
     }
   }
 
@@ -2038,6 +2048,16 @@ let handleShip = (s) => {
 
     if (s.emergencyChargingPower > 0) {
       s.chargeEmergencyPower();
+    }
+
+    if (s.engineTemperature > 0) {
+      if (!s.engineOn) s.engineTemperature -= 0.2;
+      if (s.engineTemperature < 0) s.engineTemperature = 0;
+    }
+
+    if (s.generatorTemperature > 0) {
+      if (!s.generatorOn) s.generatorTemperature -= 0.2;
+      if (s.generatorTemperature < 0) s.generatorTemperature = 0;
     }
 
     if (s.generatorTemperature > 10) {
@@ -2332,6 +2352,7 @@ let draw = () => {
   // Clear the canvases
   context1.clearRect(0,0,VW,VH);
   context2.clearRect(0,0,VW,VH);
+  context3.clearRect(0,0,VW,VH);
 
   let parallax = 50 * Math.round((VW / 2 - ships[0].x) / (VW / 2) * 1000) / 1000;
 
@@ -2391,7 +2412,7 @@ let draw = () => {
     e.draw(context2);
   })
 
-  ships[0].draw(context2);
+  ships[0].draw(context3);
 
   updateHUD(ships[0]);
 }
