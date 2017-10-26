@@ -200,11 +200,11 @@ class Exhaust {
       case 'condensate':
         ctx.beginPath();
         ctx.moveTo(this.x, this.y);
-        p = pos(1, 0);
+        p = pos(2, 0);
         ctx.lineTo(p.x, p.y);
         ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},1)`;
         // ctx.lineWidth = this.size * this.intensity / 100;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.stroke();
       break;
       case 'rotation':
@@ -324,6 +324,13 @@ class Landingpad {
   constructor(x) {
     this.x = x;
     this.apparentX = x + 75 * Math.round((VW / 2 - x) / (VW / 2) * 1000) / 1000;
+    this.shadowAngle = 0;
+  }
+
+  update(m) {
+    let a = angle({x: this.x, y: VH - 150}, m);
+    // a += a < 0 ? Math.PI * 2 : 0;
+    this.shadowAngle = a;
   }
 
   draw(ctx, plx) {
@@ -401,6 +408,7 @@ class Landingpad {
     ctx.moveTo(x - 40, VH - 159);
     ctx.lineTo(x + 40, VH - 159);
     ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    ctx.lineWidth = 1.0;
     ctx.stroke();
 
     ctx.beginPath();
@@ -411,11 +419,40 @@ class Landingpad {
 
     // Shadow underneath
 
+    // ctx.globalCompositeOperation = 'source-atop';
+    // ctx.beginPath()
+    // ctx.moveTo(x - 50, VH - 150);
+    // ctx.lineTo(x + 50, VH - 150);
+    // ctx.lineTo(x + 50, VH - 50);
+    // ctx.fillStyle = 'rgba(120,120,120,1)';
+    // ctx.fill();
+    // ctx.globalCompositeOperation = 'source-over';
+
     ctx.globalCompositeOperation = 'source-atop';
     ctx.beginPath()
+    let midpointX = x + Math.sin(this.shadowAngle) * 100;
+    let midpointY = VH - 150 + Math.cos(this.shadowAngle) * 100;
+    let controlPointX = x + Math.sin(this.shadowAngle) * 50;
+    let controlPointY = VH - 150 + Math.cos(this.shadowAngle) * 50;
     ctx.moveTo(x - 50, VH - 150);
-    ctx.lineTo(x + 50, VH - 150);
-    ctx.lineTo(x + 50, VH - 50);
+    // ctx.lineTo(midpointX, midpointY);
+    ctx.bezierCurveTo(
+      controlPointX - 50,
+      controlPointY,
+      midpointX - 50,
+      midpointY,
+      midpointX,
+      midpointY
+    )
+    // ctx.lineTo(x + 50, VH - 150);
+    ctx.bezierCurveTo(
+      midpointX + 50,
+      midpointY,
+      controlPointX + 50,
+      controlPointY,
+      x + 50,
+      VH - 150
+    )
     ctx.fillStyle = 'rgba(120,120,120,1)';
     ctx.fill();
     ctx.globalCompositeOperation = 'source-over';
@@ -686,6 +723,9 @@ class Ship {
     this.ax = 0;
     this.ay = 0;
     this.rotation = 270;
+
+    this.shadowSide = 'left';
+    this.shadowStrength = 0;
 
     // Operation
     this.shipOn = false;
@@ -1145,7 +1185,7 @@ class Ship {
     // Check things like engine temperature, generator temperature and stuff to decide if something should explode
   }
 
-  move() {
+  move(m) {
     this.states.landed = false;
     this.states.parked = false;
     this.states.landingPadContact = false;
@@ -1161,7 +1201,7 @@ class Ship {
     // if (this.y !== VH - this.r) this.vy += globals.gravity;
     this.vy += globals.gravity;
 
-    if (this.y + this.vy > VH - this.r * 4) {
+    if (this.y + this.vy > VH - this.r * 3) {
       this.states.groundProximity = true;
     }
 
@@ -1201,7 +1241,7 @@ class Ship {
     // if (this.x > VW) this.x = 0;
     // if (this.x < 0) this.x = VW;
 
-    if (!this.states.groundContact && !this.states.landingPadContact) {
+    if (!this.states.groundContact && !this.states.landingPadContact && !this.states.groundProximity && !this.states.landingPadProximity) {
       this.states.flying = true;
       this.vx += globals.wind / 300;
     }
@@ -1210,6 +1250,14 @@ class Ship {
     this.y += this.vy;
 
     // console.log(this.states.landed ? 'landed' : '', this.states.parked ? 'parked' : '', this.states.landingPadContact ? 'landingPadContact' : '', this.states.groundContact ? 'groundContact' : '', this.states.landingPadProximity ? 'landingPadProximity' : '', this.states.groundProximity ? 'groundProximity' : '', this.states.flying ? 'flying' : '');
+
+    let a = angle(m, {x: this.x, y: this.y});
+    a += a <= 0 ? Math.PI * 2 : 0;
+    a = degs(a);
+    a = a % 360;
+    this.shadowSide = this.rotation + 360 >= a + 270 && this.rotation + 360 < a + 450 ? 'right' : 'left';
+    // 
+    console.log(this.shadowStrength);
   }
 
   draw(ctx) {
@@ -1360,18 +1408,18 @@ class Ship {
     // TERTIARY (NAVIGATIONAL) THRUSTERS
 
     ctx.beginPath();
-    p = pos(r * -0.25, r * 1.1);
+    p = pos(r * -0.08, r * 1.06);
     ctx.moveTo(p.x, p.y);
-    p = pos(r * -0.38, r * 1.07)
+    p = pos(r * 0.09, r * 1.06);
     ctx.lineTo(p.x, p.y);
 
-    p = pos(r * -0.25, r * -1.1);
+    p = pos(r * -0.08, r * -1.06);
     ctx.moveTo(p.x, p.y);
-    p = pos(r * -0.38, r * -1.07)
+    p = pos(r * 0.09, r * -1.06);
     ctx.lineTo(p.x, p.y);
 
     ctx.strokeStyle = "#555";
-    ctx.lineWidth = r / 10;
+    ctx.lineWidth = r / 7;
     ctx.stroke();
 
     // MAIN FUSELAGE
@@ -1390,31 +1438,31 @@ class Ship {
       pos(r * 0.2, r * 0.6),
       pos(r * 0.15, r * 0.5),
       pos(r * 0.1, r * 0.5),
-      pos(r * 0, r * 0.85),
-      pos(r * -0.15, r * 0.975),
-      pos(r * -0.2, r * 1.2),
-      pos(r * -0.3, r * 1.2),
-      pos(r * -0.25, r * 0.75),
-      pos(r * -0.375, r * 0.525),
-      pos(r * -0.75, r * 0.675),
-      pos(r * -0.8, r * 0.665),
+
+      pos(r * -0.0, r * 0.405),
+
+      pos(r * -0.7, r * 0.65),
+      pos(r * -0.9, r * 0.9),
+      pos(r * -0.9, r * 0.875),
+      pos(r * -0.85, r * 0.675),
+
       pos(r * -0.4, r * 0.5),
       pos(r * -0.2, r * 0.4),
       pos(r * -0.1, r * 0.2),
       pos(r * -0.15, r * 0.15),
-
+      // HALF WAY POINT
       pos(r * -0.15, r * -0.15),
       pos(r * -0.1, r * -0.2),
       pos(r * -0.2, r * -0.4),
       pos(r * -0.4, r * -0.5),
-      pos(r * -0.8, r * -0.665),
-      pos(r * -0.75, r * -0.675),
-      pos(r * -0.375, r * -0.525),
-      pos(r * -0.25, r * -0.75),
-      pos(r * -0.3, r * -1.2),
-      pos(r * -0.2, r * -1.2),
-      pos(r * -0.15, r * -0.975),
-      pos(r * 0, r * -0.85),
+
+      pos(r * -0.85, r * -0.675),
+      pos(r * -0.9, r * -0.875),
+      pos(r * -0.9, r * -0.9),
+      pos(r * -0.7, r * -0.65),
+
+      pos(r * -0.0, r * -0.405),
+
       pos(r * 0.1, r * -0.5),
       pos(r * 0.15, r * -0.5),
       pos(r * 0.2, r * -0.6),
@@ -1426,7 +1474,114 @@ class Ship {
       pos(r * 0.3475, r * - 0.475),
 
       pos(r * 1.2, r * -0.05)
-    ]
+    ];
+
+    // Backup fuselage coords
+    // p = [
+    //   pos(r * 0.3475, r * 0.475),
+    //   pos(r * 0.35, r * 0.55),
+    //   pos(r * 0.3, r * 0.575),
+    //   pos(r * 0.25, r * 0.425),
+    //   pos(r * 0.2, r * 0.45),
+    //   pos(r * 0.25, r * 0.6),
+    //   pos(r * 0.2, r * 0.6),
+    //   pos(r * 0.15, r * 0.5),
+    //   pos(r * 0.1, r * 0.5),
+    //   pos(r * 0, r * 0.85),
+    //   pos(r * -0.15, r * 0.975),
+    //   pos(r * -0.2, r * 1.2),
+    //   pos(r * -0.3, r * 1.2),
+    //   pos(r * -0.25, r * 0.75),
+    //   pos(r * -0.375, r * 0.525),
+    //   pos(r * -0.75, r * 0.675),
+    //   pos(r * -0.8, r * 0.665),
+    //   pos(r * -0.4, r * 0.5),
+    //   pos(r * -0.2, r * 0.4),
+    //   pos(r * -0.1, r * 0.2),
+    //   pos(r * -0.15, r * 0.15),
+    //
+    //   pos(r * -0.15, r * -0.15),
+    //   pos(r * -0.1, r * -0.2),
+    //   pos(r * -0.2, r * -0.4),
+    //   pos(r * -0.4, r * -0.5),
+    //   pos(r * -0.8, r * -0.665),
+    //   pos(r * -0.75, r * -0.675),
+    //   pos(r * -0.375, r * -0.525),
+    //   pos(r * -0.25, r * -0.75),
+    //   pos(r * -0.3, r * -1.2),
+    //   pos(r * -0.2, r * -1.2),
+    //   pos(r * -0.15, r * -0.975),
+    //   pos(r * 0, r * -0.85),
+    //   pos(r * 0.1, r * -0.5),
+    //   pos(r * 0.15, r * -0.5),
+    //   pos(r * 0.2, r * -0.6),
+    //   pos(r * 0.25, r * -0.6),
+    //   pos(r * 0.2, r * -0.45),
+    //   pos(r * 0.25, r * -0.425),
+    //   pos(r * 0.3, r * -0.575),
+    //   pos(r * 0.35, r * -0.55),
+    //   pos(r * 0.3475, r * - 0.475),
+    //
+    //   pos(r * 1.2, r * -0.05)
+    // ];
+
+    p.forEach(function(e) {
+      ctx.lineTo(e.x, e.y);
+    });
+
+    ctx.closePath();
+
+    ctx.fillStyle = "rgba(255,255,255,1)";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, r, rads(this.rotation - 139), rads(this.rotation - 85));
+    ctx.strokeStyle = "#FFF";
+    ctx.lineWidth = r / 10;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, r, rads(this.rotation - 275), rads(this.rotation - 221));
+    ctx.strokeStyle = "#FFF";
+    ctx.lineWidth = r / 10;
+    ctx.stroke();
+
+    // WINGS
+
+    ctx.beginPath();
+    p = pos(r * 0.3, r * 0);
+    ctx.moveTo(p.x, p.y);
+
+    p = [
+      pos(r * 0, r * 0.85),
+      pos(r * -0.15, r * 0.975),
+      pos(r * -0.2, r * 1.2),
+      pos(r * -0.3, r * 1.3),
+      pos(r * -0.25, r * 0.75),
+      pos(r * -0.375, r * 0.525)
+    ];
+
+    p.forEach(function(e) {
+      ctx.lineTo(e.x, e.y);
+    });
+
+    ctx.closePath();
+
+    ctx.fillStyle = "rgba(255,255,255,1)";
+    ctx.fill();
+
+    ctx.beginPath();
+    p = pos(r * 0.3, r * 0);
+    ctx.moveTo(p.x, p.y);
+
+    p = [
+      pos(r * -0.375, r * -0.525),
+      pos(r * -0.25, r * -0.75),
+      pos(r * -0.3, r * -1.2),
+      pos(r * -0.2, r * -1.3),
+      pos(r * -0.15, r * -0.975),
+      pos(r * 0, r * -0.85)
+    ];
 
     p.forEach(function(e) {
       ctx.lineTo(e.x, e.y);
@@ -1486,6 +1641,36 @@ class Ship {
 
     ctx.fillStyle = "rgba(255,255,255,1)";
     ctx.fill();
+
+    // SHADOW
+
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.beginPath()
+    p = pos(r * 1.5, r * 0);
+    ctx.moveTo(p.x, p.y);
+    if (this.shadowSide === 'right') {
+      p = [
+        pos(r * 1.5, r * 1.5),
+        pos(r * -1.5, r * 1.5),
+        pos(r * -1.5, r * 0)
+      ];
+    } else {
+      p = [
+        pos(r * 1.5, r* -1.5),
+        pos(r * -1.5, r* -1.5),
+        pos(r * -1.5, r* 0)
+      ];
+    }
+
+    p.forEach(function(e) {
+      ctx.lineTo(e.x, e.y);
+    });
+
+    ctx.closePath();
+
+    ctx.fillStyle = `rgba(0,0,0,${this.shadowStrength * 0.5})`;
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
 
     // COCKPIT
 
@@ -1932,6 +2117,8 @@ let setStage = () => {
 
  *****************************************************************************/
 
+let angle = (a, b) => Math.atan2(a.x - b.x, a.y - b.y);
+
 let distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
 let rads = degs => degs * Math.PI / 180;
@@ -2080,7 +2267,7 @@ let handleShip = (s) => {
   }
 
   s.evaluateStatus();
-  s.move();
+  s.move({x: moons[0].x, y: moons[0].y});
 }
 
 let addExhaust = (type, p, i, s, r) => {
@@ -2150,24 +2337,7 @@ let addExhaust = (type, p, i, s, r) => {
   }
 }
 
-/*****************************************************************************
-
- UPDATE
-
- *****************************************************************************/
-
-let update = () => {
-  moons.forEach((e) => {
-    e.move();
-  })
-
-  particles.forEach((e) => {
-    e.drift();
-    e.pulsate();
-    e.flicker()
-  })
-
-  handleShip(ships[0]);
+let handleExhaust = () => {
 
   let a = [];
   exhaustGenerator.forEach((e) => {
@@ -2234,6 +2404,33 @@ let update = () => {
   a.forEach((e) => {
     exhaustRotation.push(e);
   })
+
+}
+
+/*****************************************************************************
+
+ UPDATE
+
+ *****************************************************************************/
+
+let update = () => {
+  moons.forEach((e) => {
+    e.move();
+  })
+
+  particles.forEach((e) => {
+    e.drift();
+    e.pulsate();
+    e.flicker()
+  })
+
+  landingpads.forEach((e) => {
+    e.update({x: moons[0].x, y: moons[0].y});
+  })
+
+  handleShip(ships[0]);
+
+  handleExhaust();
 
 }
 

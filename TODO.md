@@ -4,9 +4,10 @@
 - [x] Rewrite the old ship
 - [x] Ship starts on landing pad
 - [ ] Draw the wings separately from the main fuselage
-- [ ] Make wings fold backwards when boosting
+- [ ] Make wings fold backwards (in a smoothly animated fashion) when boosting
 - [ ] When the ship starts up, have the cockpit lights flicker.
 - [x] The stabilizer ring from the previous design should extend when the ship starts, and retract when the engine is turned off.
+- [ ] Rethink the stabilizer ring, and give it a mechanical effect if I decide to keep it
 - [ ] The stabilizer ring should fold out in a more interesting fashion
 - [ ] Fuel
 - [ ] Particles restore fuel
@@ -30,28 +31,24 @@
 - [x] Clean up exhaust
 - [x] Handle exhaust outside of handleShip()
 - [ ] Animate more parts of the ship
-- [ ] Add some flame when the engines are firing
-- [ ] Possibly rewrite the workings of the ship engine? Doesn't feel quite the way I want it to right now.
-- [ ] Make engine boosting dangerous
-- [ ] Figure out how the heck I want the engines to work
+- [x] Possibly rewrite the workings of the ship engine? Doesn't feel quite the way I want it to right now.
+- [x] Make engine boosting dangerous
+- [x] Figure out how the heck I want the engines to work
 - [ ] Shields
 
 ## Controls
 
-- [x] Q - Engine on/off
 - [x] W - Main thruster
 - [x] A - Turn counter-clockwise
 - [x] D - Turn clockwise
 - [x] S - Boost (Drains engine output quickly)
 - [ ] E - Stabilizers (???)
-- [x] F - Boost engine output (Drains more fuel)
 - [ ] R - Rotate to face up (Is this one really needed?)
-- [ ] C - Toggle harvesting (Decreases responsiveness) _(not yet implemented)_
-- [ ] X - Toggle landing gear _(not yet implemented)_
-- [ ] T (or maybe some other key) - Maintain current vector (might skip this one, but it was in the first version)
-- [ ] space - Fire front cannon _(not yet implemented)_
-- [ ] mouse - Turn turret _(not yet implemented)_
-- [ ] left click - Fire turret _(not yet implemented)_
+- [ ] C - Toggle harvesting (Decreases responsiveness)
+- [ ] X - Toggle landing gear
+- [ ] space - Fire front cannon
+- [ ] mouse - Turn turret
+- [ ] left click - Fire turret
 - [ ] Prevent right click
 - [ ] Fine tune control balance
 - [ ] Control to open and close the dome on the landing pad (if the dome is closed the ship can't land, and the landing pad will be treated like background)
@@ -62,13 +59,17 @@
 - [x] Wind
 - [x] Particle pulsation
 - [x] Particle flicker
+- [ ] Particle activity changes depending on distance to ship
+- [ ] Particle activity should be more frantic when being harvested
 - [ ] Particles regenerate/reform after a certain time
 - [ ] Make number of particles depend on viewport size
 - [ ] Sparks when exhaust touches ground and landing pad
+- [ ] Smoke-type exhaust should not disappear "under" ground, but should billow out instead
 - [ ] Obstacles
 - [ ] Enemies
 - [ ] Threats
 - [ ] Procedurally generated clouds?
+- [ ] A bit ambitious perhaps, but floating cities in the far distance?
 - [x] A moon gently moving across the screen
 - [ ] More moons?
 - [ ] Handle the moon when it goes off-screen
@@ -78,8 +79,13 @@
 - [x] Procedurally generated trees
 - [x] Trees sway in the wind
 - [ ] Trees react to proximity of ship
+- [ ] Grass on the ground
+- [ ] Grass sways in wind
+- [ ] Grass reacts to proximity of ship
+- [ ] Grass and trees set on fire by exhaust???
 - [x] Buildings and mountains should move slightly depending on where the ship is, parallax-like
 - [x] Landing pad/base
+- [x] Animate shadow on landing pad based on position of moon
 - [ ] Add a dome to the landing pad that open/closes when the ship leaves and takes off
 - [ ] Maybe at some point in time expand a bit on the landing pad design
 - [x] Make the landing pad land-able
@@ -118,6 +124,7 @@
 - [ ] Add phonetic reading to the title screen
 - [ ] Something something Japanese to the title screen?? Nice aesthetic maybe?
 - [ ] About link on title screen
+- [ ] Messaging system to populate the message log on certain events (but only once)
 
 ## Game
 
@@ -132,6 +139,7 @@
 - [ ] Landings are fun, so give the player a reason to have to (or to want to) make landings not just on the landing pad but out in the forest as well.
 - [ ] Check that math again.
 - [ ] Structure and clean up code. Make it conform to best practices.
+- [ ] Maybe wrap the whole thing in Electron to make a nice desktop apps for all platforms
 
 ## Goals that probably won't happen but hey you never know
 

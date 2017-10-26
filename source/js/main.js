@@ -278,6 +278,8 @@ let setStage = () => {
 
  *****************************************************************************/
 
+let angle = (a, b) => Math.atan2(a.x - b.x, a.y - b.y);
+
 let distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
 let rads = degs => degs * Math.PI / 180;
@@ -426,7 +428,7 @@ let handleShip = (s) => {
   }
 
   s.evaluateStatus();
-  s.move();
+  s.move({x: moons[0].x, y: moons[0].y});
 }
 
 let addExhaust = (type, p, i, s, r) => {
@@ -496,24 +498,7 @@ let addExhaust = (type, p, i, s, r) => {
   }
 }
 
-/*****************************************************************************
-
- UPDATE
-
- *****************************************************************************/
-
-let update = () => {
-  moons.forEach((e) => {
-    e.move();
-  })
-
-  particles.forEach((e) => {
-    e.drift();
-    e.pulsate();
-    e.flicker()
-  })
-
-  handleShip(ships[0]);
+let handleExhaust = () => {
 
   let a = [];
   exhaustGenerator.forEach((e) => {
@@ -580,6 +565,33 @@ let update = () => {
   a.forEach((e) => {
     exhaustRotation.push(e);
   })
+
+}
+
+/*****************************************************************************
+
+ UPDATE
+
+ *****************************************************************************/
+
+let update = () => {
+  moons.forEach((e) => {
+    e.move();
+  })
+
+  particles.forEach((e) => {
+    e.drift();
+    e.pulsate();
+    e.flicker()
+  })
+
+  landingpads.forEach((e) => {
+    e.update({x: moons[0].x, y: moons[0].y});
+  })
+
+  handleShip(ships[0]);
+
+  handleExhaust();
 
 }
 

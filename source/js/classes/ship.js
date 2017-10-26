@@ -10,6 +10,9 @@ class Ship {
     this.ay = 0;
     this.rotation = 270;
 
+    this.shadowSide = 'left';
+    this.shadowStrength = 0;
+
     // Operation
     this.shipOn = false;
 
@@ -468,7 +471,7 @@ class Ship {
     // Check things like engine temperature, generator temperature and stuff to decide if something should explode
   }
 
-  move() {
+  move(m) {
     this.states.landed = false;
     this.states.parked = false;
     this.states.landingPadContact = false;
@@ -484,7 +487,7 @@ class Ship {
     // if (this.y !== VH - this.r) this.vy += globals.gravity;
     this.vy += globals.gravity;
 
-    if (this.y + this.vy > VH - this.r * 4) {
+    if (this.y + this.vy > VH - this.r * 3) {
       this.states.groundProximity = true;
     }
 
@@ -524,7 +527,7 @@ class Ship {
     // if (this.x > VW) this.x = 0;
     // if (this.x < 0) this.x = VW;
 
-    if (!this.states.groundContact && !this.states.landingPadContact) {
+    if (!this.states.groundContact && !this.states.landingPadContact && !this.states.groundProximity && !this.states.landingPadProximity) {
       this.states.flying = true;
       this.vx += globals.wind / 300;
     }
@@ -533,6 +536,14 @@ class Ship {
     this.y += this.vy;
 
     // console.log(this.states.landed ? 'landed' : '', this.states.parked ? 'parked' : '', this.states.landingPadContact ? 'landingPadContact' : '', this.states.groundContact ? 'groundContact' : '', this.states.landingPadProximity ? 'landingPadProximity' : '', this.states.groundProximity ? 'groundProximity' : '', this.states.flying ? 'flying' : '');
+
+    let a = angle(m, {x: this.x, y: this.y});
+    a += a <= 0 ? Math.PI * 2 : 0;
+    a = degs(a);
+    a = a % 360;
+    this.shadowSide = this.rotation + 360 >= a + 270 && this.rotation + 360 < a + 450 ? 'right' : 'left';
+    // 
+    console.log(this.shadowStrength);
   }
 
   draw(ctx) {
@@ -683,18 +694,18 @@ class Ship {
     // TERTIARY (NAVIGATIONAL) THRUSTERS
 
     ctx.beginPath();
-    p = pos(r * -0.25, r * 1.1);
+    p = pos(r * -0.08, r * 1.06);
     ctx.moveTo(p.x, p.y);
-    p = pos(r * -0.38, r * 1.07)
+    p = pos(r * 0.09, r * 1.06);
     ctx.lineTo(p.x, p.y);
 
-    p = pos(r * -0.25, r * -1.1);
+    p = pos(r * -0.08, r * -1.06);
     ctx.moveTo(p.x, p.y);
-    p = pos(r * -0.38, r * -1.07)
+    p = pos(r * 0.09, r * -1.06);
     ctx.lineTo(p.x, p.y);
 
     ctx.strokeStyle = "#555";
-    ctx.lineWidth = r / 10;
+    ctx.lineWidth = r / 7;
     ctx.stroke();
 
     // MAIN FUSELAGE
@@ -713,31 +724,31 @@ class Ship {
       pos(r * 0.2, r * 0.6),
       pos(r * 0.15, r * 0.5),
       pos(r * 0.1, r * 0.5),
-      pos(r * 0, r * 0.85),
-      pos(r * -0.15, r * 0.975),
-      pos(r * -0.2, r * 1.2),
-      pos(r * -0.3, r * 1.2),
-      pos(r * -0.25, r * 0.75),
-      pos(r * -0.375, r * 0.525),
-      pos(r * -0.75, r * 0.675),
-      pos(r * -0.8, r * 0.665),
+
+      pos(r * -0.0, r * 0.405),
+
+      pos(r * -0.7, r * 0.65),
+      pos(r * -0.9, r * 0.9),
+      pos(r * -0.9, r * 0.875),
+      pos(r * -0.85, r * 0.675),
+
       pos(r * -0.4, r * 0.5),
       pos(r * -0.2, r * 0.4),
       pos(r * -0.1, r * 0.2),
       pos(r * -0.15, r * 0.15),
-
+      // HALF WAY POINT
       pos(r * -0.15, r * -0.15),
       pos(r * -0.1, r * -0.2),
       pos(r * -0.2, r * -0.4),
       pos(r * -0.4, r * -0.5),
-      pos(r * -0.8, r * -0.665),
-      pos(r * -0.75, r * -0.675),
-      pos(r * -0.375, r * -0.525),
-      pos(r * -0.25, r * -0.75),
-      pos(r * -0.3, r * -1.2),
-      pos(r * -0.2, r * -1.2),
-      pos(r * -0.15, r * -0.975),
-      pos(r * 0, r * -0.85),
+
+      pos(r * -0.85, r * -0.675),
+      pos(r * -0.9, r * -0.875),
+      pos(r * -0.9, r * -0.9),
+      pos(r * -0.7, r * -0.65),
+
+      pos(r * -0.0, r * -0.405),
+
       pos(r * 0.1, r * -0.5),
       pos(r * 0.15, r * -0.5),
       pos(r * 0.2, r * -0.6),
@@ -749,7 +760,114 @@ class Ship {
       pos(r * 0.3475, r * - 0.475),
 
       pos(r * 1.2, r * -0.05)
-    ]
+    ];
+
+    // Backup fuselage coords
+    // p = [
+    //   pos(r * 0.3475, r * 0.475),
+    //   pos(r * 0.35, r * 0.55),
+    //   pos(r * 0.3, r * 0.575),
+    //   pos(r * 0.25, r * 0.425),
+    //   pos(r * 0.2, r * 0.45),
+    //   pos(r * 0.25, r * 0.6),
+    //   pos(r * 0.2, r * 0.6),
+    //   pos(r * 0.15, r * 0.5),
+    //   pos(r * 0.1, r * 0.5),
+    //   pos(r * 0, r * 0.85),
+    //   pos(r * -0.15, r * 0.975),
+    //   pos(r * -0.2, r * 1.2),
+    //   pos(r * -0.3, r * 1.2),
+    //   pos(r * -0.25, r * 0.75),
+    //   pos(r * -0.375, r * 0.525),
+    //   pos(r * -0.75, r * 0.675),
+    //   pos(r * -0.8, r * 0.665),
+    //   pos(r * -0.4, r * 0.5),
+    //   pos(r * -0.2, r * 0.4),
+    //   pos(r * -0.1, r * 0.2),
+    //   pos(r * -0.15, r * 0.15),
+    //
+    //   pos(r * -0.15, r * -0.15),
+    //   pos(r * -0.1, r * -0.2),
+    //   pos(r * -0.2, r * -0.4),
+    //   pos(r * -0.4, r * -0.5),
+    //   pos(r * -0.8, r * -0.665),
+    //   pos(r * -0.75, r * -0.675),
+    //   pos(r * -0.375, r * -0.525),
+    //   pos(r * -0.25, r * -0.75),
+    //   pos(r * -0.3, r * -1.2),
+    //   pos(r * -0.2, r * -1.2),
+    //   pos(r * -0.15, r * -0.975),
+    //   pos(r * 0, r * -0.85),
+    //   pos(r * 0.1, r * -0.5),
+    //   pos(r * 0.15, r * -0.5),
+    //   pos(r * 0.2, r * -0.6),
+    //   pos(r * 0.25, r * -0.6),
+    //   pos(r * 0.2, r * -0.45),
+    //   pos(r * 0.25, r * -0.425),
+    //   pos(r * 0.3, r * -0.575),
+    //   pos(r * 0.35, r * -0.55),
+    //   pos(r * 0.3475, r * - 0.475),
+    //
+    //   pos(r * 1.2, r * -0.05)
+    // ];
+
+    p.forEach(function(e) {
+      ctx.lineTo(e.x, e.y);
+    });
+
+    ctx.closePath();
+
+    ctx.fillStyle = "rgba(255,255,255,1)";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, r, rads(this.rotation - 139), rads(this.rotation - 85));
+    ctx.strokeStyle = "#FFF";
+    ctx.lineWidth = r / 10;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, r, rads(this.rotation - 275), rads(this.rotation - 221));
+    ctx.strokeStyle = "#FFF";
+    ctx.lineWidth = r / 10;
+    ctx.stroke();
+
+    // WINGS
+
+    ctx.beginPath();
+    p = pos(r * 0.3, r * 0);
+    ctx.moveTo(p.x, p.y);
+
+    p = [
+      pos(r * 0, r * 0.85),
+      pos(r * -0.15, r * 0.975),
+      pos(r * -0.2, r * 1.2),
+      pos(r * -0.3, r * 1.3),
+      pos(r * -0.25, r * 0.75),
+      pos(r * -0.375, r * 0.525)
+    ];
+
+    p.forEach(function(e) {
+      ctx.lineTo(e.x, e.y);
+    });
+
+    ctx.closePath();
+
+    ctx.fillStyle = "rgba(255,255,255,1)";
+    ctx.fill();
+
+    ctx.beginPath();
+    p = pos(r * 0.3, r * 0);
+    ctx.moveTo(p.x, p.y);
+
+    p = [
+      pos(r * -0.375, r * -0.525),
+      pos(r * -0.25, r * -0.75),
+      pos(r * -0.3, r * -1.2),
+      pos(r * -0.2, r * -1.3),
+      pos(r * -0.15, r * -0.975),
+      pos(r * 0, r * -0.85)
+    ];
 
     p.forEach(function(e) {
       ctx.lineTo(e.x, e.y);
@@ -809,6 +927,36 @@ class Ship {
 
     ctx.fillStyle = "rgba(255,255,255,1)";
     ctx.fill();
+
+    // SHADOW
+
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.beginPath()
+    p = pos(r * 1.5, r * 0);
+    ctx.moveTo(p.x, p.y);
+    if (this.shadowSide === 'right') {
+      p = [
+        pos(r * 1.5, r * 1.5),
+        pos(r * -1.5, r * 1.5),
+        pos(r * -1.5, r * 0)
+      ];
+    } else {
+      p = [
+        pos(r * 1.5, r* -1.5),
+        pos(r * -1.5, r* -1.5),
+        pos(r * -1.5, r* 0)
+      ];
+    }
+
+    p.forEach(function(e) {
+      ctx.lineTo(e.x, e.y);
+    });
+
+    ctx.closePath();
+
+    ctx.fillStyle = `rgba(0,0,0,${this.shadowStrength * 0.5})`;
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
 
     // COCKPIT
 
