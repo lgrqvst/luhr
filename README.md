@@ -6,25 +6,27 @@ Note Sept 6, 2017: I decided to start over from scratch. This whole thing starte
 
 Note Sept 28, 2017: For the most part, I've re-implemented most of the features from the old version, and added a whole lot more. I'm still keeping the old version in here, for reference.
 
-Play the old version [here](https://lgrqvst.github.io/ravr/old/build/)
+Note Oct 27, 2017: I'm removing the old code from the master branch. I'll keep it around in other branches for now. Download those if you want to try older versionsn of the game.
 
-The new version [here](https://lgrqvst.github.io/ravr/build/)
+Play the game [here](https://lgrqvst.github.io/ravr/build/)
 
 ### Objectives:
 
--  Gather macguffins with your ship, then land and return them to base.
--  Destroy threats to protect buildings.
--  Don't die.
+-  Gather macguffins with your ship, then land and return them to base. _(Not implemented)_
+-  Occasionally land in the forest for whatever reason. _(Not implemented)_
+-  Destroy threats to protect buildings. _(Not implemented)_
+-  Don't die. _(Not implemented)_
 
 ### Controls:
 
-(These refer to the old version linked above. Controls for the new version will be largely the same, but with more stuff added on. See below for details of what has been implemented.)
+Implemented so far:
 
-Q - Engine on/off  
-W - Main thruster  
-A - Turn counter-clockwise  
-D - Turn clockwise  
-S - Boost (Drains engine power quickly)  
-E - Stabilizers (Drains engine power)  (old version only)
-F - Replenish engine power  
-R - Rotate to face up  (old version only)
+__T__ - Turn on ship
+__Y__ - Turn generator on/off
+__U, I, H__ - Activate and deactivate shields, weapons and harvesting coils. Atm does nothing except change the power drain from the generator.
+__O, K, M__ - Set generator load to 100%, 50% and 0% respectively
+__P, L__ - Increase and decrease generator load
+__W__ - Main thruster  
+__A__ - Turn counter-clockwise  
+__D__ - Turn clockwise  
+__S__ - Boost (Drains engine power quickly)  
