@@ -222,103 +222,6 @@ class Exhaust {
   }
 }
 
-class ExhaustOld {
-  constructor(x,y,rotation,speed,type,size,intensity,color,opacity) {
-    this.x = x;
-    this.y = y;
-    this.speed = speed * intensity / 100;
-    this.rotation = rotation;
-    this.type = type;
-    this.size = size * intensity / 100;
-    // this.intensity = intensity;
-    this.color = color;
-    this.opacity = opacity;
-  }
-
-  move() {
-    if (this.x < 0 || this.x > VW || this.y > VH) {
-      return true;
-    }
-
-    this.y += Math.sin(rads(this.rotation)) * this.speed;
-    this.x += Math.cos(rads(this.rotation)) * this.speed;
-
-    if (this.type === 'idle') {
-      this.y -= globals.gravity * 10;
-      this.x += globals.wind / 5;
-    }
-
-    return false;
-  }
-
-  fade() {
-    if (this.type === 'primary') {
-      this.opacity -= 0.03;
-      this.size += Math.random() * 2;
-
-    } else if (this.type === 'secondary') {
-      this.color.g -= 5;
-      this.color.b -= 10;
-      this.opacity -= 0.03;
-      this.size += Math.random() * 3;
-
-    } else if (this.type === 'tertiary') {
-      this.opacity -= 0.1;
-      // this.size += Math.random();
-      this.size += 0.2;
-
-    } else if (this.type === 'idle') {
-      this.opacity -= 0.03;
-      this.size += Math.random() * 0.5;
-    }
-
-    if (this.opacity <= 0) {
-      return true;
-    }
-    return false;
-  }
-
-  draw(ctx) {
-    let pos = local2global(this);
-    let p;
-
-    if (this.type === 'primary') {
-      ctx.beginPath();
-      ctx.moveTo(this.x, this.y);
-      p = pos(this.size * 2, 0);
-      ctx.lineTo(p.x, p.y);
-      ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
-      ctx.lineWidth = this.size / 10;
-      ctx.stroke();
-
-    } else if (this.type === 'secondary') {
-      ctx.beginPath();
-      ctx.moveTo(this.x, this.y);
-      p = pos(this.size * 2, 0);
-      ctx.lineTo(p.x, p.y);
-      ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
-      ctx.lineWidth = this.size / 10;
-      // ctx.lineWidth = 4;
-      ctx.stroke();
-
-    } else if (this.type === 'tertiary') {
-      ctx.beginPath();
-      ctx.moveTo(this.x, this.y);
-      p = pos(this.size * 2, 0);
-      ctx.lineTo(p.x, p.y);
-      ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-    } else if (this.type === 'idle') {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, Math.random() * this.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
-      ctx.fill();
-    }
-
-  }
-}
 
 class Landingpad {
   constructor(x) {
@@ -328,7 +231,7 @@ class Landingpad {
   }
 
   update(m) {
-    let a = angle({x: this.x, y: VH - 150}, m);
+    let a = angle(m, {x: this.x, y: VH - 150});
     // a += a < 0 ? Math.PI * 2 : 0;
     this.shadowAngle = a;
   }
@@ -430,10 +333,10 @@ class Landingpad {
 
     ctx.globalCompositeOperation = 'source-atop';
     ctx.beginPath()
-    let midpointX = x + Math.sin(this.shadowAngle) * 100;
-    let midpointY = VH - 150 + Math.cos(this.shadowAngle) * 100;
-    let controlPointX = x + Math.sin(this.shadowAngle) * 50;
-    let controlPointY = VH - 150 + Math.cos(this.shadowAngle) * 50;
+    let midpointX = x - Math.cos(this.shadowAngle) * 100;
+    let midpointY = VH - 150 - Math.sin(this.shadowAngle) * 100;
+    let controlPointX = x - Math.cos(this.shadowAngle) * 50;
+    let controlPointY = VH - 150 - Math.sin(this.shadowAngle) * 50;
     ctx.moveTo(x - 50, VH - 150);
     // ctx.lineTo(midpointX, midpointY);
     ctx.bezierCurveTo(
@@ -1255,9 +1158,18 @@ class Ship {
     a += a <= 0 ? Math.PI * 2 : 0;
     a = degs(a);
     a = a % 360;
-    this.shadowSide = this.rotation + 360 >= a + 270 && this.rotation + 360 < a + 450 ? 'right' : 'left';
-    // 
-    console.log(this.shadowStrength);
+
+    let r = this.rotation;
+    let d = (a - r + 360) % 360;
+    this.shadowSide = (d <= 360 && d > 180) ? 'right' : 'left';
+
+    d = d % 180;
+    d = Math.abs(90 - d);
+    d = 90 - d;
+    d = d / 90;
+    d = Math.round(d * 100) / 100;
+
+    this.shadowStrength = d;
   }
 
   draw(ctx) {
@@ -1642,36 +1554,6 @@ class Ship {
     ctx.fillStyle = "rgba(255,255,255,1)";
     ctx.fill();
 
-    // SHADOW
-
-    ctx.globalCompositeOperation = 'source-atop';
-    ctx.beginPath()
-    p = pos(r * 1.5, r * 0);
-    ctx.moveTo(p.x, p.y);
-    if (this.shadowSide === 'right') {
-      p = [
-        pos(r * 1.5, r * 1.5),
-        pos(r * -1.5, r * 1.5),
-        pos(r * -1.5, r * 0)
-      ];
-    } else {
-      p = [
-        pos(r * 1.5, r* -1.5),
-        pos(r * -1.5, r* -1.5),
-        pos(r * -1.5, r* 0)
-      ];
-    }
-
-    p.forEach(function(e) {
-      ctx.lineTo(e.x, e.y);
-    });
-
-    ctx.closePath();
-
-    ctx.fillStyle = `rgba(0,0,0,${this.shadowStrength * 0.5})`;
-    ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
-
     // COCKPIT
 
     ctx.beginPath();
@@ -1720,6 +1602,36 @@ class Ship {
     ctx.fillStyle = "#447";
     if (this.states.powered) ctx.fillStyle = "#bbd";
     ctx.fill();
+
+    // SHADOW
+
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.beginPath()
+    p = pos(r * 1.5, r * 0);
+    ctx.moveTo(p.x, p.y);
+    if (this.shadowSide === 'right') {
+      p = [
+        pos(r * 1.5, r * 1.5),
+        pos(r * -1.5, r * 1.5),
+        pos(r * -1.5, r * 0)
+      ];
+    } else {
+      p = [
+        pos(r * 1.5, r* -1.5),
+        pos(r * -1.5, r* -1.5),
+        pos(r * -1.5, r* 0)
+      ];
+    }
+
+    p.forEach(function(e) {
+      ctx.lineTo(e.x, e.y);
+    });
+
+    ctx.closePath();
+
+    ctx.fillStyle = `rgba(0,0,0,${this.shadowStrength * 0.35})`;
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
   }
 }
 
@@ -1963,12 +1875,12 @@ window.addEventListener('keyup',(e) => {
       messageLog.push('Generator: Load set to: 100%');
     }
     if (code === 75) {
-      s.generatorLoad = 0;
-      messageLog.push('Generator: Load set to: 0%');
-    }
-    if (code === 77) {
       s.generatorLoad = 50;
       messageLog.push('Generator: Load set to: 50%');
+    }
+    if (code === 77) {
+      s.generatorLoad = 0;
+      messageLog.push('Generator: Load set to: 0%');
     }
     if (code === 80) {
       controls.increaseGeneratorLoad = false;
@@ -2117,7 +2029,7 @@ let setStage = () => {
 
  *****************************************************************************/
 
-let angle = (a, b) => Math.atan2(a.x - b.x, a.y - b.y);
+let angle = (a, b) => Math.atan2(a.y - b.y, a.x - b.x);
 
 let distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
@@ -2160,10 +2072,12 @@ let handleShip = (s) => {
   s.states.chargingEmergencyPower = false;
   s.states.turningCw = false;
   s.states.turningCcw = false;
+  s.ax = 0;
+  s.ay = 0;
 
   s.resetPower();
 
-  messageLog.length > 0 ? console.log(messageLog[messageLog.length - 1]) : '';
+  // messageLog.length > 0 ? console.log(messageLog[messageLog.length - 1]) : '';
 
   if (controls.increaseGeneratorLoad) {
     s.increaseGeneratorLoad();
@@ -2267,7 +2181,7 @@ let handleShip = (s) => {
   }
 
   s.evaluateStatus();
-  s.move({x: moons[0].x, y: moons[0].y});
+  s.move({x: moons[0].x - moons[0].r * 0.75, y: moons[0].y});
 }
 
 let addExhaust = (type, p, i, s, r) => {
@@ -2441,7 +2355,7 @@ let update = () => {
  *****************************************************************************/
 
 let updateHUD = (s) => {
-  if (s.states.powered > 0) {
+  if (s.states.powered) {
     document.querySelector('.hud').classList.remove('inactive');
     document.querySelector('.hud').classList.add('active');
 
@@ -2450,13 +2364,13 @@ let updateHUD = (s) => {
     document.querySelector('.hud .shipStatus').style.setProperty("--rotation", r);
     document.querySelector('.hud .shipStatus .rotation .readout').innerHTML = r;
 
-    // document.querySelector('.hud .engineOutput').style.setProperty("--engineOutput", s.engineOutput);
-    // let engineOutputColor = '#0c9';
-    // if (s.engineOutput > 110) engineOutputColor = '#9c0';
-    // if (s.engineOutput > 175) engineOutputColor = '#d00';
-    // document.querySelector('.hud .engineOutput').style.setProperty("--engineOutputColor", engineOutputColor);
-    // document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.engineOutput);
-    // document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.engineOutput);
+    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutput", s.generatorOutput);
+    let engineOutputColor = '#0c9';
+    if (s.generatorOutput > 110) engineOutputColor = '#9c0';
+    if (s.generatorOutput > 175) engineOutputColor = '#d00';
+    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutputColor", engineOutputColor);
+    document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.generatorOutput);
+    document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.generatorOutput);
 
     let a = Math.floor(((s.y - VH + s.r) * -1) / VH * 100 / 2);
     if (a > 100) {

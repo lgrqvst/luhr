@@ -6,7 +6,7 @@ class Landingpad {
   }
 
   update(m) {
-    let a = angle({x: this.x, y: VH - 150}, m);
+    let a = angle(m, {x: this.x, y: VH - 150});
     // a += a < 0 ? Math.PI * 2 : 0;
     this.shadowAngle = a;
   }
@@ -108,10 +108,10 @@ class Landingpad {
 
     ctx.globalCompositeOperation = 'source-atop';
     ctx.beginPath()
-    let midpointX = x + Math.sin(this.shadowAngle) * 100;
-    let midpointY = VH - 150 + Math.cos(this.shadowAngle) * 100;
-    let controlPointX = x + Math.sin(this.shadowAngle) * 50;
-    let controlPointY = VH - 150 + Math.cos(this.shadowAngle) * 50;
+    let midpointX = x - Math.cos(this.shadowAngle) * 100;
+    let midpointY = VH - 150 - Math.sin(this.shadowAngle) * 100;
+    let controlPointX = x - Math.cos(this.shadowAngle) * 50;
+    let controlPointY = VH - 150 - Math.sin(this.shadowAngle) * 50;
     ctx.moveTo(x - 50, VH - 150);
     // ctx.lineTo(midpointX, midpointY);
     ctx.bezierCurveTo(

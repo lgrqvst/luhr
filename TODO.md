@@ -26,7 +26,7 @@
 - [ ] Explosion upon death
 - [ ] Craft breaks apart on crash
 - [ ] More details on the body (maybe red and green lights for port/starboard?) (or maybe some sort of markings on the wings?)
-- [ ] Shading on body (difficult maybe)
+- [x] Shading on body (difficult maybe)
 - [ ] Handle ship going off-screen
 - [x] Clean up exhaust
 - [x] Handle exhaust outside of handleShip()
@@ -41,11 +41,21 @@
 - [x] W - Main thruster
 - [x] A - Turn counter-clockwise
 - [x] D - Turn clockwise
-- [x] S - Boost (Drains engine output quickly)
-- [ ] E - Stabilizers (???)
+- [x] S - Boost
+- [x] T - Power up ship
+- [x] Y - Start/Stop generator
+- [x] U - Activate/Deactivate shields
+- [x] I - Activate/Deactivate weapons
+- [x] H - Activate/Deactivate harvesting array
+- [x] O - Set generator load to 100%
+- [x] K - Set generator load to 50%
+- [x] M - Set generator load to 0%
+- [x] P - Increase generator load
+- [x] L - Decrease generator load
+- [ ] E - Stabilizers (???) I don't know. Thinking about skipping this one. I think maybe this makes landings too easy?
 - [ ] R - Rotate to face up (Is this one really needed?)
-- [ ] C - Toggle harvesting (Decreases responsiveness)
 - [ ] X - Toggle landing gear
+- [ ] Strafing-type controls (E and Q maybe???)
 - [ ] space - Fire front cannon
 - [ ] mouse - Turn turret
 - [ ] left click - Fire turret

@@ -124,12 +124,12 @@ window.addEventListener('keyup',(e) => {
       messageLog.push('Generator: Load set to: 100%');
     }
     if (code === 75) {
-      s.generatorLoad = 0;
-      messageLog.push('Generator: Load set to: 0%');
-    }
-    if (code === 77) {
       s.generatorLoad = 50;
       messageLog.push('Generator: Load set to: 50%');
+    }
+    if (code === 77) {
+      s.generatorLoad = 0;
+      messageLog.push('Generator: Load set to: 0%');
     }
     if (code === 80) {
       controls.increaseGeneratorLoad = false;
@@ -278,7 +278,7 @@ let setStage = () => {
 
  *****************************************************************************/
 
-let angle = (a, b) => Math.atan2(a.x - b.x, a.y - b.y);
+let angle = (a, b) => Math.atan2(a.y - b.y, a.x - b.x);
 
 let distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
@@ -321,10 +321,12 @@ let handleShip = (s) => {
   s.states.chargingEmergencyPower = false;
   s.states.turningCw = false;
   s.states.turningCcw = false;
+  s.ax = 0;
+  s.ay = 0;
 
   s.resetPower();
 
-  messageLog.length > 0 ? console.log(messageLog[messageLog.length - 1]) : '';
+  // messageLog.length > 0 ? console.log(messageLog[messageLog.length - 1]) : '';
 
   if (controls.increaseGeneratorLoad) {
     s.increaseGeneratorLoad();
@@ -428,7 +430,7 @@ let handleShip = (s) => {
   }
 
   s.evaluateStatus();
-  s.move({x: moons[0].x, y: moons[0].y});
+  s.move({x: moons[0].x - moons[0].r * 0.75, y: moons[0].y});
 }
 
 let addExhaust = (type, p, i, s, r) => {
@@ -602,7 +604,7 @@ let update = () => {
  *****************************************************************************/
 
 let updateHUD = (s) => {
-  if (s.states.powered > 0) {
+  if (s.states.powered) {
     document.querySelector('.hud').classList.remove('inactive');
     document.querySelector('.hud').classList.add('active');
 
@@ -611,13 +613,13 @@ let updateHUD = (s) => {
     document.querySelector('.hud .shipStatus').style.setProperty("--rotation", r);
     document.querySelector('.hud .shipStatus .rotation .readout').innerHTML = r;
 
-    // document.querySelector('.hud .engineOutput').style.setProperty("--engineOutput", s.engineOutput);
-    // let engineOutputColor = '#0c9';
-    // if (s.engineOutput > 110) engineOutputColor = '#9c0';
-    // if (s.engineOutput > 175) engineOutputColor = '#d00';
-    // document.querySelector('.hud .engineOutput').style.setProperty("--engineOutputColor", engineOutputColor);
-    // document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.engineOutput);
-    // document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.engineOutput);
+    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutput", s.generatorOutput);
+    let engineOutputColor = '#0c9';
+    if (s.generatorOutput > 110) engineOutputColor = '#9c0';
+    if (s.generatorOutput > 175) engineOutputColor = '#d00';
+    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutputColor", engineOutputColor);
+    document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.generatorOutput);
+    document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.generatorOutput);
 
     let a = Math.floor(((s.y - VH + s.r) * -1) / VH * 100 / 2);
     if (a > 100) {

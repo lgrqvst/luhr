@@ -541,9 +541,18 @@ class Ship {
     a += a <= 0 ? Math.PI * 2 : 0;
     a = degs(a);
     a = a % 360;
-    this.shadowSide = this.rotation + 360 >= a + 270 && this.rotation + 360 < a + 450 ? 'right' : 'left';
-    // 
-    console.log(this.shadowStrength);
+
+    let r = this.rotation;
+    let d = (a - r + 360) % 360;
+    this.shadowSide = (d <= 360 && d > 180) ? 'right' : 'left';
+
+    d = d % 180;
+    d = Math.abs(90 - d);
+    d = 90 - d;
+    d = d / 90;
+    d = Math.round(d * 100) / 100;
+
+    this.shadowStrength = d;
   }
 
   draw(ctx) {
@@ -928,36 +937,6 @@ class Ship {
     ctx.fillStyle = "rgba(255,255,255,1)";
     ctx.fill();
 
-    // SHADOW
-
-    ctx.globalCompositeOperation = 'source-atop';
-    ctx.beginPath()
-    p = pos(r * 1.5, r * 0);
-    ctx.moveTo(p.x, p.y);
-    if (this.shadowSide === 'right') {
-      p = [
-        pos(r * 1.5, r * 1.5),
-        pos(r * -1.5, r * 1.5),
-        pos(r * -1.5, r * 0)
-      ];
-    } else {
-      p = [
-        pos(r * 1.5, r* -1.5),
-        pos(r * -1.5, r* -1.5),
-        pos(r * -1.5, r* 0)
-      ];
-    }
-
-    p.forEach(function(e) {
-      ctx.lineTo(e.x, e.y);
-    });
-
-    ctx.closePath();
-
-    ctx.fillStyle = `rgba(0,0,0,${this.shadowStrength * 0.5})`;
-    ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
-
     // COCKPIT
 
     ctx.beginPath();
@@ -1006,5 +985,35 @@ class Ship {
     ctx.fillStyle = "#447";
     if (this.states.powered) ctx.fillStyle = "#bbd";
     ctx.fill();
+
+    // SHADOW
+
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.beginPath()
+    p = pos(r * 1.5, r * 0);
+    ctx.moveTo(p.x, p.y);
+    if (this.shadowSide === 'right') {
+      p = [
+        pos(r * 1.5, r * 1.5),
+        pos(r * -1.5, r * 1.5),
+        pos(r * -1.5, r * 0)
+      ];
+    } else {
+      p = [
+        pos(r * 1.5, r* -1.5),
+        pos(r * -1.5, r* -1.5),
+        pos(r * -1.5, r* 0)
+      ];
+    }
+
+    p.forEach(function(e) {
+      ctx.lineTo(e.x, e.y);
+    });
+
+    ctx.closePath();
+
+    ctx.fillStyle = `rgba(0,0,0,${this.shadowStrength * 0.35})`;
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
   }
 }
