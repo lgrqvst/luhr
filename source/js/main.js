@@ -1,572 +1,403 @@
-const globals = {
-  stage: false,
-  frame: 0,
-  state: {
-    current: 'running',
-    previous: '',
-  },
-  wind: 0,
-  drag: 0,
-  gravity: 0
+'use strict';
+
+// Intersection code snagged from http://www.kevlindev.com/gui/math/intersection/index.htm
+
+function Intersection(status) {
+    if ( arguments.length > 0 ) {
+        this.init(status);
+    }
+}
+Intersection.prototype.init = function(status) {
+    this.status = status;
+    this.points = new Array();
+};
+
+var intersectLineLine = function(a1, a2, b1, b2) {
+    var result;
+
+    var ua_t = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x);
+    var ub_t = (a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x);
+    var u_b  = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y);
+
+    if ( u_b != 0 ) {
+        var ua = ua_t / u_b;
+        var ub = ub_t / u_b;
+
+        if ( 0 <= ua && ua <= 1 && 0 <= ub && ub <= 1 ) {
+            result = new Intersection("Intersection");
+            result.points.push({
+                x: a1.x + ua * (a2.x - a1.x),
+                y: a1.y + ua * (a2.y - a1.y)
+            });
+        } else {
+            result = new Intersection("No Intersection");
+        }
+    } else {
+        if ( ua_t == 0 || ub_t == 0 ) {
+            result = new Intersection("Coincident");
+        } else {
+            result = new Intersection("Parallel");
+        }
+    }
+
+    return result;
+};
+
+const w = window.innerWidth;
+const h = window.innerHeight;
+
+function getContext(w, h) {
+  var canvas = document.createElement("canvas");
+  document.body.appendChild(canvas);
+  canvas.width = w || window.innerWidth;
+  canvas.height = h || window.innerHeight;
+  return canvas.getContext("2d");
 }
 
-/*****************************************************************************
+var ctx = getContext(w, h);
 
- CONTROLS
+var g = 0.03;
+var airResistance = 0.5;
+// var g = 0;
+// var wind = 0.3;
 
- *****************************************************************************/
+var maxExhaust = 200;
 
-const controls = {
-  primaryThruster: false,
-  turnCw: false,
-  turnCcw: false,
-  // boost: false,
-  // stabilize: false,
-  // turnReset: false,
-  // maintain: false,
+var sprite = new Sprite();
+
+var dust = [];
+
+for (var i = 0; i < 500; i++) {
+  let d = new Dust();
+  dust.push(d);
 }
 
-window.addEventListener('keydown',(e) => {
+var exhaust = [];
+
+var thrusterexhaust = [];
+
+var sparks = [];
+
+var controls = {
+  w: false,
+  a: false,
+  s: false,
+  d: false,
+  e: false
+}
+
+window.addEventListener('keydown',function(e) {
   // console.log(e.which);
   let code = e.which;
-  if (code === 87) controls.primaryThruster = true;
-  if (code === 65) controls.turnCcw = true;
-  if (code === 68) controls.turnCw = true;
-  if (code === 83) controls.secondaryThruster = true;
-  // if (code === 69) controls.stabilize = true;
-  // if (code === 82) controls.turnReset = true;
-  // if (code === 84) controls.maintain = true;
-
+  if (code === 87) controls.w = true;
+  if (code === 65) controls.a = true;
+  if (code === 83) controls.s = true;
+  if (code === 68) controls.d = true;
+  if (code === 69) controls.e = true;
+  if (code === 82) controls.r = true;
+  if (code === 84) controls.t = true;
 });
 
-window.addEventListener('keyup',(e) => {
+window.addEventListener('keyup',function(e) {
   let code = e.which;
-  if (code === 87) controls.primaryThruster = false;
-  if (code === 65) controls.turnCcw = false;
-  if (code === 68) controls.turnCw = false;
-  if (code === 83) controls.secondaryThruster = false;
-  // if (code === 69) controls.stabilize = false;
-  // if (code === 82) controls.turnReset = false;
-  // if (code === 84) controls.maintain = false;
-
+  if (code === 87) controls.w = false;
+  if (code === 65) controls.a = false;
+  if (code === 83) controls.s = false;
+  if (code === 68) controls.d = false;
+  if (code === 69) controls.e = false;
+  if (code === 82) controls.r = false;
+  if (code === 84) controls.t = false;
   if (code === 81) {
-    ships[0].engineOn = !ships[0].engineOn;
+    sprite.engineOn = sprite.engineOn ? false : true;
   }
-
-  if (code === 70 && ships[0].engineOn) {
-    ships[0].engineOutput += 100;
+  if (code === 70 && sprite.engineOn) {
+    sprite.engineOutput += 100;
   }
 });
 
-/*****************************************************************************
+function update() {
+  sprite.adjustThrusters();
 
- STATES
+  dust.forEach(function(e) {
+    e.drift();
+    e.pulsate();
+  });
 
- titlescreen
- running
- paused
- gameover
+  exhaust.forEach(function(e,i) {
+    e.drift();
+    e.fade();
+    e.age = i;
 
- *****************************************************************************/
-
-let setState = s => {
-  globals.state.previous = globals.state.current;
-  globals.state.current = s;
-
-  document.querySelector('body').classList.remove(globals.state.previous);
-  document.querySelector('body').classList.add(globals.state.current);
-}
-
-/*****************************************************************************
-
- OBJECTS
-
- *****************************************************************************/
-
-const particles = [];
-const moons = [];
-const mountains = [];
-const landingpads = [];
-const trees = [];
-const buildings = [];
-const ships = [];
-const primaryExhaustIdle = [];
-const primaryExhaust = [];
-const secondaryExhaust = [];
-const tertiaryExhaust = [];
-
-let setStage = () => {
-
-  globals.wind = Math.round(Math.random() * 20 - 10);
-
-  globals.drag = 0.995;
-
-  globals.gravity = 0.03;
-
-  // Create the moon(s?)
-  let m = new Moon(Math.floor(Math.random() * VW), VH * 0.75, 75);
-  moons.push(m);
-
-  // Generate mountains
-  for (let i = 0; i < 5; i++) {
-    let foot = Math.floor(Math.random() * VW  - VW / 2);
-    // let height = Math.random() * 40 + 10;
-    let height = Math.random() * ((4 - i) * 10) + 10;
-    let peaks = Math.ceil(Math.random() * 3);
-    let color = {r: Math.floor(Math.random() * 40), g: 0, b: Math.floor(Math.random() * 40), a: 1};
-    // Higher = farther away = more parallax
-    let distance = i + 1;
-    let m = new Mountain(foot,height,peaks,color,distance);
-    mountains.push(m)
-  }
-
-  // Create the landing pad
-  let p = new Landingpad(Math.floor(Math.random() * (VW - 100)) + 50);
-  landingpads.push(p);
-
-  //Generate trees
-  for (let i = 0; i < 150; i++) {
-    let x = Math.round(Math.random() * VW * 1.5 - VW * 0.25);
-    // I want more trees of type 1 than type 2
-    let type = Math.floor(Math.random() * 100 + 1) <= 85 ? 1 : 2;
-    let z = type === 2 ? 2 : Math.floor(Math.random() * 2 + 1);
-    let h = Math.round(Math.random() * 30 + 15);
-    let color = {
-      r: Math.round(Math.random() * 50 + 50),
-      g: Math.round(Math.random() * 50 + 0),
-      b: Math.round(Math.random() * 50 + 50)
+    var is = intersectLineLine({x:0,y:h},{x:w,y:h},{x:e.x,y:e.y},{x:e.x - (e.x - e.targetX) / e.length, y:e.y - (e.y - e.targetY) / e.length});
+    if (is.status === "Intersection") {
+      let x = is.points[0].x;
+      let y = is.points[0].y;
+      let a = sprite.rotation + Math.round(Math.random() * 120) - 60;
+      let i = sprite.engineOutput;
+      let rads = a * Math.PI / 180;
+      let vx = Math.cos(rads) * i / 50 * -1;
+      let vy = Math.sin(rads) * i / 50;
+      let c = {
+        r: Math.round(Math.random(50) + 200),
+        g: Math.round(Math.random(50) + 200),
+        b: Math.round(Math.random(50) + 200)
+      }
+      if (controls.s) {
+        i *= 5;
+        c = {r: Math.round(Math.random(50) + 200), g: 150, b: 150};
+      }
+      if (controls.w) {
+        i *= 2
+      }
+      if (controls.e) {
+        i *= 1;
+        c = {r: 150, g: 150, b: Math.round(Math.random(50) + 200)};
+      }
+      let s = new Spark(x,y,vx,vy,a,i,c);
+      sparks.push(s);
+      if (sparks.length > 200) sparks.shift();
     }
-    let t = new Tree(x,z,type,h,color);
-    trees.push(t);
-  }
+  });
 
-  // Generate buildings
-  for (let i = 0; i < 5; i++) {
-    let x = Math.round(Math.random() * VW);
-    let type = 1;
-    let height = Math.round(Math.random() * 20 + 20);
-    let color = {}
-    color.r = color.g = color.b = Math.round(Math.random() * 75 + 50);
-    let b = new Building(x,type,height,color);
-    buildings.push(b);
-  }
+  // Control sparks
+  let s = []
+  sparks.forEach(function(e) {
+    e.spark();
+    e.fade();
+    if(e.alpha > 0) {
+      s.push(e);
+    }
+  });
+  sparks = s;
 
-  // Generate particles
-  for (let i = 0; i < 200; i++) {
-    let p = new Particle();
-    particles.push(p);
-    globals.stage = true;
-  }
+  let t = []
+  thrusterexhaust.forEach(function(e) {
+    e.drift();
+    e.fade();
+    if(e.alpha > 0) {
+      t.push(e);
+    }
+  });
+  thrusterexhaust = t;
 
-  // Create ship
-  let s = new Ship(landingpads[0].apparentX, VH - 162 - 15);
-  // let s = new Ship(VW / 2, VH / 2);
-  ships.push(s);
-
-}
-
-/*****************************************************************************
-
- TRIGONOMETRY FUNCTIONS
-
- Also add functions for:
- line-line intersections
- other intersections
- direction from one point to another
-
- *****************************************************************************/
-
-let distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-
-let rads = degs => degs * Math.PI / 180;
-
-let degs = rads => rads * 180 / Math.PI;
-
-let local2global = (self) => {
-  let r = rads(self.rotation) || 0;
-  return (x1, y1) => {
-    // Make the passed-in local coordinates global using the magic of trigonometry and the provided rotation
-
-    let l = Math.hypot(x1,y1);
-    let a = Math.atan2(y1,x1) + r;
-    // Keep the below bit for now. Don't know if I'll need it later.
-    // a += a < 0 ? Math.PI * 2 : 0;
-    // a += r;
-
-    let x2 = self.x + Math.cos(a) * l;
-    let y2 = self.y + Math.sin(a) * l;
-
-    return {x: x2, y: y2};
-  };
-}
-
-/*****************************************************************************
-
- SHIP HANDLING
-
- *****************************************************************************/
-
-let handleShip = (s) => {
-  s.states.primaryThruster = false;
-  s.states.secondaryThruster = false;
-  s.states.turningCw = false;
-  s.states.turningCcw = false;
-
-  if (s.engineOn) {
-    if (s.primaryFuel > 0) {
-      let p = s.runEngine();
-
-      addExhaust('idle',s,p);
+  if (sprite.engineOn) {
+    // Determine energy line length and thickness.
+    if (controls.s) {
+      sprite.currentPowerMod += (sprite.boostPowerMod - sprite.currentPowerMod)/ 50;
+      if (sprite.boostPowerMod - sprite.currentPowerMod < 0.05) sprite.currentPowerMod = sprite.boostPowerMod
+    } else if (controls.e) {
+      sprite.currentPowerMod += (sprite.thrusterPowerMod - sprite.currentPowerMod)/ 50;
+      if (sprite.currentPowerMod - sprite.thrusterPowerMod < 0.05) sprite.currentPowerMod = sprite.thrusterPowerMod;
     } else {
-      s.engineOn = false;
+      sprite.currentPowerMod += (sprite.standardPowerMod - sprite.currentPowerMod) / 50;
+      if (Math.abs(sprite.currentPowerMod - sprite.standardPowerMod) < 0.05) sprite.currentPowerMod = sprite.standardPowerMod;
+    }
+
+    // Lets engineOutput rise slowly when engine is started. Don't increse output while engaging thrusters
+    if (sprite.engineOutput < 100 && !controls.e) {
+      sprite.engineOutput += 0.25;
     }
   }
 
-  if (!s.engineOn && s.engineOutput > 0){
-    let p = s.powerDownEngine();
+  // If engine has any power, the craft can be controlled
+  if (sprite.engineOutput > 0) {
+    sprite.primaryFuel -= 1 * sprite.currentPowerMod;
 
-    addExhaust('idle',s,p);
-  }
+    if (controls.w) {
+      let rads = sprite.rotation * Math.PI / 180;
 
-  // Controls
-
-  if (s.engineOutput > 0) {
-    if (controls.secondaryThruster) {
-      let p = s.secondaryThruster();
-      s.states.primaryThruster = true;
-      s.states.secondaryThruster = true;
-
-      addExhaust('primary',s,{x: p.x1, y: p.y1});
-      addExhaust('secondary',s,p);
-
-    } else if (controls.primaryThruster) {
-      let p = s.primaryThruster();
-      s.states.primaryThruster = true;
-
-      addExhaust('primary',s,p);
+      sprite.vy += Math.sin(rads) * sprite.movespeed * sprite.engineOutput / 100;
+      sprite.vx += Math.cos(rads) * sprite.movespeed * sprite.engineOutput / 100;
     }
 
-    if (controls.turnCw) {
-      let p = s.cw();
-      s.states.turningCw = true;
+    if (controls.t) {
+      let rads = sprite.rotation * Math.PI / 180;
 
-      addExhaust('tertiaryCw',s,p);
+      sprite.vy += Math.sin(rads) * g * sprite.engineOutput / 100;
+      sprite.vx += Math.cos(rads) * g * sprite.engineOutput / 100;
     }
 
-    if (controls.turnCcw) {
-      let p = s.ccw();
-      s.states.turningCcw = true;
+    if (controls.s) {
+      let rads = sprite.rotation * Math.PI / 180;
 
-      addExhaust('tertiaryCcw',s,p);
+      sprite.vy += Math.sin(rads) * sprite.boostspeed * sprite.engineOutput / 100;
+      sprite.vx += Math.cos(rads) * sprite.boostspeed * sprite.engineOutput / 100;
+
+      sprite.engineOutput -= 0.75;
     }
+
+    if (controls.e) {
+      sprite.vy -= sprite.vy / 10;
+      sprite.vx -= sprite.vx / 20;
+
+      sprite.engineOutput -= 0.5;
+    }
+
+    if (controls.a) {
+      if (sprite.engineOutput < 100) {
+        sprite.rotation -= sprite.turnspeed * sprite.engineOutput / 100;
+      } else {
+        sprite.rotation -= sprite.turnspeed;
+      }
+    }
+
+    if (controls.d) {
+      if (sprite.engineOutput < 100) {
+        sprite.rotation += sprite.turnspeed * sprite.engineOutput / 100;
+      } else {
+        sprite.rotation += sprite.turnspeed;
+      }
+    }
+
+    //  Rotate to face up
+    if (controls.r && sprite.rotation !== 270) {
+      let r = sprite.rotation;
+      let d = Math.abs((270 - r) / 10);
+      if (d < 2) d = 2;
+      if (r < 270 && r >= 90) {
+        sprite.rotation += d;
+      } else {
+        sprite.rotation -= d;
+      }
+      if (r >= 269 && r <= 271) sprite.rotation = 270;
+    }
+
+    if (sprite.rotation < 0) sprite.rotation = 360;
+    if (sprite.rotation > 360) sprite.rotation = 0;
   }
 
-  if (s.engineOutput > 0) {
-    s.drainFuel();
+  // Generate main engine exhaust if engine is outputting power
+  if (sprite.engineOn) {
+    let c = {r: 255, g: 255, b: 255};
+    let l = 10;
+    let t = 1;
+    let d = 1;
+    if (controls.s) {
+      c = {r:200, g: 100, b: 100};
+      l = 1;
+      t = 3;
+      d = 2;
+    }
+    if (controls.w) {
+      l = 5;
+      t = 2;
+      d = 1.25;
+    }
+    if (controls.e) {
+      c = {r: 200, g: 200, b: 255};
+      l = 10;
+      t = 1;
+      d = 0.75;
+    }
+    let rads = sprite.rotation * Math.PI / 180;
+    let x = sprite.x + Math.cos(rads) * sprite.engineOutput * sprite.currentPowerMod * d * -1;
+    let y = sprite.y + Math.sin(rads) * sprite.engineOutput * sprite.currentPowerMod * d * -1;
+    let e = new Exhaust(sprite.x, sprite.y, c, l, t, x, y);
+    exhaust.push(e);
+    if (exhaust.length > maxExhaust) exhaust.shift();
   }
 
-  // Update position of ship
-
-  s.move();
-}
-
-let addExhaust = (type, s, p) => {
-  if (type === 'idle') {
+  //Generate thruster exhaust if engine is outputting power and thrusters are engaged
+  if (sprite.engineOn && controls.e) {
+    // let rads = sprite.balancingThruster + 45;
+    // let x1 = sprite.x + Math.cos(rads) * 10;
+    // let y1 = sprite.y + Math.sin(rads) * 10;
+    // rads = sprite.balancingThruster - 45;
+    // let x2 = sprite.x + Math.cos(rads) * 10;
+    // let y2 = sprite.y + Math.sin(rads) * 10;
+    // let vx1 = Math.cos(sprite.balancingThruster + 45) * 5;
+    // let vx2 = Math.cos(sprite.balancingThruster - 45) * 5;
+    // let vy1 = Math.sin(sprite.balancingThruster + 45) * 5;
+    // let vy2 = Math.sin(sprite.balancingThruster - 45) * 5;
     let c = {
       r: 150,
       g: 150,
-      b: 150
+      b: 255
     }
-    let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, (s.engineOutput > 150 ? 150 : s.engineOutput), c, 0.5);
-    primaryExhaustIdle.push(e);
+    // let t1 = new ThrusterExhaust(x1,y1,vx1,vy1,c);
+    // let t2 = new ThrusterExhaust(x2,y2,vx2,vy2,c);
 
-  } else if (type === 'primary') {
-    let c = {
-      r: 200,
-      g: 200,
-      b: 200
-    }
-    let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'primary', 10, s.engineOutput, c, 1);
-    primaryExhaust.push(e);
-
-  } else if (type === 'secondary') {
-    let c = {
-      r: Math.round(Math.random() * 55 + 200),
-      g: Math.round(Math.random() * 55 + 200),
-      b: Math.round(Math.random() * 55 + 200)
-    }
-    let e = new Exhaust(p.x2, p.y2, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
-    secondaryExhaust.push(e);
-
-    e = new Exhaust(p.x3, p.y3, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
-    secondaryExhaust.push(e);
-
-  } else if (type === 'tertiaryCw') {
-    let c = {
-      r: 200,
-      g: 200,
-      b: 200
-    }
-    let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'tertiary', 2, s.engineOutput, c, 1);
-    tertiaryExhaust.push(e);
-  } else if (type === 'tertiaryCcw') {
-    let c = {
-      r: 200,
-      g: 200,
-      b: 200
-    }
-    let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'tertiary', 2, s.engineOutput, c, 1);
-    tertiaryExhaust.push(e);
+    // thrusterexhaust.push(t1);
+    // thrusterexhaust.push(t2);
   }
-}
 
-/*****************************************************************************
-
- UPDATE
-
- *****************************************************************************/
-
-let update = () => {
-  moons.forEach((e) => {
-    e.move();
-  })
-
-  particles.forEach((e) => {
-    e.drift();
-    e.pulsate();
-    e.flicker()
-  })
-
-  handleShip(ships[0]);
-
-  let a = [];
-  primaryExhaustIdle.forEach((e) => {
-    if (!e.fade() && !e.move()) {
-      a.push(e);
-    }
-  })
-  primaryExhaustIdle.length = 0;
-  a.forEach((e) => {
-    primaryExhaustIdle.push(e);
-  })
-
-  a = [];
-  primaryExhaust.forEach((e) => {
-    if (!e.fade() && !e.move()) {
-      a.push(e);
-    }
-  })
-  primaryExhaust.length = 0;
-  a.forEach((e) => {
-    primaryExhaust.push(e);
-  })
-
-  a = [];
-  secondaryExhaust.forEach((e) => {
-    if (!e.fade() && !e.move()) {
-      a.push(e);
-    }
-  })
-  secondaryExhaust.length = 0;
-  a.forEach((e) => {
-    secondaryExhaust.push(e);
-  })
-
-  a = [];
-  tertiaryExhaust.forEach((e) => {
-    if (!e.fade() && !e.move()) {
-      a.push(e);
-    }
-  })
-  tertiaryExhaust.length = 0;
-  a.forEach((e) => {
-    tertiaryExhaust.push(e);
-  })
-
-}
-
-/*****************************************************************************
-
- HUD
-
- *****************************************************************************/
-
-let updateHUD = (s) => {
-  if (s.engineOutput > 0) {
-    document.querySelector('.hud').classList.remove('inactive');
-    document.querySelector('.hud').classList.add('active');
-
-    let r = Math.floor(s.rotation) - 270;
-    if (r < 0) r+= 360;
-    document.querySelector('.hud .shipStatus').style.setProperty("--rotation", r);
-    document.querySelector('.hud .shipStatus .rotation .readout').innerHTML = r;
-
-    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutput", s.engineOutput);
-    let engineOutputColor = '#0c9';
-    if (s.engineOutput > 110) engineOutputColor = '#9c0';
-    if (s.engineOutput > 175) engineOutputColor = '#d00';
-    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutputColor", engineOutputColor);
-    document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.engineOutput);
-    document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.engineOutput);
-
-    let a = Math.floor(((s.y - VH + s.r) * -1) / VH * 100 / 2);
-    if (a > 100) {
-      a = 100;
-      document.querySelector('.hud .shipStatus .altitude').classList.add('critical');
-    } else {
-      document.querySelector('.hud .shipStatus .altitude').classList.remove('critical');
-    }
-    document.querySelector('.hud .shipStatus').style.setProperty("--altitude", a);
-
-    let ax = Math.round(s.ax * 800);
-    let ay = Math.round(s.ay * 800 * -1);
-    if (ax > 200) ax = 200;
-    if (ax < -200) ax = -200;
-    if (ay > 200) ay = 200;
-    if (ay < -200) ay = -200;
-    ax += 200;
-    ay += 200;
-    ax /= 4;
-    ay /= 4;
-    document.querySelector('.hud .shipStatus').style.setProperty('--accelerationHorizontal',ax);
-    document.querySelector('.hud .shipStatus').style.setProperty('--accelerationVertical',ay);
-
-    let vx = Math.round(s.vx / 14 * 100);
-    let vy = Math.round(s.vy * -1 / 14 * 100);
-    let vxp = 0;
-    let vxn = 0;
-    let vxc = false;
-    if (vx > 50) {
-      vx = 50;
-      vxc = true;
-    }
-    if (vx < -50) {
-      vx = -50;
-      vxc = true;
-    }
-    if (vx > 0) {
-      vxp = vx;
-    } else if (vx < 0) {
-      vxn = vx * -1;
-    }
-    let vyp = 0;
-    let vyn = 0;
-    let vyc = false;
-    if (vy > 50) {
-      vy = 50;
-      vyc = true;
-    }
-    if (vy < -50) {
-      vy = -50;
-      vyc = true;
-    }
-    if (vy > 0) {
-      vyp = vy;
-    } else if (vy < 0) {
-      vyn = vy * -1;
-    }
-    if (vxc) {
-      document.querySelector('.hud .shipStatus .speedHorizontal').classList.add('critical');
-    } else {
-      document.querySelector('.hud .shipStatus .speedHorizontal').classList.remove('critical');
-    }
-    if (vyc) {
-      document.querySelector('.hud .shipStatus .speedVertical').classList.add('critical');
-    } else {
-      document.querySelector('.hud .shipStatus .speedVertical').classList.remove('critical');
-    }
-    document.querySelector('.hud .shipStatus').style.setProperty('--speedHorizontalPositive',vxp);
-    document.querySelector('.hud .shipStatus').style.setProperty('--speedHorizontalNegative',vxn);
-    document.querySelector('.hud .shipStatus').style.setProperty('--speedVerticalPositive',vyp);
-    document.querySelector('.hud .shipStatus').style.setProperty('--speedVerticalNegative',vyn);
-
-  } else {
-    document.querySelector('.hud').classList.remove('active');
-    document.querySelector('.hud').classList.add('inactive');
-    let criticals = document.querySelectorAll('.hud *')
-    criticals.forEach((e) => {
-      e.classList.remove('critical');
-    });
+  // If engine output is really high, have it dissipate faster. That engine's not built to handle this much energy!!
+  if (sprite.engineOutput > 100) {
+    sprite.engineOutput -= (sprite.engineOutput - 100) / 50;
+    if (sprite.engineOutput < 101) sprite.engineOutput = 100;
   }
-}
 
-/*****************************************************************************
-
- DRAW
-
- *****************************************************************************/
-
-let draw = () => {
-  // Clear the canvases
-  context1.clearRect(0,0,VW,VH);
-  context2.clearRect(0,0,VW,VH);
-
-  let parallax = 50 * Math.round((VW / 2 - ships[0].x) / (VW / 2) * 1000) / 1000;
-
-  moons.forEach((e) => {
-    e.draw(context1);
-  })
-
-  mountains.forEach((e) => {
-    e.draw(context1,parallax);
-  })
-
-  trees.forEach((e) => {
-    if (e.z === 1) {
-      e.draw(context1,parallax);
-    }
-  })
-
-  buildings.forEach((e) => {
-    e.draw(context1,parallax)
-  })
-
-  landingpads.forEach((e) => {
-    e.draw(context2,parallax);
-  })
-
-  trees.forEach((e) => {
-    if (e.z === 2) {
-      e.draw(context2,parallax);
-    }
-  })
-
-  primaryExhaustIdle.forEach((e) => {
-    e.draw(context2);
-  })
-
-  primaryExhaust.forEach((e) => {
-    e.draw(context2);
-  })
-
-  secondaryExhaust.forEach((e) => {
-    e.draw(context2);
-  })
-
-  tertiaryExhaust.forEach((e) => {
-    e.draw(context2);
-  })
-
-  particles.forEach((e) => {
-    e.draw(context2);
-  })
-
-  ships[0].draw(context2);
-
-  updateHUD(ships[0]);
-}
-
-/*****************************************************************************
-
- FRAME
-
- *****************************************************************************/
-
-let frame = setInterval(() => {
-  if (globals.state.current === 'running') {
-    if (globals.stage === false) setStage();
-    globals.frame++;
-    update();
-    draw();
+  // Engine slowly dies when turned off.
+  if (!sprite.engineOn && sprite.engineOutput > 0) {
+    sprite.engineOutput--;
   }
-}, 16); // ~60fps
+
+  if (sprite.y !== h - sprite.radius) {
+    sprite.vy += g;
+  }
+
+  sprite.y += sprite.vy;
+
+  if (sprite.y > h -sprite.radius) {
+    sprite.y = h -sprite.radius;
+    sprite.vy *= -0.33;
+  }
+
+  sprite.x += sprite.vx;
+
+  if (sprite.y === h - sprite.radius) {
+    sprite.vx *= 0.75;
+  }
+
+  // if (sprite.x > w) sprite.x = w;
+  // if (sprite.x < 0) sprite.x = 0;
+
+  if (sprite.x > w) sprite.x = 0;
+  if (sprite.x < 0) sprite.x = w;
+
+  sprite.vx = Math.round(sprite.vx * 1000) / 1000;
+  sprite.vy = Math.round(sprite.vy * 1000) / 1000;
+}
+
+function draw() {
+  ctx.clearRect(0,0,w,h);
+
+  exhaust.forEach(function(e) {
+    e.draw();
+  });
+
+  sparks.forEach(function(e) {
+    e.draw();
+  });
+
+  thrusterexhaust.forEach(function(e) {
+    e.draw();
+  });
+
+  dust.forEach(function(e) {
+    if (Math.sqrt(Math.pow(Math.abs(e.x - sprite.x),2) + Math.pow(Math.abs(e.y - sprite.y),2)) < sprite.engineOutput * sprite.currentPowerMod && sprite.engineOutput > 0) {
+      ctx.beginPath();
+      ctx.moveTo(e.x, e.y);
+      ctx.lineTo(sprite.x, sprite.y);
+      ctx.strokeStyle = "rgba(255,255,255," + Math.random() * 0.5 + ")";
+      ctx.lineWidth = 1 * sprite.currentPowerMod;
+      if (controls.s) {
+        ctx.strokeStyle = "rgba(" + Math.round(Math.random() * 155 + 100) + "," + Math.round(Math.random() * 155 + 100) + ",0," + Math.random() * 0.5 + ")";
+        ctx.lineWidth = 1.5 * sprite.currentPowerMod;
+      }
+      if (controls.e) {
+        ctx.strokeStyle = "rgba(" + Math.round(Math.random() * 50 + 100) + "," + Math.round(Math.random() * 50 + 100) + "," + Math.round(Math.random() * 55 + 200) + "," + Math.random() * 0.5 + ")";
+        ctx.lineWidth = 1.5 / sprite.currentPowerMod;
+      }
+      ctx.stroke();
+      ctx.lineWidth = 1;
+    }
+    e.draw();
+  });
+  sprite.draw();
+}
+
+var frame = setInterval(function() {
+  update();
+  draw();
+}, 10);

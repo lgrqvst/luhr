@@ -1,806 +1,134 @@
-'use strict';
+//@codekit-append sprite.js
+//@codekit-append dust.js
+//@codekit-append exhaust.js
+//@codekit-append thrusterexhaust.js
+//@codekit-append spark.js
+//@codekit-append main.js
 
-const VW = window.innerWidth;
-const VH = window.innerHeight - 10;
+var Sprite = function() {
+  this.x = Math.round(w / 2);
+  // this.y = Math.round(h / 2);
+  this.y = Math.round(h);
+  this.vx = 0;
+  this.vy = 0;
+  this.radius = 15;
+  this.rotation = 270;
+  this.movespeed = 0.05;
+  this.boostspeed = 0.1;
+  this.currentPowerMod = 0;
+  this.standardPowerMod = 1;
+  this.boostPowerMod = 1.5;
+  this.thrusterPowerMod = 0.5;
+  this.turnspeed = 3;
+  this.engineOn = false;
+  this.engineOutput = 0;
+  this.primaryFuel = 1000;
+  this.secondaryFuel = 250;
+  this.thruster1Default = 45;
+  this.thruster2Default = 135;
+  this.thruster1Current = 45;
+  this.thruster2Current = 135
+  this.thrusterTest = 0;
 
-let getContext = (w, h, c) => {
-  let canvas = document.createElement("canvas");
-  canvas.classList.add(c);
-  document.body.appendChild(canvas);
-  canvas.width = w || window.innerWidth;
-  canvas.height = h || window.innerHeight;
-  return canvas.getContext("2d");
-}
+  return this;
+};
+Sprite.prototype = {
+  draw: function() {
 
-const context1 = getContext(VW, VH, 'layer1');
-const context2 = getContext(VW, VH, 'layer2');
+    let rads = 0;
 
-class Building {
-  constructor(x, type, height, color) {
-    this.x = x;
-    this.type = type;
-    this.height = height;
-    this.color = color;
-  }
+    rads = this.rotation * Math.PI / 180;
 
-  draw(ctx, plx) {
-    let x = this.x + plx * 1.3;
+    let r = this.radius;
 
-    ctx.beginPath();
-    ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},1)`;
-    ctx.fillRect(x, VH - this.height, 50, this.height);
-  }
-}
+    // MOVE THIS FUNCTION OUT OF THIS METHOD FOR USE IN OTHER PLACES...
+    let xy = function(x1, y1) {
+      let l = Math.sqrt(x1 * x1 + y1 * y1);
+      if (x1 < 0 && y1 < 0) l *= -1;
 
-class Exhaust {
-  constructor(x,y,rotation,speed,type,size,intensity,color,opacity) {
-    this.x = x;
-    this.y = y;
-    this.speed = speed * intensity / 100;
-    this.rotation = rotation;
-    this.type = type;
-    this.size = size * intensity / 100;
-    // this.intensity = intensity;
-    this.color = color;
-    this.opacity = opacity;
-  }
+      let r1 = Math.asin(y1 / l);
+      if (x1 < 0) r1 = Math.acos(x1 / l);
 
-  move() {
-    if (this.x < 0 || this.x > VW || this.y > VH) {
-      return true;
-    }
+      let r2 = (sprite.rotation) * Math.PI / 180;
+      let r3 = r1 + r2;
+      let x2 = sprite.x + Math.cos(r3) * l;
+      let y2 = sprite.y + Math.sin(r3) * l;
 
-    this.y += Math.sin(rads(this.rotation)) * this.speed;
-    this.x += Math.cos(rads(this.rotation)) * this.speed;
+      return {
+        x: x2,
+        y: y2
+      };
+    };
 
-    if (this.type === 'idle') {
-      this.y -= globals.gravity * 10;
-      this.x += globals.wind / 5;
-    }
+    let xy2 = function(x1, y1) {
+      let l = Math.sqrt(x1 * x1 + y1 * y1);
+      if (x1 < 0 && y1 < 0) l *= -1;
 
-    return false;
-  }
+      let r1 = Math.asin(y1 / l);
+      if (x1 < 0) r1 = Math.acos(x1 / l);
 
-  fade() {
-    if (this.type === 'primary') {
-      this.opacity -= 0.03;
-      this.size += Math.random() * 2;
+      let r2 = (sprite.rotation) * Math.PI / 180;
+      let r3 = r1 + r2;
+      let x2 = sprite.x + Math.cos(r1) * l;
+      let y2 = sprite.y + Math.sin(r1) * l;
 
-    } else if (this.type === 'secondary') {
-      this.color.g -= 5;
-      this.color.b -= 10;
-      this.opacity -= 0.03;
-      this.size += Math.random() * 3;
+      return {
+        x: x2,
+        y: y2,
+        a: r1 / Math.PI * 180
+      };
+    };
 
-    } else if (this.type === 'tertiary') {
-      this.opacity -= 0.1;
-      // this.size += Math.random();
-      this.size += 0.2;
+    let a = {};
 
-    } else if (this.type === 'idle') {
-      this.opacity -= 0.03;
-      this.size += Math.random() * 0.5;
-    }
+    // Thrusters
 
-    if (this.opacity <= 0) {
-      return true;
-    }
-    return false;
-  }
+    if (controls.e) {
 
-  draw(ctx) {
-    let pos = local2global(this);
-    let p;
-
-    if (this.type === 'primary') {
       ctx.beginPath();
-      ctx.moveTo(this.x, this.y);
-      p = pos(this.size * 2, 0);
-      ctx.lineTo(p.x, p.y);
-      ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
-      ctx.lineWidth = this.size / 10;
-      ctx.stroke();
 
-    } else if (this.type === 'secondary') {
-      ctx.beginPath();
-      ctx.moveTo(this.x, this.y);
-      p = pos(this.size * 2, 0);
-      ctx.lineTo(p.x, p.y);
-      ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
-      ctx.lineWidth = this.size / 10;
-      // ctx.lineWidth = 4;
-      ctx.stroke();
+      a = xy2(this.vx / 10, this.vy / 10);
 
-    } else if (this.type === 'tertiary') {
-      ctx.beginPath();
-      ctx.moveTo(this.x, this.y);
-      p = pos(this.size * 2, 0);
-      ctx.lineTo(p.x, p.y);
-      ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
+      ctx.moveTo(a.x, a.y);
+
+      a = xy2(this.vx * 50, this.vy * 50);
+
+      ctx.lineTo(a.x, a.y);
+
+      ctx.strokeStyle = "#F00";
       ctx.lineWidth = 2;
       ctx.stroke();
-
-    } else if (this.type === 'idle') {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, Math.random() * this.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
-      ctx.fill();
     }
 
-  }
-}
-
-class Landingpad {
-  constructor(x) {
-    this.x = x;
-    this.apparentX = x + 75 * Math.round((VW / 2 - x) / (VW / 2) * 1000) / 1000;
-  }
-
-  draw(ctx, plx) {
-    // MAIN BODY
-
-    this.apparentX = this.x + plx * 1.75;
-    let x = this.apparentX;
+    // Stabilizer ring
 
     ctx.beginPath();
 
-    ctx.moveTo(x, VH - 100);
+    ctx.arc(this.x, this.y, r, 0, 2 * Math.PI);
 
-    ctx.bezierCurveTo(
-      x - 3,
-      VH - 100,
-      x - 3,
-      VH - 75,
-      x - 3,
-      VH
-    );
-
-    ctx.lineTo(x - 5, VH);
-
-    ctx.bezierCurveTo(
-      x - 5,
-      VH - 100,
-      x - 5,
-      VH - 150,
-      x - 50,
-      VH - 150
-    );
-
-    ctx.lineTo(x - 50, VH - 153);
-
-    ctx.lineTo(x - 40, VH - 159);
-
-    ctx.lineTo(x - 40, VH - 162);
-
-    // Right side mirrored
-
-    ctx.lineTo(x + 40, VH - 162);
-
-    ctx.lineTo(x + 40, VH - 159);
-
-    ctx.lineTo(x + 50, VH - 153);
-
-    ctx.lineTo(x + 50, VH - 150);
-
-    ctx.bezierCurveTo(
-      x + 5,
-      VH - 150,
-      x + 5,
-      VH - 100,
-      x + 5,
-      VH
-    );
-
-    ctx.lineTo(x + 3, VH);
-
-    ctx.bezierCurveTo(
-      x + 3,
-      VH - 75,
-      x + 3,
-      VH - 100,
-      x,
-      VH - 100
-    );
-
-    ctx.fillStyle = 'rgba(180,180,180,1)';
-    ctx.fill();
-
-    // Details
-
-    ctx.beginPath();
-    ctx.moveTo(x - 40, VH - 159);
-    ctx.lineTo(x + 40, VH - 159);
-    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(x - 50, VH - 153);
-    ctx.lineTo(x + 50, VH - 153);
-    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-    ctx.stroke();
-
-    // Shadow underneath
-
-    ctx.globalCompositeOperation = 'source-atop';
-    ctx.beginPath()
-    ctx.moveTo(x - 50, VH - 150);
-    ctx.lineTo(x + 50, VH - 150);
-    ctx.lineTo(x + 50, VH - 50);
-    ctx.fillStyle = 'rgba(120,120,120,1)';
-    ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
-
-    // ctx.beginPath();
-    //
-    // ctx.moveTo(this.x, VH - 100);
-    //
-    // ctx.bezierCurveTo(
-    //   this.x - 3,
-    //   VH - 100,
-    //   this.x - 3,
-    //   VH - 75,
-    //   this.x - 3,
-    //   VH
-    // );
-    //
-    // ctx.lineTo(this.x - 5, VH);
-    //
-    // ctx.bezierCurveTo(
-    //   this.x - 5,
-    //   VH - 100,
-    //   this.x - 5,
-    //   VH - 150,
-    //   this.x - 50,
-    //   VH - 150
-    // );
-    //
-    // ctx.lineTo(this.x - 50, VH - 153);
-    //
-    // ctx.lineTo(this.x - 40, VH - 159);
-    //
-    // ctx.lineTo(this.x - 40, VH - 162);
-    //
-    // // Right side mirrored
-    //
-    // ctx.lineTo(this.x + 40, VH - 162);
-    //
-    // ctx.lineTo(this.x + 40, VH - 159);
-    //
-    // ctx.lineTo(this.x + 50, VH - 153);
-    //
-    // ctx.lineTo(this.x + 50, VH - 150);
-    //
-    // ctx.bezierCurveTo(
-    //   this.x + 5,
-    //   VH - 150,
-    //   this.x + 5,
-    //   VH - 100,
-    //   this.x + 5,
-    //   VH
-    // );
-    //
-    // ctx.lineTo(this.x + 3, VH);
-    //
-    // ctx.bezierCurveTo(
-    //   this.x + 3,
-    //   VH - 75,
-    //   this.x + 3,
-    //   VH - 100,
-    //   this.x,
-    //   VH - 100
-    // );
-    //
-    // ctx.fillStyle = 'rgba(180,180,180,1)';
-    // ctx.fill();
-    //
-    // // Details
-    //
-    // ctx.beginPath();
-    // ctx.moveTo(this.x - 40, VH - 159);
-    // ctx.lineTo(this.x + 40, VH - 159);
-    // ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-    // ctx.stroke();
-    //
-    // ctx.beginPath();
-    // ctx.moveTo(this.x - 50, VH - 153);
-    // ctx.lineTo(this.x + 50, VH - 153);
-    // ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-    // ctx.stroke();
-    //
-    // // Shadow underneath
-    //
-    // ctx.globalCompositeOperation = 'source-atop';
-    // ctx.beginPath()
-    // ctx.moveTo(this.x - 50, VH - 150);
-    // ctx.lineTo(this.x + 50, VH - 150);
-    // ctx.lineTo(this.x + 50, VH - 50);
-    // ctx.fillStyle = 'rgba(120,120,120,1)';
-    // ctx.fill();
-    // ctx.globalCompositeOperation = 'source-over';
-  }
-}
-
-class Moon {
-  constructor(x,y,r) {
-    this.x = x;
-    this.y = y;
-    this.targetX = VW - x;
-    this.targetY = -r;
-    this.r = r;
-  }
-
-  move() {
-    let dx = (this.targetX - this.x) / 50000;
-    let dy = (this.targetY - this.y) / 50000;
-    this.x += dx;
-    this.y += dy;
-  }
-
-  draw(ctx) {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(245,235,255,1)';
-    ctx.fill();
-
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath()
-    ctx.arc(this.x + this.r * 0.2, this.y, this.r * 0.85, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
-  }
-}
-
-class Mountain {
-  constructor(foot, height, peaks, color, distance) {
-    this.foot = foot;
-    this.height = height;
-    this.peaks = peaks;
-    this.color = color;
-    this.distance = distance;
-  }
-
-  draw(ctx, plx) {
-    let plxf = 1;
-    if (this.distance === 1) plxf = 0.25;
-    if (this.distance === 2) plxf = 0.5;
-    if (this.distance === 3) plxf = 0.8;
-    if (this.distance === 4) plxf = 1;
-    if (this.distance === 5) plxf = 1.5;
-    let foot = this.foot + plx * plxf;
-
-    ctx.beginPath();
-    ctx.moveTo(foot, VH);
-
-    ctx.bezierCurveTo(
-      foot + VW / 9,
-      VH - (VH * this.height / 100 / 4),
-      foot + VW / 4.5,
-      VH - (VH * this.height / 100 / 4 * 2),
-      foot + VW / 3,
-      VH - VH * this.height / 100
-    );
-
-    let base = foot + VW / 3;
-
-    if (this.peaks > 1) {
-      for (let i = 0; i < this.peaks; ++i) {
-        ctx.bezierCurveTo(
-          base + VW / 15,
-          VH - (VH * this.height / 100 / 3 * 2),
-          base + VW / 7.5,
-          VH - (VH * this.height / 100 / 3 * 2),
-          base + VW / 5,
-          VH - VH * this.height / 100
-        )
-        base += VW / 5;
-      }
-    }
-
-    ctx.bezierCurveTo(
-      base + VW / 9,
-      VH - (VH * this.height / 100 / 4 * 2),
-      base + VW / 4.5,
-      VH - (VH * this.height / 100 / 4),
-      base + VW / 3,
-      VH,
-    )
-
-    ctx.lineTo(this.foot, VH);
-
-    ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
-    ctx.fill();
-  }
-
-}
-
-class Particle {
-  constructor() {
-    this.x = Math.round(Math.random() * VW);
-    this.y = Math.round(Math.random() * VH);
-
-    this.energy = Math.round(Math.random() * 1000);
-
-    this.radiusFactor = 200;
-    this.targetRadiusFactor = this.radiusFactor + (25 - Math.round(Math.random() * 50));
-
-    this.color = {
-      r: Math.round(Math.random() * 50 + 200),
-      g: Math.round(Math.random() * 50 + 200),
-      b: Math.round(Math.random() * 50 + 200)
-    }
-    this.opacity = Math.round(Math.random() * 30 + 20) / 100;
-    // this.targetOpacity = this.opacity + ((50 - Math.round(Math.random() * 100)) / 100);
-    this.targetOpacity = Math.round(Math.random() * 40 + 10) / 100;
-
-    this.driftDistance = 25;
-    this.targetX = this.x + (this.driftDistance - Math.round(Math.random() * this.driftDistance * 2));
-    this.targetY = this.y + (this.driftDistance - Math.round(Math.random() * this.driftDistance * 2));
-  }
-
-  draw(ctx) {
-    let color = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.energy / this.radiusFactor, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  drift() {
-    let x = (this.targetX - this.x) / (Math.round(Math.random() * 400) + 100);
-    let y = (this.targetY - this.y) / (Math.round(Math.random() * 400) + 100);
-    this.x += x;
-    this.y += y;
-    if (this.x > VW + this.energy / this.radiusFactor) this.x = 0;
-    if (this.x < 0 - this.energy / this.radiusFactor) this.x = VW;
-    if (this.y > VH + this.energy / this.radiusFactor) this.y = 0;
-    if (this.y < 0 - this.energy / this.radiusFactor) this.y = VH;
-    if (Math.abs(this.targetX - this.x) < 10 || Math.abs(this.targetX - this.x) > 100) this.targetX = this.x + (this.driftDistance - Math.round(Math.random() * this.driftDistance * 2));
-    if (Math.abs(this.targetY - this.y) < 10 || Math.abs(this.targetY - this.y) > 100) this.targetY = this.y + (this.driftDistance - Math.round(Math.random() * this.driftDistance * 2));
-  }
-
-  pulsate() {
-    let r = (this.targetRadiusFactor - this.radiusFactor) / 70;
-    this.radiusFactor += r;
-
-    if (this.radiusFactor < 125) this.targetRadiusFactor += 50;
-    if (this.radiusFactor > 225) this.targetRadiusFactor -= 50;
-
-    if (Math.abs(this.targetRadiusFactor - this.radiusFactor) < 10) this.targetRadiusFactor = this.radiusFactor + (25 - Math.round(Math.random() * 50));
-  }
-
-  flicker() {
-    let o = (this.targetOpacity - this.opacity) / 50;
-    this.opacity += o;
-
-    // if (this.opacity < 0.1) this.targetOpacity += 0.5;
-    // if (this.opacity > 0.9) this.targetOpacity -= 0.5;
-
-    // if (Math.abs(this.targetOpacity - this.opacity) < 10) this.targetOpacity = this.opacity + ((50 - Math.round(Math.random() * 100)) / 100);
-    if (Math.abs(this.targetOpacity - this.opacity) < 10) this.targetOpacity = Math.round(Math.random() * 40 + 10) / 100;
-
-  }
-
-  deplete() {
-
-  }
-}
-
-class Ship {
-  constructor(x, y) {
-    // Rendering
-    this.x = x;
-    this.y = y;
-    this.r = 15;
-    this.vx = 0;
-    this.vy = 0;
-    this.ax = 0;
-    this.ay = 0;
-    this.rotation = 270;
-
-    // Operation
-    this.engineOn = false;
-    this.engineOutput = 0;
-    this.primaryFuel = 1000000;
-
-    // Handling
-    this.responsiveness = 100;
-    this.moveSpeed = 0.07;
-    this.boostSpeed = 0.14;
-    this.turnSpeed = 2.5;
-
-    // Status
-    this.states = {
-      landed: false,
-      parked: false,
-      landingPadContact: false,
-      groundContact: false,
-      landingPadProximity: false,
-      groundProximity: false,
-      flying: false,
-      primaryThruster: false,
-      secondaryThruster: false,
-      turningCw: false,
-      turningCcw: false,
-    }
-
-    this.animationProps = {
-      stabilizerRing: {
-        current: 0,
-        max: 100,
-      }
-    }
-
-    // this.currentPowerMod = 0;
-    // this.standardPowerMod = 1;
-    // this.boostPowerMod = 1.5;
-    // this.stabilizerPowerMod = 0.5;
-
-    // this.primaryFuel = 0;
-    // this.secondaryFuel = 0;
-  }
-
-  runEngine() {
-    if (this.engineOutput < 100) this.engineOutput += 0.5;
-    // if (this.engineOutput < 100) this.engineOutput += 5;
-    if (this.engineOutput > 101) this.engineOutput -= ((this.engineOutput - 100) / 75);
-    // if (this.engineOutput > 101) this.engineOutput -= ((this.engineOutput - 100) / 150);
-
-    this.ax = 0;
-    this.ay = 0;
-
-    let pos = local2global(this);
-    let p = pos(this.r * -0.45, this.r * 0);
-    return {x: p.x, y: p.y};
-  }
-
-  drainFuel() {
-    let fuelConsumption = 0;
-
-    if (this.engineOn) {
-      fuelConsumption += 1 * this.engineOutput;
-    } else {
-      fuelConsumption = Math.ceil(this.engineOutput / 100)
-    }
-
-    if (this.states.primaryThruster) fuelConsumption += 5 * this.engineOutput;
-    if (this.states.secondaryThruster) fuelConsumption += 10 * this.engineOutput;
-    if (this.states.turningCw) fuelConsumption += 1;
-    if (this.states.turningCcw) fuelConsumption += 1;
-
-    this.primaryFuel -= fuelConsumption;
-    if (this.primaryFuel < 0) this.primaryFuel = 0;
-  }
-
-  powerDownEngine() {
-    if (this.engineOutput > 0) this.engineOutput -= 0.5;
-
-    let pos = local2global(this);
-    let p = pos(this.r * -0.45, this.r * 0);
-    return {x: p.x, y: p.y};
-  }
-
-  primaryThruster() {
-    // this.vx += Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
-    // this.vy += Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
-    this.ax = Math.cos(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
-    this.ay = Math.sin(rads(this.rotation)) * this.moveSpeed * this.engineOutput / 100;
-    this.vx += this.ax;
-    this.vy += this.ay;
-
-    let pos = local2global(this);
-    let p = pos(this.r * -0.45, this.r * 0);
-    return {x: p.x, y: p.y};
-  }
-
-  secondaryThruster() {
-    // this.vx += Math.cos(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
-    // this.vy += Math.sin(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
-    this.ax = Math.cos(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
-    this.ay = Math.sin(rads(this.rotation)) * this.boostSpeed * this.engineOutput / 100;
-    this.vx += this.ax;
-    this.vy += this.ay;
-
-    this.engineOutput -= 0.75;
-    if (this.engineOutput < 0) this.engineOutput = 0;
-
-    let pos = local2global(this);
-    let p1 = pos(this.r * -0.45, this.r * 0);
-    let p2 = pos(this.r * -0.35, this.r * 0.32);
-    let p3 = pos(this.r * -0.35, this.r * -0.32);
-    return {
-      x1: p1.x,
-      y1: p1.y,
-      x2: p2.x,
-      y2: p2.y,
-      x3: p3.x,
-      y3: p3.y
-    };
-  }
-
-  cw() {
-    this.rotation += this.turnSpeed * this.responsiveness / 100 * (this.engineOutput > 100 ? 100 : this.engineOutput) / 100;
-
-    if (this.rotation < 0) this.rotation += 360;
-    if (this.rotation > 360) this.rotation -= 360;
-
-    let pos = local2global(this);
-    let p = pos(this.r * -0.38, this.r * -1.07);
-    return {x: p.x, y: p.y};
-  }
-
-  ccw() {
-    this.rotation -= this.turnSpeed * this.responsiveness / 100 * (this.engineOutput > 100 ? 100 : this.engineOutput) / 100;
-
-    if (this.rotation < 0) this.rotation += 360;
-    if (this.rotation > 360) this.rotation -= 360;
-
-    let pos = local2global(this);
-    let p = pos(this.r * -0.38, this.r * 1.07);
-    return {x: p.x, y: p.y};
-  }
-
-  move() {
-    this.states.landed = false;
-    this.states.parked = false;
-    this.states.landingPadContact = false;
-    this.states.groundContact = false;
-    this.states.landingPadProximity = false;
-    this.states.groundProximity = false;
-    this.states.flying = false;
-
-    // this.vx += globals.wind / 200;
-    this.vx *= globals.drag;
-    // this.vy *= globals.drag;;
-
-    // if (this.y !== VH - this.r) this.vy += globals.gravity;
-    this.vy += globals.gravity;
-
-    if (this.y + this.vy > VH - this.r * 4) {
-      this.states.groundProximity = true;
-    }
-
-    if (landingpads[0].apparentX - 40 < this.x && this.x < landingpads[0].apparentX + 40 && this.y + this.vy > VH - 162 - this.r * 4 && this.y <= VH - 162 - this.r) {
-      this.states.landingPadProximity = true;
-    }
-
-    if (this.y + this.vy > VH - this.r) {
-      this.y = VH - this.r;
-      this.vy *= -0.3;
-      this.vx *= 0.3;
-
-      // Set state to parked if requirements are met
-      if (Math.abs(this.vx) < 0.1 &&  Math.abs(this.vy) < 0.1 && this.rotation % 360 < 280 && this.rotation % 360 > 260) {
-        this.states.parked = true;
-      }
-      this.states.groundContact = true;
-    }
-
-    if (landingpads[0].apparentX - 40 < this.x && this.x < landingpads[0].apparentX + 40 && this.y + this.vy > VH - 162 - this.r && this.y <= VH - 162 - this.r) {
-      // Maybe rotate to face up and set state to landed?
-      this.y = VH - 162 - this.r;
-      this.vy *= -0.3;
-      this.vx *= 0.3;
-
-      // Set state to landed if requirements are met
-      if (Math.abs(this.vx) < 0.1 &&  Math.abs(this.vy) < 0.1 && this.rotation % 360 < 280 && this.rotation % 360 > 260) {
-        this.states.landed = true;
-      }
-      this.states.landingPadContact = true;
-    }
-
-    this.vx = Math.round(this.vx * 1000) / 1000;
-    this.vy = Math.round(this.vy * 1000) / 1000;
-
-    // this.vx += this.vx > 0 ? globals.drag * -1 : globals.drag;
-
-    // console.log(this.vx, dx);
-    // console.log('after: ' + dx);
-    // If I'm going to do this 👇, then parallax has to go. If not, I need another solution. Bounce back just outside screen?
-    // if (this.x > VW) this.x = 0;
-    // if (this.x < 0) this.x = VW;
-
-    if (!this.states.groundContact && !this.states.landingPadContact) {
-      this.states.flying = true;
-      this.vx += globals.wind / 300;
-    }
-
-    this.x += this.vx;
-    this.y += this.vy;
-
-    // console.log(this.states.landed ? 'landed' : '', this.states.parked ? 'parked' : '', this.states.landingPadContact ? 'landingPadContact' : '', this.states.groundContact ? 'groundContact' : '', this.states.landingPadProximity ? 'landingPadProximity' : '', this.states.groundProximity ? 'groundProximity' : '', this.states.flying ? 'flying' : '');
-  }
-
-  draw(ctx) {
-
-    let pos = local2global(this);
-    let r = this.r;
-    let p;
-
-    // FORWARD GUNS
-
-    // Let's hold off on designing the guns for now. This might not be what I'll end up wanting.
-
-    // ctx.beginPath();
-    // p = pos(r * -0.1, r * 0.65);
-    // ctx.moveTo(p.x, p.y);
-    // p = pos(r * 1, r * 0.65);
-    // ctx.lineTo(p.x, p.y);
-    //
-    // ctx.strokeStyle = "#bbb";
-    // ctx.lineWidth = r / 18;
-    // ctx.stroke();
-    //
-    // ctx.beginPath();
-    // p = pos(r * 0.95, r * 0.65);
-    // ctx.moveTo(p.x, p.y);
-    // p = pos(r * 1.2, r * 0.65);
-    // ctx.lineTo(p.x, p.y);
-    //
-    // ctx.strokeStyle = "#888";
-    // ctx.lineWidth = r / 12;
-    // ctx.lineCap = 'round';
-    // ctx.stroke();
-    // ctx.lineCap = 'square';
-    //
-    // ctx.beginPath();
-    // p = pos(r * -0.1, r * -0.65);
-    // ctx.moveTo(p.x, p.y);
-    // p = pos(r * 1, r * -0.65);
-    // ctx.lineTo(p.x, p.y);
-    //
-    // ctx.strokeStyle = "#bbb";
-    // ctx.lineWidth = r / 18;
-    // ctx.stroke();
-    //
-    // ctx.beginPath();
-    // p = pos(r * 0.95, r * -0.65);
-    // ctx.moveTo(p.x, p.y);
-    // p = pos(r * 1.2, r * -0.65);
-    // ctx.lineTo(p.x, p.y);
-    //
-    // ctx.strokeStyle = "#888";
-    // ctx.lineWidth = r / 12;
-    // ctx.lineCap = 'round';
-    // ctx.stroke();
-    // ctx.lineCap = 'square';
-
-    // STABILIZER RING
-    // This should only render for certain ship states -- or should it??? Have a think about this.
-
-    if ((!this.states.landed && !this.states.parked)) {
-      if (this.engineOn) {
-        this.animationProps.stabilizerRing.current += this.animationProps.stabilizerRing.current < this.animationProps.stabilizerRing.max ? 2 : 0;
-      } else {
-        this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
-      }
-    } else {
-      this.animationProps.stabilizerRing.current -= this.animationProps.stabilizerRing.current > 0 ? 2 : 0;
-    }
-
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, r * this.animationProps.stabilizerRing.current / 100, 0, 2 * Math.PI);
     ctx.closePath();
+
     ctx.strokeStyle = "#FFF";
     ctx.lineWidth = r / 10;
     ctx.stroke();
 
-    // PRIMARY THRUSTER
+    // Engine
 
     ctx.beginPath();
-    p = pos(r * -0.15, r * 0.125);
-    ctx.moveTo(p.x, p.y);
+    a = xy(r * -0.15, r * 0.125);
+    ctx.moveTo(a.x, a.y);
 
-    p = [
-      pos(r * -0.4, r * 0.2),
-      pos(r * -0.45, r * 0.175),
+    a = [
+      xy(r * -0.4, r * 0.2),
+      xy(r * -0.45, r * 0.175),
 
-      pos(r * -0.45, r * -0.175),
-      pos(r * -0.4, r * -0.2),
+      xy(r * -0.45, r * -0.175),
+      xy(r * -0.4, r * -0.2),
 
-      pos(r * -0.15, r * -0.125)
+      xy(r * -0.15, r * -0.125)
     ]
 
-    p.forEach(function(e) {
+    a.forEach(function(e) {
       ctx.lineTo(e.x, e.y);
     });
 
@@ -809,122 +137,92 @@ class Ship {
     ctx.fillStyle = "#333";
     ctx.fill();
 
-    // SECONDARY THRUSTERS
-
     ctx.beginPath();
-    p = pos(r * 0, r * 0.32);
-    ctx.moveTo(p.x, p.y);
-    p = pos(r * -0.35, r * 0.32);
-    ctx.lineTo(p.x, p.y);
+    a = xy(r * -0.3, r * 0.1);
+    ctx.moveTo(a.x, a.y);
+    a = xy(r * 0.05, r* 0.5);
+    ctx.lineTo(a.x, a.y);
 
-    p = pos(r * 0, r * -0.32);
-    ctx.moveTo(p.x, p.y);
-    p = pos(r * -0.35, r * -0.32);
-    ctx.lineTo(p.x, p.y);
+    a = xy(r * -0.4, r * 0.1);
+    ctx.moveTo(a.x, a.y);
+    a = xy(r * -0.05, r* 0.5);
+    ctx.lineTo(a.x, a.y);
 
-    ctx.strokeStyle = "#666";
-    ctx.lineWidth = r / 8;
-    ctx.stroke();
+    a = xy(r * -0.3, r * -0.1);
+    ctx.moveTo(a.x, a.y);
+    a = xy(r * 0.05, r* -0.5);
+    ctx.lineTo(a.x, a.y);
 
-    // PRIMARY THRUSTER POWER CONDUITS
-
-    ctx.beginPath();
-    p = pos(r * -0.3, r * 0.1);
-    ctx.moveTo(p.x, p.y);
-    p = pos(r * 0.05, r* 0.5);
-    ctx.lineTo(p.x, p.y);
-
-    p = pos(r * -0.4, r * 0.1);
-    ctx.moveTo(p.x, p.y);
-    p = pos(r * -0.05, r* 0.5);
-    ctx.lineTo(p.x, p.y);
-
-    p = pos(r * -0.3, r * -0.1);
-    ctx.moveTo(p.x, p.y);
-    p = pos(r * 0.05, r* -0.5);
-    ctx.lineTo(p.x, p.y);
-
-    p = pos(r * -0.4, r * -0.1);
-    ctx.moveTo(p.x, p.y);
-    p = pos(r * -0.05, r* -0.5);
-    ctx.lineTo(p.x, p.y);
+    a = xy(r * -0.4, r * -0.1);
+    ctx.moveTo(a.x, a.y);
+    a = xy(r * -0.05, r* -0.5);
+    ctx.lineTo(a.x, a.y);
 
     ctx.strokeStyle = "#333";
     ctx.lineWidth = r / 20;
     ctx.stroke();
 
-    // TERTIARY (NAVIGATIONAL) THRUSTERS
+    // Shading
+
+    // Add some sweet shading here to different parts of the main body depending on the craft rotation.
+    // E.g. if rotation is 0, add a darker layer on the right side of the craft. If rotation is 270, maybe to the bottom of the wings. 285, maybe start covering up the right side of the craft slightly, but keep like the wingtips bright.
+    // Fade out depending on current rotational distance from max rendering rotation for specific shadow
+
+    // Main body
 
     ctx.beginPath();
-    p = pos(r * -0.25, r * 1.1);
-    ctx.moveTo(p.x, p.y);
-    p = pos(r * -0.38, r * 1.07)
-    ctx.lineTo(p.x, p.y);
+    a = xy(r * 1.2, r * 0.05);
+    ctx.moveTo(a.x, a.y);
 
-    p = pos(r * -0.25, r * -1.1);
-    ctx.moveTo(p.x, p.y);
-    p = pos(r * -0.38, r * -1.07)
-    ctx.lineTo(p.x, p.y);
+    a = [
+      xy(r * 0.3475, r * 0.475),
+      xy(r * 0.35, r * 0.55),
+      xy(r * 0.3, r * 0.575),
+      xy(r * 0.25, r * 0.425),
+      xy(r * 0.2, r * 0.45),
+      xy(r * 0.25, r * 0.6),
+      xy(r * 0.2, r * 0.6),
+      xy(r * 0.15, r * 0.5),
+      xy(r * 0.1, r * 0.5),
+      xy(r * 0, r * 0.85),
+      xy(r * -0.15, r * 0.975),
+      xy(r * -0.2, r * 1.2),
+      xy(r * -0.3, r * 1.2),
+      xy(r * -0.25, r * 0.75),
+      xy(r * -0.375, r * 0.525),
+      xy(r * -0.75, r * 0.675),
+      xy(r * -0.8, r * 0.665),
+      xy(r * -0.4, r * 0.5),
+      xy(r * -0.2, r * 0.4),
+      xy(r * -0.1, r * 0.2),
+      xy(r * -0.15, r * 0.15),
 
-    ctx.strokeStyle = "#555";
-    ctx.lineWidth = r / 10;
-    ctx.stroke();
+      xy(r * -0.15, r * -0.15),
+      xy(r * -0.1, r * -0.2),
+      xy(r * -0.2, r * -0.4),
+      xy(r * -0.4, r * -0.5),
+      xy(r * -0.8, r * -0.665),
+      xy(r * -0.75, r * -0.675),
+      xy(r * -0.375, r * -0.525),
+      xy(r * -0.25, r * -0.75),
+      xy(r * -0.3, r * -1.2),
+      xy(r * -0.2, r * -1.2),
+      xy(r * -0.15, r * -0.975),
+      xy(r * 0, r * -0.85),
+      xy(r * 0.1, r * -0.5),
+      xy(r * 0.15, r * -0.5),
+      xy(r * 0.2, r * -0.6),
+      xy(r * 0.25, r * -0.6),
+      xy(r * 0.2, r * -0.45),
+      xy(r * 0.25, r * -0.425),
+      xy(r * 0.3, r * -0.575),
+      xy(r * 0.35, r * -0.55),
+      xy(r * 0.3475, r * - 0.475),
 
-    // MAIN FUSELAGE
-
-    ctx.beginPath();
-    p = pos(r * 1.2, r * 0.05);
-    ctx.moveTo(p.x, p.y);
-
-    p = [
-      pos(r * 0.3475, r * 0.475),
-      pos(r * 0.35, r * 0.55),
-      pos(r * 0.3, r * 0.575),
-      pos(r * 0.25, r * 0.425),
-      pos(r * 0.2, r * 0.45),
-      pos(r * 0.25, r * 0.6),
-      pos(r * 0.2, r * 0.6),
-      pos(r * 0.15, r * 0.5),
-      pos(r * 0.1, r * 0.5),
-      pos(r * 0, r * 0.85),
-      pos(r * -0.15, r * 0.975),
-      pos(r * -0.2, r * 1.2),
-      pos(r * -0.3, r * 1.2),
-      pos(r * -0.25, r * 0.75),
-      pos(r * -0.375, r * 0.525),
-      pos(r * -0.75, r * 0.675),
-      pos(r * -0.8, r * 0.665),
-      pos(r * -0.4, r * 0.5),
-      pos(r * -0.2, r * 0.4),
-      pos(r * -0.1, r * 0.2),
-      pos(r * -0.15, r * 0.15),
-
-      pos(r * -0.15, r * -0.15),
-      pos(r * -0.1, r * -0.2),
-      pos(r * -0.2, r * -0.4),
-      pos(r * -0.4, r * -0.5),
-      pos(r * -0.8, r * -0.665),
-      pos(r * -0.75, r * -0.675),
-      pos(r * -0.375, r * -0.525),
-      pos(r * -0.25, r * -0.75),
-      pos(r * -0.3, r * -1.2),
-      pos(r * -0.2, r * -1.2),
-      pos(r * -0.15, r * -0.975),
-      pos(r * 0, r * -0.85),
-      pos(r * 0.1, r * -0.5),
-      pos(r * 0.15, r * -0.5),
-      pos(r * 0.2, r * -0.6),
-      pos(r * 0.25, r * -0.6),
-      pos(r * 0.2, r * -0.45),
-      pos(r * 0.25, r * -0.425),
-      pos(r * 0.3, r * -0.575),
-      pos(r * 0.35, r * -0.55),
-      pos(r * 0.3475, r * - 0.475),
-
-      pos(r * 1.2, r * -0.05)
+      xy(r * 1.2, r * -0.05)
     ]
 
-    p.forEach(function(e) {
+    a.forEach(function(e) {
       ctx.lineTo(e.x, e.y);
     });
 
@@ -933,75 +231,25 @@ class Ship {
     ctx.fillStyle = "rgba(255,255,255,1)";
     ctx.fill();
 
-    // AILERONS
+    // Main viewport
 
     ctx.beginPath();
-    p = pos(r * -0.45, r * 0.85);
-    ctx.moveTo(p.x, p.y);
-    p = [
-      pos(r * -0.65, r * 1.07),
-      pos(r * -0.85, r * 1.1),
-      pos(r * -0.65, r * 0.7),
-    ];
-    if (this.states.secondaryThruster) {
-      p = [
-        pos(r * -0.95, r * 1.02),
-        pos(r * -1, r * 0.9),
-        pos(r * -0.65, r * 0.7),
-      ];
-    }
-    p.forEach(function(e) {
-      ctx.lineTo(e.x, e.y);
-    });
+    a = xy(r * 1, r * 0.075);
+    ctx.moveTo(a.x, a.y);
 
-    ctx.closePath();
+    a = [
+      xy(r * 0.4, r * 0.35),
+      xy(r * 0.375, r * 0.275),
+      xy(r * 0.5, r * 0.15),
 
-    ctx.fillStyle = "rgba(255,255,255,1)";
-    ctx.fill();
+      xy(r * 0.5, r * -0.15),
+      xy(r * 0.375, r * -0.275),
+      xy(r * 0.4, r * -0.35),
 
-    ctx.beginPath();
-    p = pos(r * -0.45, r * -0.85);
-    ctx.moveTo(p.x, p.y);
-    p = [
-      pos(r * -0.65, r * -1.07),
-      pos(r * -0.85, r * -1.1),
-      pos(r * -0.65, r * -0.7),
-    ];
-    if (this.states.secondaryThruster) {
-      p = [
-        pos(r * -0.95, r * -1.02),
-        pos(r * -1, r * -0.9),
-        pos(r * -0.65, r * -0.7),
-      ];
-    }
-    p.forEach(function(e) {
-      ctx.lineTo(e.x, e.y);
-    });
-
-    ctx.closePath();
-
-    ctx.fillStyle = "rgba(255,255,255,1)";
-    ctx.fill();
-
-    // COCKPIT
-
-    ctx.beginPath();
-    p = pos(r * 1, r * 0.075);
-    ctx.moveTo(p.x, p.y);
-
-    p = [
-      pos(r * 0.4, r * 0.35),
-      pos(r * 0.375, r * 0.275),
-      pos(r * 0.5, r * 0.15),
-
-      pos(r * 0.5, r * -0.15),
-      pos(r * 0.375, r * -0.275),
-      pos(r * 0.4, r * -0.35),
-
-      pos(r * 1, r * -0.075)
+      xy(r * 1, r * -0.075)
     ]
 
-    p.forEach(function(e) {
+    a.forEach(function(e) {
       ctx.lineTo(e.x, e.y);
     });
 
@@ -1012,17 +260,17 @@ class Ship {
     ctx.fill();
 
     ctx.beginPath();
-    p = pos(r * 1, r * 0.075);
-    ctx.moveTo(p.x, p.y);
+    a = xy(r * 1, r * 0.075);
+    ctx.moveTo(a.x, a.y);
 
-    p = [
-      pos(r * 0.5, r * 0.15),
-      pos(r * 0.5, r * -0.15),
+    a = [
+      xy(r * 0.5, r * 0.15),
+      xy(r * 0.5, r * -0.15),
 
-      pos(r * 1, r * -0.075)
+      xy(r * 1, r * -0.075)
     ]
 
-    p.forEach(function(e) {
+    a.forEach(function(e) {
       ctx.lineTo(e.x, e.y);
     });
 
@@ -1031,692 +279,655 @@ class Ship {
     ctx.fillStyle = "#447";
     if (this.engineOn) ctx.fillStyle = "#bbd";
     ctx.fill();
-  }
-}
 
+    // ctx.beginPath();
+    // ctx.moveTo(this.x, this.y);
+    // ctx.arc(this.x, this.y, 2, rads, rads + 2 * Math.PI);
+    // ctx.fillStyle = "rgba(255,255,255,1)";
+    // ctx.fill();
 
-class Tree {
-  constructor(x,z,type,height,color) {
-    this.x = x;
-    this.z = z;
-    this.type = type;
-    this.color = color;
-    this.height = type === 2 ? height * 1.5 : height;
-    this.frame = 0;
-    this.frameDirection = 'asc';
-  }
+    // console.log(this.x,this.y,a.x,a.y);
 
-  draw(ctx, plx) {
-    let h = this.height / 10;
-    let w = globals.wind;
+    // THIS IS THE OLD MODEL.
+    // Base circle
+    // ctx.beginPath();
+    // ctx.moveTo(this.x, this.y);
+    // ctx.arc(this.x, this.y, 10, rads, rads + 2 * Math.PI);
+    // ctx.fillStyle = "rgba(255,255,255,1)";
+    // ctx.fill();
 
-    let x = this.x + plx * 1.75;
+    // Window
+    // ctx.beginPath();
+    // ctx.moveTo(this.x, this.y);
+    // ctx.arc(this.x, this.y, 8, rads + 1.75 * Math.PI, rads + 2.25 * Math.PI);
+    // ctx.fillStyle = "rgba(0,0,0,0.25)";
+    // ctx.fill();
 
-    if (this.frameDirection === 'asc') {
-      this.frame += Math.round(Math.random() * 3);
-    } else {
-      this.frame -= Math.round(Math.random() * 3);
-    }
-
-    if (this.frame >= 75) {
-      this.frameDirection = 'desc';
-    }
-
-    if (this.frame <= 0) {
-      this.frameDirection = 'asc';
-    }
-
-    let xmod = w * this.frame / 100;
-
-    if (this.type === 1) {
-      // Draw type 1 tree, the proud FIR
-
-      // ctx.beginPath();
-      // ctx.moveTo(this.x - h / 2, VH);
-      // ctx.lineTo(0.25 * xmod + (this.x - h / 2), VH - h * 1);
-      // ctx.lineTo(0.1 * xmod + (this.x - h * 4), VH - h / 4);
-      //
-      // ctx.lineTo(0.5 * xmod + (this.x - h), VH - h * 3);
-      // ctx.lineTo(0.6 * xmod + (this.x - h * 3), VH - h * 2.5);
-      //
-      // ctx.lineTo(0.7 * xmod + (this.x - h / 2), VH - h * 6);
-      // ctx.lineTo(0.8 * xmod + (this.x - h * 2), VH - h * 5);
-      //
-      // ctx.lineTo(1.75 * xmod + (this.x), VH - h * 10);
-      //
-      // ctx.lineTo(0.8 * xmod + (this.x + h * 2), VH - h * 5);
-      // ctx.lineTo(0.7 * xmod + (this.x + h / 2), VH - h * 6);
-      //
-      // ctx.lineTo(0.6 * xmod + (this.x + h * 3), VH - h * 2.5);
-      // ctx.lineTo(0.5 * xmod + (this.x + h), VH - h * 3);
-      //
-      // ctx.lineTo(0.1 * xmod + (this.x + h * 4), VH - h / 4);
-      // ctx.lineTo(0.25 * xmod + (this.x + h / 2), VH - h * 1);
-      //
-      // ctx.lineTo(this.x + h / 2, VH);
-
-      ctx.beginPath();
-      ctx.moveTo(x - h / 2, VH);
-      ctx.lineTo(0.25 * xmod + (x - h / 2), VH - h * 1);
-      ctx.lineTo(0.1 * xmod + (x - h * 4), VH - h / 4);
-
-      ctx.lineTo(0.5 * xmod + (x - h), VH - h * 3);
-      ctx.lineTo(0.6 * xmod + (x - h * 3), VH - h * 2.5);
-
-      ctx.lineTo(0.7 * xmod + (x - h / 2), VH - h * 6);
-      ctx.lineTo(0.8 * xmod + (x - h * 2), VH - h * 5);
-
-      ctx.lineTo(1.75 * xmod + (x), VH - h * 10);
-
-      ctx.lineTo(0.8 * xmod + (x + h * 2), VH - h * 5);
-      ctx.lineTo(0.7 * xmod + (x + h / 2), VH - h * 6);
-
-      ctx.lineTo(0.6 * xmod + (x + h * 3), VH - h * 2.5);
-      ctx.lineTo(0.5 * xmod + (x + h), VH - h * 3);
-
-      ctx.lineTo(0.1 * xmod + (x + h * 4), VH - h / 4);
-      ctx.lineTo(0.25 * xmod + (x + h / 2), VH - h * 1);
-
-      ctx.lineTo(x + h / 2, VH);
-
-      ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},1)`;
-      ctx.fill();
-
-    }
-
-    if (this.type === 2) {
-      // Draw type 2 tree, the mighty PINE
-      // Actually, I think I'll just keep this kind of tree this way. Just a
-      // trunk going straight up. It adds an interesting visual element to the
-      // landscape.
-
-      // ctx.beginPath();
-      // ctx.moveTo(this.x - h * 0.5, VH);
-      // ctx.lineTo(0.25 * xmod + (this.x - h * 0.25), VH - h * 12);
-      // ctx.lineTo(0.25 * xmod + (this.x + h * 0.25), VH - h * 12);
-      // ctx.lineTo(this.x + h * 0.5, VH);
-
-      ctx.beginPath();
-      ctx.moveTo(x - h * 0.5, VH);
-      ctx.lineTo(0.25 * xmod + (x - h * 0.25), VH - h * 12);
-      ctx.lineTo(0.25 * xmod + (x + h * 0.25), VH - h * 12);
-      ctx.lineTo(x + h * 0.5, VH);
-
-      ctx.fillStyle = `rgba(${this.color.r + 50},${this.color.g + 10},${this.color.b + 10},1)`;
-      ctx.fill();
-    }
-  }
-}
-
-const globals = {
-  stage: false,
-  frame: 0,
-  state: {
-    current: 'running',
-    previous: '',
+    // Cover bottom of window
+    // ctx.beginPath();
+    // ctx.moveTo(this.x, this.y);
+    // ctx.arc(this.x, this.y, 2, rads + 1.5 * Math.PI, rads + 2.5 * Math.PI);
+    // ctx.fillStyle = "rgba(255,255,255,1)";
+    // ctx.fill();
   },
-  wind: 0,
-  drag: 0,
-  gravity: 0
+  adjustThrusters: function() {
+    if (!this.balancingThruster) this.balancingThruster = 90;
+
+    // Only move the thrusters into position if they're engaged. Otherwise move them back to default position.
+    if (controls.e) {
+
+    } else {
+
+    }
+
+    // THE ONES BELOW WEREN'T REALLY WHAT I WAS AFTER, AND SO, WERE ABANDONED WITHOUT MERCY.
+    let doit = false;
+    if (this.engineOn && doit) {
+      // console.log(this.vx, this.vy);
+      let vx = this.vx;
+      let vy = this.vy;
+
+      let a = Math.asin(Math.abs(vy) / Math.sqrt(Math.pow(Math.abs(vx),2) + Math.pow(Math.abs(vy),2))) / Math.PI * 180;
+
+      let b = 0;
+      if (vx >= -1 && vx <= 1 && vy > 1) {
+        a = 90;
+      } else if (vx < -1 && vy > 1) {
+        b = 90;
+      } else if (vx < -1 && vy >= -1 && vy <= 1) {
+        a = 180;
+      } else if (vx < -1 && vy < -1) {
+        b = 180;
+      } else if (vx >= -1 && vx <= 1 && vy < -1) {
+        a = 270;
+      } else if (vx > 1 && vy > -1) {
+        b = 270;
+      } else if (vx > 1 && vy >= -1 && vy <= 1) {
+        a = 0;
+      }
+      a += b;
+
+      // this.balancingThruster += Math.round((a - this.balancingThruster) / 10);
+    }
+
+    if (this.engineOn && doit) {
+      // let h1 = Math.pow(this.vx, 2);
+      // let h2 = Math.pow(this.vy, 2);
+      // let h = h1 + h2;
+      let h = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+      let a = Math.acos(this.vx / h) / Math.PI * 180;
+      // a = a / Math.PI * 180 + 180;
+      // a = a - this.balancingThruster;
+      // a = a / 5;
+      a = Math.round(a);
+
+      // this.balancingThruster = a;
+    } else {
+      // this.balancingthruster = 0;
+    }
+  }
+};
+
+var Dust = function() {
+  this.x = Math.round(Math.random() * w);
+  this.y = Math.round(Math.random() * h);
+  this.r = Math.round(Math.random() * 10);
+  this.color = "rgba(" + (Math.round(Math.random() * 50 + 200)) + "," + (Math.round(Math.random() * 50 + 200)) + "," + (Math.round(Math.random()) * 50 + 200) + "," + 0.3 + ")";
+  // this.color = {
+  //   r: Math.random() * 50 + 200,
+  //   g: Math.random() * 50 + 200,
+  //   b: Math.random() * 50 + 200,
+  // };
+  this.driftdistance = 25;
+  this.targetX = this.x + (this.driftdistance - Math.round(Math.random() * this.driftdistance * 2));
+  this.targetY = this.y + (this.driftdistance - Math.round(Math.random() * this.driftdistance * 2));
+  return this;
+};
+Dust.prototype = {
+  draw: function() {
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fill();
+  },
+  drift: function() {
+    let x = (this.targetX - this.x) / (Math.round(Math.random() * 400) + 100);
+    let y = (this.targetY - this.y) / (Math.round(Math.random() * 400) + 100);
+    this.x += x;
+    this.y += y;
+    if (this.x > w + this.r) this.x = 0;
+    if (this.x < 0 - this.r) this.x = w;
+    if (this.y > h + this.r) this.y = 0;
+    if (this.y < 0 - this.r) this.y = h;
+    if (Math.abs(this.targetX - this.x) < 10 || Math.abs(this.targetX - this.x) > 100) this.targetX = this.x + (this.driftdistance - Math.round(Math.random() * this.driftdistance * 2));
+    if (Math.abs(this.targetY - this.y) < 10 || Math.abs(this.targetY - this.y) > 100) this.targetY = this.y + (this.driftdistance - Math.round(Math.random() * this.driftdistance * 2));
+  },
+  pulsate: function() {
+
+  },
+  shrink: function() {
+
+  }
+};
+
+var Exhaust = function(x = sprite.x, y = sprite.y, c = {r: 255, g: 255, b: 255}, length, thickness, targetX, targetY) {
+  this.x = x;
+  this.y = y;
+  this.alpha = 1;
+  this.color = c;
+  this.length = length;
+  this.thickness = thickness;
+  this.targetX = targetX;
+  this.targetY = targetY;
+  this.angle = sprite.rotation; // Used to generate sparks
+  this.age = 0;
+  return this;
+};
+Exhaust.prototype = {
+  draw: function() {
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    // ctx.lineTo((this.targetX - (this.targetX - this.x)) / 10, (this.targetY - (this.targetY - this.y)) / 10);
+    // ctx.lineTo(this.targetX, this.targetY);
+    ctx.lineTo(this.x - (this.x - this.targetX) / this.length, this.y - (this.y - this.targetY) / this.length);
+    let color = "rgba(" + this.color.r + "," + this.color.g + "," + this.color.b + "," + this.alpha + ")";
+    ctx.strokeStyle = color;
+    ctx.lineWidth = this.thickness * this.age / maxExhaust;
+    // ctx.lineWidth = this.thickness;
+    ctx.stroke();
+  },
+  fade: function() {
+    if (this.alpha > 0) {
+      this.alpha -= 0.01;
+    }
+  },
+  drift: function() {
+    this.x -= (this.x - this.targetX) / 10;
+    this.y -= (this.y - this.targetY) / 10;
+    if(this.x > w) {
+      this.x = 0;
+      this.targetX -= w;
+    }
+    if(this.x < 0) {
+      this.x = w;
+      this.targetX += w;
+    }
+  }
+};
+
+var ThrusterExhaust = function(x,y,vx,vy,c) {
+  this.x = x;
+  this.y = y;
+  this.vx = vx;
+  this.vy = vy;
+  this.color = c;
+  this.alpha = 1;
+};
+ThrusterExhaust.prototype = {
+  draw: function() {
+    ctx.beginPath();
+    // ctx.arc(this.x, this.y, Math.random() * 7, 0, 2 * Math.PI);
+    ctx.arc(this.x, this.y, 2, 0, 2 * Math.PI);
+    ctx.fillStyle = "rgba(" + this.color.r + "," + this.color.g + "," + this.color.b + "," + this.alpha + ")";
+    ctx.fill();
+  },
+  drift: function() {
+    if (this.vx < 0) this.vx += airResistance;
+    if (this.vx > 0) this.vx -= airResistance;
+    if (this.vy < 0) this.vy += airResistance;
+    if (this.vy > 0) this.vy -= airResistance;
+
+    this.vy -= g;
+
+    this.x += this.vx;
+    this.y += this.vy;
+  },
+  fade: function() {
+    if (this.alpha > 0) {
+      this.alpha -= 0.1;
+    }
+  }
+};
+
+var Spark = function(x, y, vx, vy, angle, intensity, color) {
+  this.x = x;
+  this.y = y;
+  this.vx = vx;
+  this.vy = vy;
+  // this.orientation = orientation; // Up, down, left, right
+  this.angle = angle;
+  this.intensity = intensity;
+  this.color = color;
+  this.alpha = 1;
+};
+Spark.prototype = {
+  draw: function() {
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    let rads = this.angle * Math.PI / 180;
+    let rand = Math.round(Math.random() * 15) + 4;
+    let x = this.x - Math.cos(rads) * this.intensity / rand;
+    let y = this.y + Math.sin(rads) * this.intensity / rand;
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = "rgba(" + this.color.r + "," + this.color.g + "," + this.color.b +"," + this.alpha + ")";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  },
+  spark: function() {
+    this.vy += g;
+    this.x += this.vx;
+    this.y += this.vy;
+  },
+  fade: function() {
+    if (this.alpha > 0) {
+      this.alpha -= 0.1;
+    }
+  }
+};
+
+'use strict';
+
+// Intersection code snagged from http://www.kevlindev.com/gui/math/intersection/index.htm
+
+function Intersection(status) {
+    if ( arguments.length > 0 ) {
+        this.init(status);
+    }
+}
+Intersection.prototype.init = function(status) {
+    this.status = status;
+    this.points = new Array();
+};
+
+var intersectLineLine = function(a1, a2, b1, b2) {
+    var result;
+
+    var ua_t = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x);
+    var ub_t = (a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x);
+    var u_b  = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y);
+
+    if ( u_b != 0 ) {
+        var ua = ua_t / u_b;
+        var ub = ub_t / u_b;
+
+        if ( 0 <= ua && ua <= 1 && 0 <= ub && ub <= 1 ) {
+            result = new Intersection("Intersection");
+            result.points.push({
+                x: a1.x + ua * (a2.x - a1.x),
+                y: a1.y + ua * (a2.y - a1.y)
+            });
+        } else {
+            result = new Intersection("No Intersection");
+        }
+    } else {
+        if ( ua_t == 0 || ub_t == 0 ) {
+            result = new Intersection("Coincident");
+        } else {
+            result = new Intersection("Parallel");
+        }
+    }
+
+    return result;
+};
+
+const w = window.innerWidth;
+const h = window.innerHeight;
+
+function getContext(w, h) {
+  var canvas = document.createElement("canvas");
+  document.body.appendChild(canvas);
+  canvas.width = w || window.innerWidth;
+  canvas.height = h || window.innerHeight;
+  return canvas.getContext("2d");
 }
 
-/*****************************************************************************
+var ctx = getContext(w, h);
 
- CONTROLS
+var g = 0.03;
+var airResistance = 0.5;
+// var g = 0;
+// var wind = 0.3;
 
- *****************************************************************************/
+var maxExhaust = 200;
 
-const controls = {
-  primaryThruster: false,
-  turnCw: false,
-  turnCcw: false,
-  // boost: false,
-  // stabilize: false,
-  // turnReset: false,
-  // maintain: false,
+var sprite = new Sprite();
+
+var dust = [];
+
+for (var i = 0; i < 500; i++) {
+  let d = new Dust();
+  dust.push(d);
 }
 
-window.addEventListener('keydown',(e) => {
+var exhaust = [];
+
+var thrusterexhaust = [];
+
+var sparks = [];
+
+var controls = {
+  w: false,
+  a: false,
+  s: false,
+  d: false,
+  e: false
+}
+
+window.addEventListener('keydown',function(e) {
   // console.log(e.which);
   let code = e.which;
-  if (code === 87) controls.primaryThruster = true;
-  if (code === 65) controls.turnCcw = true;
-  if (code === 68) controls.turnCw = true;
-  if (code === 83) controls.secondaryThruster = true;
-  // if (code === 69) controls.stabilize = true;
-  // if (code === 82) controls.turnReset = true;
-  // if (code === 84) controls.maintain = true;
-
+  if (code === 87) controls.w = true;
+  if (code === 65) controls.a = true;
+  if (code === 83) controls.s = true;
+  if (code === 68) controls.d = true;
+  if (code === 69) controls.e = true;
+  if (code === 82) controls.r = true;
+  if (code === 84) controls.t = true;
 });
 
-window.addEventListener('keyup',(e) => {
+window.addEventListener('keyup',function(e) {
   let code = e.which;
-  if (code === 87) controls.primaryThruster = false;
-  if (code === 65) controls.turnCcw = false;
-  if (code === 68) controls.turnCw = false;
-  if (code === 83) controls.secondaryThruster = false;
-  // if (code === 69) controls.stabilize = false;
-  // if (code === 82) controls.turnReset = false;
-  // if (code === 84) controls.maintain = false;
-
+  if (code === 87) controls.w = false;
+  if (code === 65) controls.a = false;
+  if (code === 83) controls.s = false;
+  if (code === 68) controls.d = false;
+  if (code === 69) controls.e = false;
+  if (code === 82) controls.r = false;
+  if (code === 84) controls.t = false;
   if (code === 81) {
-    ships[0].engineOn = !ships[0].engineOn;
+    sprite.engineOn = sprite.engineOn ? false : true;
   }
-
-  if (code === 70 && ships[0].engineOn) {
-    ships[0].engineOutput += 100;
+  if (code === 70 && sprite.engineOn) {
+    sprite.engineOutput += 100;
   }
 });
 
-/*****************************************************************************
+function update() {
+  sprite.adjustThrusters();
 
- STATES
+  dust.forEach(function(e) {
+    e.drift();
+    e.pulsate();
+  });
 
- titlescreen
- running
- paused
- gameover
+  exhaust.forEach(function(e,i) {
+    e.drift();
+    e.fade();
+    e.age = i;
 
- *****************************************************************************/
-
-let setState = s => {
-  globals.state.previous = globals.state.current;
-  globals.state.current = s;
-
-  document.querySelector('body').classList.remove(globals.state.previous);
-  document.querySelector('body').classList.add(globals.state.current);
-}
-
-/*****************************************************************************
-
- OBJECTS
-
- *****************************************************************************/
-
-const particles = [];
-const moons = [];
-const mountains = [];
-const landingpads = [];
-const trees = [];
-const buildings = [];
-const ships = [];
-const primaryExhaustIdle = [];
-const primaryExhaust = [];
-const secondaryExhaust = [];
-const tertiaryExhaust = [];
-
-let setStage = () => {
-
-  globals.wind = Math.round(Math.random() * 20 - 10);
-
-  globals.drag = 0.995;
-
-  globals.gravity = 0.03;
-
-  // Create the moon(s?)
-  let m = new Moon(Math.floor(Math.random() * VW), VH * 0.75, 75);
-  moons.push(m);
-
-  // Generate mountains
-  for (let i = 0; i < 5; i++) {
-    let foot = Math.floor(Math.random() * VW  - VW / 2);
-    // let height = Math.random() * 40 + 10;
-    let height = Math.random() * ((4 - i) * 10) + 10;
-    let peaks = Math.ceil(Math.random() * 3);
-    let color = {r: Math.floor(Math.random() * 40), g: 0, b: Math.floor(Math.random() * 40), a: 1};
-    // Higher = farther away = more parallax
-    let distance = i + 1;
-    let m = new Mountain(foot,height,peaks,color,distance);
-    mountains.push(m)
-  }
-
-  // Create the landing pad
-  let p = new Landingpad(Math.floor(Math.random() * (VW - 100)) + 50);
-  landingpads.push(p);
-
-  //Generate trees
-  for (let i = 0; i < 150; i++) {
-    let x = Math.round(Math.random() * VW * 1.5 - VW * 0.25);
-    // I want more trees of type 1 than type 2
-    let type = Math.floor(Math.random() * 100 + 1) <= 85 ? 1 : 2;
-    let z = type === 2 ? 2 : Math.floor(Math.random() * 2 + 1);
-    let h = Math.round(Math.random() * 30 + 15);
-    let color = {
-      r: Math.round(Math.random() * 50 + 50),
-      g: Math.round(Math.random() * 50 + 0),
-      b: Math.round(Math.random() * 50 + 50)
+    var is = intersectLineLine({x:0,y:h},{x:w,y:h},{x:e.x,y:e.y},{x:e.x - (e.x - e.targetX) / e.length, y:e.y - (e.y - e.targetY) / e.length});
+    if (is.status === "Intersection") {
+      let x = is.points[0].x;
+      let y = is.points[0].y;
+      let a = sprite.rotation + Math.round(Math.random() * 120) - 60;
+      let i = sprite.engineOutput;
+      let rads = a * Math.PI / 180;
+      let vx = Math.cos(rads) * i / 50 * -1;
+      let vy = Math.sin(rads) * i / 50;
+      let c = {
+        r: Math.round(Math.random(50) + 200),
+        g: Math.round(Math.random(50) + 200),
+        b: Math.round(Math.random(50) + 200)
+      }
+      if (controls.s) {
+        i *= 5;
+        c = {r: Math.round(Math.random(50) + 200), g: 150, b: 150};
+      }
+      if (controls.w) {
+        i *= 2
+      }
+      if (controls.e) {
+        i *= 1;
+        c = {r: 150, g: 150, b: Math.round(Math.random(50) + 200)};
+      }
+      let s = new Spark(x,y,vx,vy,a,i,c);
+      sparks.push(s);
+      if (sparks.length > 200) sparks.shift();
     }
-    let t = new Tree(x,z,type,h,color);
-    trees.push(t);
-  }
+  });
 
-  // Generate buildings
-  for (let i = 0; i < 5; i++) {
-    let x = Math.round(Math.random() * VW);
-    let type = 1;
-    let height = Math.round(Math.random() * 20 + 20);
-    let color = {}
-    color.r = color.g = color.b = Math.round(Math.random() * 75 + 50);
-    let b = new Building(x,type,height,color);
-    buildings.push(b);
-  }
+  // Control sparks
+  let s = []
+  sparks.forEach(function(e) {
+    e.spark();
+    e.fade();
+    if(e.alpha > 0) {
+      s.push(e);
+    }
+  });
+  sparks = s;
 
-  // Generate particles
-  for (let i = 0; i < 200; i++) {
-    let p = new Particle();
-    particles.push(p);
-    globals.stage = true;
-  }
+  let t = []
+  thrusterexhaust.forEach(function(e) {
+    e.drift();
+    e.fade();
+    if(e.alpha > 0) {
+      t.push(e);
+    }
+  });
+  thrusterexhaust = t;
 
-  // Create ship
-  let s = new Ship(landingpads[0].apparentX, VH - 162 - 15);
-  // let s = new Ship(VW / 2, VH / 2);
-  ships.push(s);
-
-}
-
-/*****************************************************************************
-
- TRIGONOMETRY FUNCTIONS
-
- Also add functions for:
- line-line intersections
- other intersections
- direction from one point to another
-
- *****************************************************************************/
-
-let distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-
-let rads = degs => degs * Math.PI / 180;
-
-let degs = rads => rads * 180 / Math.PI;
-
-let local2global = (self) => {
-  let r = rads(self.rotation) || 0;
-  return (x1, y1) => {
-    // Make the passed-in local coordinates global using the magic of trigonometry and the provided rotation
-
-    let l = Math.hypot(x1,y1);
-    let a = Math.atan2(y1,x1) + r;
-    // Keep the below bit for now. Don't know if I'll need it later.
-    // a += a < 0 ? Math.PI * 2 : 0;
-    // a += r;
-
-    let x2 = self.x + Math.cos(a) * l;
-    let y2 = self.y + Math.sin(a) * l;
-
-    return {x: x2, y: y2};
-  };
-}
-
-/*****************************************************************************
-
- SHIP HANDLING
-
- *****************************************************************************/
-
-let handleShip = (s) => {
-  s.states.primaryThruster = false;
-  s.states.secondaryThruster = false;
-  s.states.turningCw = false;
-  s.states.turningCcw = false;
-
-  if (s.engineOn) {
-    if (s.primaryFuel > 0) {
-      let p = s.runEngine();
-
-      addExhaust('idle',s,p);
+  if (sprite.engineOn) {
+    // Determine energy line length and thickness.
+    if (controls.s) {
+      sprite.currentPowerMod += (sprite.boostPowerMod - sprite.currentPowerMod)/ 50;
+      if (sprite.boostPowerMod - sprite.currentPowerMod < 0.05) sprite.currentPowerMod = sprite.boostPowerMod
+    } else if (controls.e) {
+      sprite.currentPowerMod += (sprite.thrusterPowerMod - sprite.currentPowerMod)/ 50;
+      if (sprite.currentPowerMod - sprite.thrusterPowerMod < 0.05) sprite.currentPowerMod = sprite.thrusterPowerMod;
     } else {
-      s.engineOn = false;
+      sprite.currentPowerMod += (sprite.standardPowerMod - sprite.currentPowerMod) / 50;
+      if (Math.abs(sprite.currentPowerMod - sprite.standardPowerMod) < 0.05) sprite.currentPowerMod = sprite.standardPowerMod;
+    }
+
+    // Lets engineOutput rise slowly when engine is started. Don't increse output while engaging thrusters
+    if (sprite.engineOutput < 100 && !controls.e) {
+      sprite.engineOutput += 0.25;
     }
   }
 
-  if (!s.engineOn && s.engineOutput > 0){
-    let p = s.powerDownEngine();
+  // If engine has any power, the craft can be controlled
+  if (sprite.engineOutput > 0) {
+    sprite.primaryFuel -= 1 * sprite.currentPowerMod;
 
-    addExhaust('idle',s,p);
-  }
+    if (controls.w) {
+      let rads = sprite.rotation * Math.PI / 180;
 
-  // Controls
-
-  if (s.engineOutput > 0) {
-    if (controls.secondaryThruster) {
-      let p = s.secondaryThruster();
-      s.states.primaryThruster = true;
-      s.states.secondaryThruster = true;
-
-      addExhaust('primary',s,{x: p.x1, y: p.y1});
-      addExhaust('secondary',s,p);
-
-    } else if (controls.primaryThruster) {
-      let p = s.primaryThruster();
-      s.states.primaryThruster = true;
-
-      addExhaust('primary',s,p);
+      sprite.vy += Math.sin(rads) * sprite.movespeed * sprite.engineOutput / 100;
+      sprite.vx += Math.cos(rads) * sprite.movespeed * sprite.engineOutput / 100;
     }
 
-    if (controls.turnCw) {
-      let p = s.cw();
-      s.states.turningCw = true;
+    if (controls.t) {
+      let rads = sprite.rotation * Math.PI / 180;
 
-      addExhaust('tertiaryCw',s,p);
+      sprite.vy += Math.sin(rads) * g * sprite.engineOutput / 100;
+      sprite.vx += Math.cos(rads) * g * sprite.engineOutput / 100;
     }
 
-    if (controls.turnCcw) {
-      let p = s.ccw();
-      s.states.turningCcw = true;
+    if (controls.s) {
+      let rads = sprite.rotation * Math.PI / 180;
 
-      addExhaust('tertiaryCcw',s,p);
+      sprite.vy += Math.sin(rads) * sprite.boostspeed * sprite.engineOutput / 100;
+      sprite.vx += Math.cos(rads) * sprite.boostspeed * sprite.engineOutput / 100;
+
+      sprite.engineOutput -= 0.75;
     }
+
+    if (controls.e) {
+      sprite.vy -= sprite.vy / 10;
+      sprite.vx -= sprite.vx / 20;
+
+      sprite.engineOutput -= 0.5;
+    }
+
+    if (controls.a) {
+      if (sprite.engineOutput < 100) {
+        sprite.rotation -= sprite.turnspeed * sprite.engineOutput / 100;
+      } else {
+        sprite.rotation -= sprite.turnspeed;
+      }
+    }
+
+    if (controls.d) {
+      if (sprite.engineOutput < 100) {
+        sprite.rotation += sprite.turnspeed * sprite.engineOutput / 100;
+      } else {
+        sprite.rotation += sprite.turnspeed;
+      }
+    }
+
+    //  Rotate to face up
+    if (controls.r && sprite.rotation !== 270) {
+      let r = sprite.rotation;
+      let d = Math.abs((270 - r) / 10);
+      if (d < 2) d = 2;
+      if (r < 270 && r >= 90) {
+        sprite.rotation += d;
+      } else {
+        sprite.rotation -= d;
+      }
+      if (r >= 269 && r <= 271) sprite.rotation = 270;
+    }
+
+    if (sprite.rotation < 0) sprite.rotation = 360;
+    if (sprite.rotation > 360) sprite.rotation = 0;
   }
 
-  if (s.engineOutput > 0) {
-    s.drainFuel();
+  // Generate main engine exhaust if engine is outputting power
+  if (sprite.engineOn) {
+    let c = {r: 255, g: 255, b: 255};
+    let l = 10;
+    let t = 1;
+    let d = 1;
+    if (controls.s) {
+      c = {r:200, g: 100, b: 100};
+      l = 1;
+      t = 3;
+      d = 2;
+    }
+    if (controls.w) {
+      l = 5;
+      t = 2;
+      d = 1.25;
+    }
+    if (controls.e) {
+      c = {r: 200, g: 200, b: 255};
+      l = 10;
+      t = 1;
+      d = 0.75;
+    }
+    let rads = sprite.rotation * Math.PI / 180;
+    let x = sprite.x + Math.cos(rads) * sprite.engineOutput * sprite.currentPowerMod * d * -1;
+    let y = sprite.y + Math.sin(rads) * sprite.engineOutput * sprite.currentPowerMod * d * -1;
+    let e = new Exhaust(sprite.x, sprite.y, c, l, t, x, y);
+    exhaust.push(e);
+    if (exhaust.length > maxExhaust) exhaust.shift();
   }
 
-  // Update position of ship
-
-  s.move();
-}
-
-let addExhaust = (type, s, p) => {
-  if (type === 'idle') {
+  //Generate thruster exhaust if engine is outputting power and thrusters are engaged
+  if (sprite.engineOn && controls.e) {
+    // let rads = sprite.balancingThruster + 45;
+    // let x1 = sprite.x + Math.cos(rads) * 10;
+    // let y1 = sprite.y + Math.sin(rads) * 10;
+    // rads = sprite.balancingThruster - 45;
+    // let x2 = sprite.x + Math.cos(rads) * 10;
+    // let y2 = sprite.y + Math.sin(rads) * 10;
+    // let vx1 = Math.cos(sprite.balancingThruster + 45) * 5;
+    // let vx2 = Math.cos(sprite.balancingThruster - 45) * 5;
+    // let vy1 = Math.sin(sprite.balancingThruster + 45) * 5;
+    // let vy2 = Math.sin(sprite.balancingThruster - 45) * 5;
     let c = {
       r: 150,
       g: 150,
-      b: 150
+      b: 255
     }
-    let e = new Exhaust(p.x, p.y, s.rotation + 180, 2, 'idle', 5, (s.engineOutput > 150 ? 150 : s.engineOutput), c, 0.5);
-    primaryExhaustIdle.push(e);
+    // let t1 = new ThrusterExhaust(x1,y1,vx1,vy1,c);
+    // let t2 = new ThrusterExhaust(x2,y2,vx2,vy2,c);
 
-  } else if (type === 'primary') {
-    let c = {
-      r: 200,
-      g: 200,
-      b: 200
-    }
-    let e = new Exhaust(p.x, p.y, s.rotation + 180, 5, 'primary', 10, s.engineOutput, c, 1);
-    primaryExhaust.push(e);
-
-  } else if (type === 'secondary') {
-    let c = {
-      r: Math.round(Math.random() * 55 + 200),
-      g: Math.round(Math.random() * 55 + 200),
-      b: Math.round(Math.random() * 55 + 200)
-    }
-    let e = new Exhaust(p.x2, p.y2, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
-    secondaryExhaust.push(e);
-
-    e = new Exhaust(p.x3, p.y3, s.rotation + 180, 10, 'secondary', 10, s.engineOutput, c, 1);
-    secondaryExhaust.push(e);
-
-  } else if (type === 'tertiaryCw') {
-    let c = {
-      r: 200,
-      g: 200,
-      b: 200
-    }
-    let e = new Exhaust(p.x, p.y, s.rotation + 165, 4, 'tertiary', 2, s.engineOutput, c, 1);
-    tertiaryExhaust.push(e);
-  } else if (type === 'tertiaryCcw') {
-    let c = {
-      r: 200,
-      g: 200,
-      b: 200
-    }
-    let e = new Exhaust(p.x, p.y, s.rotation + 195, 4, 'tertiary', 2, s.engineOutput, c, 1);
-    tertiaryExhaust.push(e);
+    // thrusterexhaust.push(t1);
+    // thrusterexhaust.push(t2);
   }
-}
 
-/*****************************************************************************
-
- UPDATE
-
- *****************************************************************************/
-
-let update = () => {
-  moons.forEach((e) => {
-    e.move();
-  })
-
-  particles.forEach((e) => {
-    e.drift();
-    e.pulsate();
-    e.flicker()
-  })
-
-  handleShip(ships[0]);
-
-  let a = [];
-  primaryExhaustIdle.forEach((e) => {
-    if (!e.fade() && !e.move()) {
-      a.push(e);
-    }
-  })
-  primaryExhaustIdle.length = 0;
-  a.forEach((e) => {
-    primaryExhaustIdle.push(e);
-  })
-
-  a = [];
-  primaryExhaust.forEach((e) => {
-    if (!e.fade() && !e.move()) {
-      a.push(e);
-    }
-  })
-  primaryExhaust.length = 0;
-  a.forEach((e) => {
-    primaryExhaust.push(e);
-  })
-
-  a = [];
-  secondaryExhaust.forEach((e) => {
-    if (!e.fade() && !e.move()) {
-      a.push(e);
-    }
-  })
-  secondaryExhaust.length = 0;
-  a.forEach((e) => {
-    secondaryExhaust.push(e);
-  })
-
-  a = [];
-  tertiaryExhaust.forEach((e) => {
-    if (!e.fade() && !e.move()) {
-      a.push(e);
-    }
-  })
-  tertiaryExhaust.length = 0;
-  a.forEach((e) => {
-    tertiaryExhaust.push(e);
-  })
-
-}
-
-/*****************************************************************************
-
- HUD
-
- *****************************************************************************/
-
-let updateHUD = (s) => {
-  if (s.engineOutput > 0) {
-    document.querySelector('.hud').classList.remove('inactive');
-    document.querySelector('.hud').classList.add('active');
-
-    let r = Math.floor(s.rotation) - 270;
-    if (r < 0) r+= 360;
-    document.querySelector('.hud .shipStatus').style.setProperty("--rotation", r);
-    document.querySelector('.hud .shipStatus .rotation .readout').innerHTML = r;
-
-    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutput", s.engineOutput);
-    let engineOutputColor = '#0c9';
-    if (s.engineOutput > 110) engineOutputColor = '#9c0';
-    if (s.engineOutput > 175) engineOutputColor = '#d00';
-    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutputColor", engineOutputColor);
-    document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.engineOutput);
-    document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.engineOutput);
-
-    let a = Math.floor(((s.y - VH + s.r) * -1) / VH * 100 / 2);
-    if (a > 100) {
-      a = 100;
-      document.querySelector('.hud .shipStatus .altitude').classList.add('critical');
-    } else {
-      document.querySelector('.hud .shipStatus .altitude').classList.remove('critical');
-    }
-    document.querySelector('.hud .shipStatus').style.setProperty("--altitude", a);
-
-    let ax = Math.round(s.ax * 800);
-    let ay = Math.round(s.ay * 800 * -1);
-    if (ax > 200) ax = 200;
-    if (ax < -200) ax = -200;
-    if (ay > 200) ay = 200;
-    if (ay < -200) ay = -200;
-    ax += 200;
-    ay += 200;
-    ax /= 4;
-    ay /= 4;
-    document.querySelector('.hud .shipStatus').style.setProperty('--accelerationHorizontal',ax);
-    document.querySelector('.hud .shipStatus').style.setProperty('--accelerationVertical',ay);
-
-    let vx = Math.round(s.vx / 14 * 100);
-    let vy = Math.round(s.vy * -1 / 14 * 100);
-    let vxp = 0;
-    let vxn = 0;
-    let vxc = false;
-    if (vx > 50) {
-      vx = 50;
-      vxc = true;
-    }
-    if (vx < -50) {
-      vx = -50;
-      vxc = true;
-    }
-    if (vx > 0) {
-      vxp = vx;
-    } else if (vx < 0) {
-      vxn = vx * -1;
-    }
-    let vyp = 0;
-    let vyn = 0;
-    let vyc = false;
-    if (vy > 50) {
-      vy = 50;
-      vyc = true;
-    }
-    if (vy < -50) {
-      vy = -50;
-      vyc = true;
-    }
-    if (vy > 0) {
-      vyp = vy;
-    } else if (vy < 0) {
-      vyn = vy * -1;
-    }
-    if (vxc) {
-      document.querySelector('.hud .shipStatus .speedHorizontal').classList.add('critical');
-    } else {
-      document.querySelector('.hud .shipStatus .speedHorizontal').classList.remove('critical');
-    }
-    if (vyc) {
-      document.querySelector('.hud .shipStatus .speedVertical').classList.add('critical');
-    } else {
-      document.querySelector('.hud .shipStatus .speedVertical').classList.remove('critical');
-    }
-    document.querySelector('.hud .shipStatus').style.setProperty('--speedHorizontalPositive',vxp);
-    document.querySelector('.hud .shipStatus').style.setProperty('--speedHorizontalNegative',vxn);
-    document.querySelector('.hud .shipStatus').style.setProperty('--speedVerticalPositive',vyp);
-    document.querySelector('.hud .shipStatus').style.setProperty('--speedVerticalNegative',vyn);
-
-  } else {
-    document.querySelector('.hud').classList.remove('active');
-    document.querySelector('.hud').classList.add('inactive');
-    let criticals = document.querySelectorAll('.hud *')
-    criticals.forEach((e) => {
-      e.classList.remove('critical');
-    });
+  // If engine output is really high, have it dissipate faster. That engine's not built to handle this much energy!!
+  if (sprite.engineOutput > 100) {
+    sprite.engineOutput -= (sprite.engineOutput - 100) / 50;
+    if (sprite.engineOutput < 101) sprite.engineOutput = 100;
   }
-}
 
-/*****************************************************************************
-
- DRAW
-
- *****************************************************************************/
-
-let draw = () => {
-  // Clear the canvases
-  context1.clearRect(0,0,VW,VH);
-  context2.clearRect(0,0,VW,VH);
-
-  let parallax = 50 * Math.round((VW / 2 - ships[0].x) / (VW / 2) * 1000) / 1000;
-
-  moons.forEach((e) => {
-    e.draw(context1);
-  })
-
-  mountains.forEach((e) => {
-    e.draw(context1,parallax);
-  })
-
-  trees.forEach((e) => {
-    if (e.z === 1) {
-      e.draw(context1,parallax);
-    }
-  })
-
-  buildings.forEach((e) => {
-    e.draw(context1,parallax)
-  })
-
-  landingpads.forEach((e) => {
-    e.draw(context2,parallax);
-  })
-
-  trees.forEach((e) => {
-    if (e.z === 2) {
-      e.draw(context2,parallax);
-    }
-  })
-
-  primaryExhaustIdle.forEach((e) => {
-    e.draw(context2);
-  })
-
-  primaryExhaust.forEach((e) => {
-    e.draw(context2);
-  })
-
-  secondaryExhaust.forEach((e) => {
-    e.draw(context2);
-  })
-
-  tertiaryExhaust.forEach((e) => {
-    e.draw(context2);
-  })
-
-  particles.forEach((e) => {
-    e.draw(context2);
-  })
-
-  ships[0].draw(context2);
-
-  updateHUD(ships[0]);
-}
-
-/*****************************************************************************
-
- FRAME
-
- *****************************************************************************/
-
-let frame = setInterval(() => {
-  if (globals.state.current === 'running') {
-    if (globals.stage === false) setStage();
-    globals.frame++;
-    update();
-    draw();
+  // Engine slowly dies when turned off.
+  if (!sprite.engineOn && sprite.engineOutput > 0) {
+    sprite.engineOutput--;
   }
-}, 16); // ~60fps
+
+  if (sprite.y !== h - sprite.radius) {
+    sprite.vy += g;
+  }
+
+  sprite.y += sprite.vy;
+
+  if (sprite.y > h -sprite.radius) {
+    sprite.y = h -sprite.radius;
+    sprite.vy *= -0.33;
+  }
+
+  sprite.x += sprite.vx;
+
+  if (sprite.y === h - sprite.radius) {
+    sprite.vx *= 0.75;
+  }
+
+  // if (sprite.x > w) sprite.x = w;
+  // if (sprite.x < 0) sprite.x = 0;
+
+  if (sprite.x > w) sprite.x = 0;
+  if (sprite.x < 0) sprite.x = w;
+
+  sprite.vx = Math.round(sprite.vx * 1000) / 1000;
+  sprite.vy = Math.round(sprite.vy * 1000) / 1000;
+}
+
+function draw() {
+  ctx.clearRect(0,0,w,h);
+
+  exhaust.forEach(function(e) {
+    e.draw();
+  });
+
+  sparks.forEach(function(e) {
+    e.draw();
+  });
+
+  thrusterexhaust.forEach(function(e) {
+    e.draw();
+  });
+
+  dust.forEach(function(e) {
+    if (Math.sqrt(Math.pow(Math.abs(e.x - sprite.x),2) + Math.pow(Math.abs(e.y - sprite.y),2)) < sprite.engineOutput * sprite.currentPowerMod && sprite.engineOutput > 0) {
+      ctx.beginPath();
+      ctx.moveTo(e.x, e.y);
+      ctx.lineTo(sprite.x, sprite.y);
+      ctx.strokeStyle = "rgba(255,255,255," + Math.random() * 0.5 + ")";
+      ctx.lineWidth = 1 * sprite.currentPowerMod;
+      if (controls.s) {
+        ctx.strokeStyle = "rgba(" + Math.round(Math.random() * 155 + 100) + "," + Math.round(Math.random() * 155 + 100) + ",0," + Math.random() * 0.5 + ")";
+        ctx.lineWidth = 1.5 * sprite.currentPowerMod;
+      }
+      if (controls.e) {
+        ctx.strokeStyle = "rgba(" + Math.round(Math.random() * 50 + 100) + "," + Math.round(Math.random() * 50 + 100) + "," + Math.round(Math.random() * 55 + 200) + "," + Math.random() * 0.5 + ")";
+        ctx.lineWidth = 1.5 / sprite.currentPowerMod;
+      }
+      ctx.stroke();
+      ctx.lineWidth = 1;
+    }
+    e.draw();
+  });
+  sprite.draw();
+}
+
+var frame = setInterval(function() {
+  update();
+  draw();
+}, 10);
+
+
+//# sourceMappingURL=game.js.map
