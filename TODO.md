@@ -151,6 +151,10 @@
 - [ ] Structure and clean up code. Make it conform to best practices.
 - [ ] Maybe wrap the whole thing in Electron to make a nice desktop apps for all platforms
 
+## Other
+
+- [ ] Rewrite the gulpfile so it's better. I mistype 'watch' every dang time.
+
 ## Goals that probably won't happen but hey you never know
 
 - [ ] A store to buy upgrades with the stuff you collect
