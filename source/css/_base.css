@@ -18,7 +18,7 @@ body {
     linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 75%),
     repeating-linear-gradient(135deg, rgba(255,255,255,0) 0, rgba(255,255,255,0.05) 5%, rgba(0,0,0,0.05) 5%, rgba(0,0,0,0) 10%);
   box-shadow: 0 0 25vmin rgba(0,0,0,0.75) inset;
-  border-bottom: 50px solid rgba(10,0,10,1);
+  border-bottom: 10px solid rgba(10,0,10,1);
 }
 
 canvas {
@@ -385,6 +385,14 @@ canvas {
         right: -5px;
         bottom: calc(var(--altitude) * 1% - 3px);
         transition: $transitionTime border-color;
+      }
+      .readout {
+        position: absolute;
+        top: -4px;
+        right: 8px;
+        color: var(--interfaceColor1);
+        transition: $transitionTime;
+        font-size: 8px;
       }
       .tick {
         display: block;

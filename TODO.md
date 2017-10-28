@@ -76,6 +76,7 @@
 - [ ] Sparks when exhaust touches ground and landing pad
 - [ ] Smoke-type exhaust should not disappear "under" ground, but should billow out instead
 - [ ] Obstacles
+- [ ] Floating mines
 - [ ] Enemies
 - [ ] Threats
 - [ ] Procedurally generated clouds?
@@ -108,33 +109,85 @@
 
 ## UI / HUD
 
-- [ ] Engine status
-- [x] Engine output
+### Status indicators
+
+- [ ] Generator
+- [ ] Shields
+- [ ] Weapons I
+- [ ] Weapons II ?
+- [ ] Weapons III ??
+- [ ] Harvesting
+- [ ] Engine
+- [ ] Ship is on battery power
+
+### Power channels
+
+- [ ] General
+- [ ] Shields
+- [ ] Weapons
+- [ ] Harvesting
+- [ ] Engine
+- [ ] Battery charging
+- [ ] Emergency power charging
+- [ ] Venting
+
+### Stores
+
+- [ ] Fuel I
+- [ ] Fuel II
+- [ ] Oxidizer
+- [ ] Coolant
+- [ ] Ammunition I
+- [ ] Ammunition II
+- [ ] Ammunition III
+- [ ] Loaded macguffins / Cargo hold status
+
+### Bars and meters
+
+- [ ] Generator load
+- [ ] Generator output
+- [ ] Generator temperature
+- [ ] Shield strength
+- [ ] Shield condition
+- [ ] Weapon I strength
+- [ ] Weapon II strength
+- [ ] Weapon II ready to fire
+- [ ] Weapon III strength
+- [ ] Weapon III ready to fire
+- [ ] Engine output
+- [ ] Engine temperature
 - [ ] Fuel
 - [ ] Fuel consumption
-- [ ] Ammunition
-- [ ] Weapon indicator
-- [ ] Ship status/health/hull integrity
+- [ ] Ship health
+
+### Ship sensors and indicators
+
+- [ ] Ship states
 - [x] Ship rotation
 - [x] Altitude
 - [x] Vertical speed
 - [x] Horizontal speed
 - [x] Current acceleration
-- [ ] Ship states
-- [ ] Thruster indications
+- [ ] Thruster indicators
 - [ ] Ground proximity alert and other warnings/indications
-- [ ] Distance to landingpad
-- [ ] Box for subtitles, dialogue, etc.
+- [ ] Distance to landing pad
 - [ ] Wind direction and strength
-- [ ] Loaded macguffins / Cargo hold status
+
+### Other in-game UI items
+
+- [ ] Message log
+- [ ] Messaging system to populate the message log on certain events (but only once)
+- [ ] Box for subtitles, dialogue, etc.
 - [ ] Score (Profit earned or total macguffins collected or whatever)
 - [ ] Leveling status
 - [ ] Wave number
+
+### Menu screens
+
 - [ ] Add acronym meaning to the title screen
 - [ ] Add phonetic reading to the title screen
 - [ ] Something something Japanese to the title screen?? Nice aesthetic maybe?
 - [ ] About link on title screen
-- [ ] Messaging system to populate the message log on certain events (but only once)
 
 ## Game
 

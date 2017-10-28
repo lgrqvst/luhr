@@ -200,11 +200,11 @@ class Exhaust {
       case 'condensate':
         ctx.beginPath();
         ctx.moveTo(this.x, this.y);
-        p = pos(2, 0);
+        p = pos(1, 0);
         ctx.lineTo(p.x, p.y);
         ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},1)`;
         // ctx.lineWidth = this.size * this.intensity / 100;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1;
         ctx.stroke();
       break;
       case 'rotation':
@@ -1983,7 +1983,7 @@ let setStage = () => {
     // I want more trees of type 1 than type 2
     let type = Math.floor(Math.random() * 100 + 1) <= 85 ? 1 : 2;
     let z = type === 2 ? 2 : Math.floor(Math.random() * 2 + 1);
-    let h = Math.round(Math.random() * 30 + 15);
+    let h = Math.round(Math.random() * 30 + 13);
     let color = {
       r: Math.round(Math.random() * 50 + 50),
       g: Math.round(Math.random() * 50 + 0),
@@ -2231,8 +2231,8 @@ let addExhaust = (type, p, i, s, r) => {
 
     case 'condensate':
       c = {
-        r: 255,
-        g: 255,
+        r: 105,
+        g: 105,
         b: 255
       }
       e = new Exhaust(p.x, p.y, s.rotation + 180, Math.hypot(s.vx,s.vy), type, 1, i, c, 1);
@@ -2372,7 +2372,8 @@ let updateHUD = (s) => {
     document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.generatorOutput);
     document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.generatorOutput);
 
-    let a = Math.floor(((s.y - VH + s.r) * -1) / VH * 100 / 2);
+    let a1 = ((s.y - VH + s.r) * -1);
+    let a = Math.floor(a1 / VH * 100 / 2);
     if (a > 100) {
       a = 100;
       document.querySelector('.hud .shipStatus .altitude').classList.add('critical');
@@ -2380,6 +2381,7 @@ let updateHUD = (s) => {
       document.querySelector('.hud .shipStatus .altitude').classList.remove('critical');
     }
     document.querySelector('.hud .shipStatus').style.setProperty("--altitude", a);
+    document.querySelector('.hud .shipStatus .altitude .readout').innerHTML = Math.round(a1 / 4.1);
 
     let ax = Math.round(s.ax * 800);
     let ay = Math.round(s.ay * 800 * -1);

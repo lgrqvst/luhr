@@ -165,11 +165,11 @@ class Exhaust {
       case 'condensate':
         ctx.beginPath();
         ctx.moveTo(this.x, this.y);
-        p = pos(2, 0);
+        p = pos(1, 0);
         ctx.lineTo(p.x, p.y);
         ctx.strokeStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},1)`;
         // ctx.lineWidth = this.size * this.intensity / 100;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1;
         ctx.stroke();
       break;
       case 'rotation':
