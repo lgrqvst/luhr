@@ -3,13 +3,13 @@
 ## Ship
 - [x] Rewrite the old ship
 - [x] Ship starts on landing pad
-- [ ] Draw the wings separately from the main fuselage
+- [x] Draw the wings separately from the main fuselage
 - [ ] Make wings fold backwards (in a smoothly animated fashion) when boosting
 - [ ] When the ship starts up, have the cockpit lights flicker.
 - [x] The stabilizer ring from the previous design should extend when the ship starts, and retract when the engine is turned off.
 - [ ] Rethink the stabilizer ring, and give it a mechanical effect if I decide to keep it
 - [ ] The stabilizer ring should fold out in a more interesting fashion
-- [ ] Fuel
+- [x] Fuel
 - [ ] Particles restore fuel
 - [ ] Visible stabilizers
 - [ ] Stabilizer exhaust
@@ -69,6 +69,7 @@
 - [x] Wind
 - [x] Particle pulsation
 - [x] Particle flicker
+- [ ] Particle parallax effect
 - [ ] Particle activity changes depending on distance to ship
 - [ ] Particle activity should be more frantic when being harvested
 - [ ] Particles regenerate/reform after a certain time
@@ -181,6 +182,7 @@
 - [ ] Score (Profit earned or total macguffins collected or whatever)
 - [ ] Leveling status
 - [ ] Wave number
+- [ ] Some sort of indicator that points to the ship when it goes off-screen (assuming that continues to be possible)
 
 ### Menu screens
 
