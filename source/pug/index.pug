@@ -19,21 +19,36 @@ html(lang="en")
       h2 Game paused
       a.resume Resume
     .hud.inactive
-      .engineOutput
+      .generatorOutput
         .left
           .track
             .bar
-          .labels
-            .safe 安定
-            .danger 危険
+          .readout 0
+          .loadIndicator
+        .right
+          .track
+            .bar
+          .readout 0
+          .loadIndicator
+      .generatorTemperature
+        .left
+          .bar
+        .right
+          .bar
+      .enginePower
+        .left
+          .track
+            .bar
           .readout 0
         .right
           .track
             .bar
-          .labels
-            .safe 安定
-            .danger 危険
           .readout 0
+      .engineTemperature
+        .left
+          .bar
+        .right
+          .bar
       .primaryFuel
         .track
           .bar

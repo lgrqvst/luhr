@@ -10,6 +10,10 @@ const globals = {
   gravity: 0
 }
 
+const uiAnimProps = {
+  enginePower: 0,
+}
+
 const messageLog = [];
 
 /*****************************************************************************
@@ -605,22 +609,51 @@ let update = () => {
 
 let updateHUD = (s) => {
   if (s.states.powered) {
+    // HUD power
     document.querySelector('.hud').classList.remove('inactive');
     document.querySelector('.hud').classList.add('active');
 
+    // Rotation
     let r = Math.floor(s.rotation) - 270;
     if (r < 0) r+= 360;
     document.querySelector('.hud .shipStatus').style.setProperty("--rotation", r);
     document.querySelector('.hud .shipStatus .rotation .readout').innerHTML = r;
 
-    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutput", s.generatorOutput);
-    let engineOutputColor = '#0c9';
-    if (s.generatorOutput > 110) engineOutputColor = '#9c0';
-    if (s.generatorOutput > 175) engineOutputColor = '#d00';
-    document.querySelector('.hud .engineOutput').style.setProperty("--engineOutputColor", engineOutputColor);
-    document.querySelector('.hud .engineOutput .left .readout').innerHTML = Math.floor(s.generatorOutput);
-    document.querySelector('.hud .engineOutput .right .readout').innerHTML = Math.floor(s.generatorOutput);
+    // Generator output
+    document.querySelector('.hud .generatorOutput').style.setProperty("--generatorOutput", s.generatorOutput);
+    let generatorOutputColor = '#0c9';
+    if (s.generatorOutput > 110) generatorOutputColor = '#9c0';
+    if (s.generatorOutput > 175) generatorOutputColor = '#d00';
+    document.querySelector('.hud .generatorOutput').style.setProperty("--generatorOutputColor", generatorOutputColor);
+    document.querySelector('.hud .generatorOutput .left .readout').innerHTML = Math.floor(s.generatorOutput);
+    document.querySelector('.hud .generatorOutput .right .readout').innerHTML = Math.floor(s.generatorOutput);
 
+    // Generator Temperature
+    document.querySelector('.hud .generatorTemperature').style.setProperty("--generatorTemperature", s.generatorTemperature);
+    let generatorTemperatureColor = '#0c9';
+    if (s.generatorTemperature > 10) generatorTemperatureColor = '#9c0';
+    if (s.generatorTemperature > 50) generatorTemperatureColor = '#d00';
+    document.querySelector('.hud .generatorTemperature').style.setProperty("--generatorTemperatureColor", generatorTemperatureColor);
+
+    // Engine power
+    uiAnimProps.enginePower += (s.enginePower - uiAnimProps.enginePower) / 50;
+    document.querySelector('.hud .enginePower').style.setProperty("--enginePower", uiAnimProps.enginePower);
+    let enginePowerColor = '#0c9';
+    if (uiAnimProps.enginePower > 100) enginePowerColor = '#9c0';
+    if (uiAnimProps.enginePower > 150) enginePowerColor = '#d00';
+    if (controls.boostEngine) enginePowerColor = '#f90';
+    document.querySelector('.hud .enginePower').style.setProperty("--enginePowerColor", enginePowerColor);
+    document.querySelector('.hud .enginePower .left .readout').innerHTML = Math.round(uiAnimProps.enginePower);
+    document.querySelector('.hud .enginePower .right .readout').innerHTML = Math.round(uiAnimProps.enginePower);
+
+    // Engine temperature
+    document.querySelector('.hud .engineTemperature').style.setProperty("--engineTemperature", s.engineTemperature);
+    let engineTemperatureColor = '#0c9';
+    if (s.engineTemperature > 10) engineTemperatureColor = '#9c0';
+    if (s.engineTemperature > 50) engineTemperatureColor = '#d00';
+    document.querySelector('.hud .engineTemperature').style.setProperty("--engineTemperatureColor", engineTemperatureColor);
+
+    // Altitude
     let a1 = ((s.y - VH + s.r) * -1);
     let a = Math.floor(a1 / VH * 100 / 2);
     if (a > 100) {
@@ -632,6 +665,7 @@ let updateHUD = (s) => {
     document.querySelector('.hud .shipStatus').style.setProperty("--altitude", a);
     document.querySelector('.hud .shipStatus .altitude .readout').innerHTML = Math.round(a1 / 4.1);
 
+    // Acceleration
     let ax = Math.round(s.ax * 800);
     let ay = Math.round(s.ay * 800 * -1);
     if (ax > 200) ax = 200;
@@ -645,6 +679,7 @@ let updateHUD = (s) => {
     document.querySelector('.hud .shipStatus').style.setProperty('--accelerationHorizontal',ax);
     document.querySelector('.hud .shipStatus').style.setProperty('--accelerationVertical',ay);
 
+    // Velocity
     let vx = Math.round(s.vx / 14 * 100);
     let vy = Math.round(s.vy * -1 / 14 * 100);
     let vxp = 0;

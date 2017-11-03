@@ -74,14 +74,16 @@ canvas {
     --interfaceColor1: #85DC8E;
     --interfaceColor1: #858EDC;
   }
-  .engineOutput {
+  .generatorOutput, .enginePower {
     position: relative;
     z-index: 1;
     width: 100%;
-    height: 100px;
+    height: 20px;
     overflow-x: hidden;
-    --engineOutput: 0;
-    --engineOutputColor: #0c9;
+    --generatorOutput: 0;
+    --generatorOutputColor: #0c9;
+    --enginePower: 0;
+    --enginePowerColor: #0c9;
 
     .track {
       position: absolute;
@@ -103,42 +105,19 @@ canvas {
       position: absolute;
       top: 3px;
       height: 13px;
-      width: calc(var(--engineOutput) * 0.5%);
+      width: calc(var(--generatorOutput) * 0.5%);
     }
     .right .bar {
       left: 0;
-      /*background: linear-gradient(to right, var(--engineOutputColor) 0%, white 100%);*/
-      background: repeating-linear-gradient(to right, transparent 0%, transparent 5px, #000 5px, #000 8px),linear-gradient(to right, var(--interfaceBackground1) 0%, var(--engineOutputColor) 100%);
+      /*background: linear-gradient(to right, var(--generatorOutputColor) 0%, white 100%);*/
+      background: repeating-linear-gradient(to right, transparent 0%, transparent 5px, #000 5px, #000 8px),linear-gradient(to right, var(--interfaceBackground1) 0%, var(--generatorOutputColor) 100%);
       border-right: 2px solid #fff;
     }
     .left .bar {
       right: 0;
-      /*background: linear-gradient(to left, var(--engineOutputColor) 0%, white 100%);*/
-      background: repeating-linear-gradient(to left, transparent 0%, transparent 5px, #000 5px, #000 8px),linear-gradient(to left, var(--interfaceBackground1) 0%, var(--engineOutputColor) 100%);
+      /*background: linear-gradient(to left, var(--generatorOutputColor) 0%, white 100%);*/
+      background: repeating-linear-gradient(to left, transparent 0%, transparent 5px, #000 5px, #000 8px),linear-gradient(to left, var(--interfaceBackground1) 0%, var(--generatorOutputColor) 100%);
       border-left: 2px solid #fff;
-    }
-    .labels div {
-      position: absolute;
-      top: 22px;
-      color: #ccc;
-      font-size: 8px;
-      height: 30px;
-      letter-spacing: 2px;
-      writing-mode: vertical-lr;
-      text-orientation: upright;
-      transform: translateX(-50%);
-    }
-    .right .labels .safe {
-      left: calc(50% + 85px + 24.75vw - 47px);
-    }
-    .right .labels .danger {
-      left: calc(50% + 85px + 39.375vw - 74.375px);
-    }
-    .left .labels .safe {
-      right: calc(50% + 85px + 24.75vw - 47px);
-    }
-    .left .labels .danger {
-      right: calc(50% + 85px + 39.375vw - 74.375px);
     }
     .readout {
       position: absolute;
@@ -156,6 +135,66 @@ canvas {
       right: calc(50% + 105px);
     }
 
+  }
+  .generatorTemperature, .engineTemperature {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 4px;
+    overflow-x: hidden;
+    --generatorTemperature: 0;
+    --generatorTemperatureColor: #0c9;
+    --engineTemperature: 0;
+    --engineTemperatureColor: #0c9;
+
+    .bar {
+      position: absolute;
+      top: 1px;
+      height: 2px;
+      width: calc(var(--generatorTemperature) * 0.33%);
+      background: var(--generatorTemperatureColor);
+    }
+    .left .bar {
+      right: calc(50% + 85px);
+    }
+    .right .bar {
+      left: calc(50% + 85px);
+    }
+  }
+  .enginePower {
+    .right .track {
+      left: calc(50% + 75px);
+    }
+    .left .track {
+      right: calc(50% + 75px);
+    }
+    .bar {
+      width: calc(var(--enginePower) * 0.5%);
+    }
+    .right .bar {
+      background: repeating-linear-gradient(to right, transparent 0%, transparent 5px, #000 5px, #000 8px),linear-gradient(to right, var(--interfaceBackground1) 0%, var(--enginePowerColor) 100%);
+    }
+    .left .bar {
+      background: repeating-linear-gradient(to left, transparent 0%, transparent 5px, #000 5px, #000 8px),linear-gradient(to left, var(--interfaceBackground1) 0%, var(--enginePowerColor) 100%);
+    }
+    .right .readout {
+      left: calc(50% + 95px);
+    }
+    .left .readout {
+      right: calc(50% + 95px);
+    }
+  }
+  .engineTemperature {
+    .bar {
+      width: calc(var(--engineTemperature) * 0.33%);
+      background: var(--engineTemperatureColor);
+    }
+    .left .bar {
+      right: calc(50% + 75px);
+    }
+    .right .bar {
+      left: calc(50% + 75px);
+    }
   }
   .shipStatusFrame {
     z-index: 5;

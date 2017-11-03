@@ -345,6 +345,7 @@ class Ship {
       };
 
     } else {
+      this.engineTemperature += 0.75;
       this.secondaryFuel = 0;
       this.oxidizer = 0;
       return false;
@@ -403,6 +404,7 @@ class Ship {
       };
 
     } else {
+      this.engineTemperature += 0.75;
       this.secondaryFuel = 0;
       this.oxidizer = 0;
       return false;
