@@ -1,6 +1,7 @@
 # TO DO
 
 ## Ship
+
 - [x] Rewrite the old ship
 - [x] Ship starts on landing pad
 - [x] Draw the wings separately from the main fuselage
@@ -85,6 +86,7 @@
 - [x] A moon gently moving across the screen
 - [ ] More moons?
 - [ ] Handle the moon when it goes off-screen
+- [ ] Aurora borealis in the sky behind the mountains?
 - [x] Procedurally generated mountains
 - [ ] Procedurally generated buildings
 - [ ] Make the buildings prettier. I like the contrast of something being there, but they need to look way better.

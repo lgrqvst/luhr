@@ -10,14 +10,14 @@ Note Oct 27, 2017: I'm removing the old code from the master branch. I'll keep i
 
 Play the game [here](https://lgrqvst.github.io/ravr/build/)
 
-### Objectives:
+## Objectives
 
--  Gather macguffins with your ship, then land and return them to base. _(Not implemented)_
--  Occasionally land in the forest for whatever reason. _(Not implemented)_
--  Destroy threats to protect buildings. _(Not implemented)_
--  Don't die. _(Not implemented)_
+- Gather macguffins with your ship, then land and return them to base. _(Not implemented)_
+- Occasionally land in the forest for whatever reason. _(Not implemented)_
+- Destroy threats to protect buildings. _(Not implemented)_
+- Don't die. _(Not implemented)_
 
-### Controls:
+## Controls
 
 Implemented so far:
 
