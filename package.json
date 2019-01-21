@@ -1,29 +1,25 @@
 {
-  "name": "ravr",
-  "version": "1.0.0",
-  "description": "A small game to learn more about canvas, to strengthen my JavaScript and to brush up on my trigonometry.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "name": "ravr2",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "react-scripts": "2.1.3"
   },
-  "author": "Johan Lagerqvist",
-  "license": "MIT",
-  "devDependencies": {
-    "browser-sync": "^2.18.13",
-    "del": "^3.0.0",
-    "gulp": "^3.9.1",
-    "gulp-concat": "^2.6.1",
-    "gulp-cssnano": "^2.1.2",
-    "gulp-postcss": "^7.0.0",
-    "gulp-pug": "^3.3.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-rucksack": "^0.1.4",
-    "gulp-sourcemaps": "^2.6.1",
-    "gulp-uglify": "^3.0.0",
-    "postcss-assets": "^5.0.0",
-    "postcss-cssnext": "^3.0.2",
-    "postcss-math": "0.0.8",
-    "postcss-short-color": "^3.0.0",
-    "precss": "^2.0.0"
-  }
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }
