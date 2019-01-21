@@ -1,16 +1,18 @@
 # TO DO
 
+- [ ] Figure out new To Do list
+
 ## Ship
 
-- [x] Rewrite the old ship
-- [x] Ship starts on landing pad
-- [x] Draw the wings separately from the main fuselage
+- [ ] Rewrite the old ship
+- [ ] Ship starts on landing pad
+- [ ] Draw the wings separately from the main fuselage
 - [ ] Make wings fold backwards (in a smoothly animated fashion) when boosting
 - [ ] When the ship starts up, have the cockpit lights flicker.
-- [x] The stabilizer ring from the previous design should extend when the ship starts, and retract when the engine is turned off.
+- [ ] The stabilizer ring from the previous design should extend when the ship starts, and retract when the engine is turned off.
 - [ ] Rethink the stabilizer ring, and give it a mechanical effect if I decide to keep it
 - [ ] The stabilizer ring should fold out in a more interesting fashion
-- [x] Fuel
+- [ ] Fuel
 - [ ] Particles restore fuel
 - [ ] Visible stabilizers
 - [ ] Stabilizer exhaust
@@ -27,32 +29,32 @@
 - [ ] Explosion upon death
 - [ ] Craft breaks apart on crash
 - [ ] More details on the body (maybe red and green lights for port/starboard?) (or maybe some sort of markings on the wings?)
-- [x] Shading on body (difficult maybe)
+- [ ] Shading on body (difficult maybe)
 - [ ] Handle ship going off-screen
-- [x] Clean up exhaust
-- [x] Handle exhaust outside of handleShip()
+- [ ] Clean up exhaust
+- [ ] Handle exhaust outside of handleShip()
 - [ ] Animate more parts of the ship
-- [x] Possibly rewrite the workings of the ship engine? Doesn't feel quite the way I want it to right now.
-- [x] Make engine boosting dangerous
-- [x] Figure out how the heck I want the engines to work
+- [ ] Possibly rewrite the workings of the ship engine? Doesn't feel quite the way I want it to right now.
+- [ ] Make engine boosting dangerous
+- [ ] Figure out how the heck I want the engines to work
 - [ ] Shields
 
 ## Controls
 
-- [x] W - Main thruster
-- [x] A - Turn counter-clockwise
-- [x] D - Turn clockwise
-- [x] S - Boost
-- [x] T - Power up ship
-- [x] Y - Start/Stop generator
-- [x] U - Activate/Deactivate shields
-- [x] I - Activate/Deactivate weapons
-- [x] H - Activate/Deactivate harvesting array
-- [x] O - Set generator load to 100%
-- [x] K - Set generator load to 50%
-- [x] M - Set generator load to 0%
-- [x] P - Increase generator load
-- [x] L - Decrease generator load
+- [ ] W - Main thruster
+- [ ] A - Turn counter-clockwise
+- [ ] D - Turn clockwise
+- [ ] S - Boost
+- [ ] T - Power up ship
+- [ ] Y - Start/Stop generator
+- [ ] U - Activate/Deactivate shields
+- [ ] I - Activate/Deactivate weapons
+- [ ] H - Activate/Deactivate harvesting array
+- [ ] O - Set generator load to 100%
+- [ ] K - Set generator load to 50%
+- [ ] M - Set generator load to 0%
+- [ ] P - Increase generator load
+- [ ] L - Decrease generator load
 - [ ] E - Stabilizers (???) I don't know. Thinking about skipping this one. I think maybe this makes landings too easy?
 - [ ] R - Rotate to face up (Is this one really needed?)
 - [ ] X - Toggle landing gear
@@ -66,10 +68,10 @@
 
 ## Environment
 
-- [x] Air resistance slows down horizontal movement
-- [x] Wind
-- [x] Particle pulsation
-- [x] Particle flicker
+- [ ] Air resistance slows down horizontal movement
+- [ ] Wind
+- [ ] Particle pulsation
+- [ ] Particle flicker
 - [ ] Particle parallax effect
 - [ ] Particle activity changes depending on distance to ship
 - [ ] Particle activity should be more frantic when being harvested
@@ -83,26 +85,26 @@
 - [ ] Threats
 - [ ] Procedurally generated clouds?
 - [ ] A bit ambitious perhaps, but floating cities in the far distance?
-- [x] A moon gently moving across the screen
+- [ ] A moon gently moving across the screen
 - [ ] More moons?
 - [ ] Handle the moon when it goes off-screen
 - [ ] Aurora borealis in the sky behind the mountains?
-- [x] Procedurally generated mountains
+- [ ] Procedurally generated mountains
 - [ ] Procedurally generated buildings
-- [ ] Make the buildings prettier. I like the contrast of something being there, but they need to look way better.
-- [x] Procedurally generated trees
-- [x] Trees sway in the wind
+- [ ] Make the buildings prettier. I like the contrast of something being there, but they need to look way better.
+- [ ] Procedurally generated trees
+- [ ] Trees sway in the wind
 - [ ] Trees react to proximity of ship
 - [ ] Grass on the ground
 - [ ] Grass sways in wind
 - [ ] Grass reacts to proximity of ship
 - [ ] Grass and trees set on fire by exhaust???
-- [x] Buildings and mountains should move slightly depending on where the ship is, parallax-like
-- [x] Landing pad/base
-- [x] Animate shadow on landing pad based on position of moon
+- [ ] Buildings and mountains should move slightly depending on where the ship is, parallax-like
+- [ ] Landing pad/base
+- [ ] Animate shadow on landing pad based on position of moon
 - [ ] Add a dome to the landing pad that open/closes when the ship leaves and takes off
 - [ ] Maybe at some point in time expand a bit on the landing pad design
-- [x] Make the landing pad land-able
+- [ ] Make the landing pad land-able
 - [ ] No-particle areas
 - [ ] Smoke in addition to sparks
 - [ ] Power-ups
@@ -166,11 +168,11 @@
 ### Ship sensors and indicators
 
 - [ ] Ship states
-- [x] Ship rotation
-- [x] Altitude
-- [x] Vertical speed
-- [x] Horizontal speed
-- [x] Current acceleration
+- [ ] Ship rotation
+- [ ] Altitude
+- [ ] Vertical speed
+- [ ] Horizontal speed
+- [ ] Current acceleration
 - [ ] Thruster indicators
 - [ ] Ground proximity alert and other warnings/indications
 - [ ] Distance to landing pad
