@@ -8,7 +8,7 @@
 
 ~~Note Sept 28, 2017: For the most part, I've re-implemented most of the features from the old version, and added a whole lot more. I'm still keeping the old version in here, for reference.~~
 
-~~Note Oct 27, 2017: I'm removing the old code from the master branch. I'll keep it around in other branches for now. Download those if you want to try older versionsn of the game~~
+~~Note Oct 27, 2017: I'm removing the old code from the master branch. I'll keep it around in other branches for now. Download those if you want to try older versions of the game~~
 
 ~~Play the game [here](https://lgrqvst.github.io/ravr/build/)~~
 
