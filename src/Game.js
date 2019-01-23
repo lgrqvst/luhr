@@ -90,11 +90,9 @@ class Game extends Component {
     return this.state.input.resetTaps();
   };
 
-  update = d => {
+  update = delta => {
     // console.log(this.state.input.tappedKeys);
     // console.log(this.props.gameState);
-
-    console.log(d);
 
     // let keys = this.state.input.pressedKeys;
     let taps = this.state.input.tappedKeys;
