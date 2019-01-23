@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import * as actionTypes from './store/actionTypes';
 import styled from 'styled-components';
+import MainLoop from 'mainloop.js';
 
 import * as gameStates from './data/gameStates';
 
@@ -44,7 +45,11 @@ class Game extends Component {
   initialize = () => {
     this.setCanvasSize();
     this.resizeListener = window.addEventListener('resize', this.handleResize);
-    this.update();
+
+    MainLoop.setUpdate(this.update)
+      .setDraw(this.draw)
+      .setEnd(this.end)
+      .start();
   };
 
   setCanvasSize = () => {
@@ -85,9 +90,11 @@ class Game extends Component {
     return this.state.input.resetTaps();
   };
 
-  update = () => {
+  update = d => {
     // console.log(this.state.input.tappedKeys);
     // console.log(this.props.gameState);
+
+    console.log(d);
 
     // let keys = this.state.input.pressedKeys;
     let taps = this.state.input.tappedKeys;
@@ -138,8 +145,11 @@ class Game extends Component {
      */
 
     taps = this.resetTaps();
-    window.requestAnimationFrame(this.update);
   };
+
+  draw = () => {};
+
+  end = () => {};
 
   render() {
     const { gameState } = this.props;
