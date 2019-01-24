@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { css } from 'styled-components';
 import transition from 'styled-transition-group';
 
 const ScreenTransition = props => {
@@ -7,6 +8,7 @@ const ScreenTransition = props => {
     <ScreenTransitionElement
       in={props.show}
       timeout={props.timeout}
+      type={props.type}
       unmountOnExit
     >
       {props.children}
@@ -14,16 +16,43 @@ const ScreenTransition = props => {
   );
 };
 
-const ScreenTransitionElement = transition.div`
-  &:enter { opacity: 0.01; }
-  &:enter-active {
+const showStyles = {
+  fade: css`
     opacity: 1;
-    transition: opacity ${props => props.timeout}ms ease-in;
-  }
-  &:exit { opacity: 1; }
-  &:exit-active {
+  `,
+  slide: css`
+    transform: translateY(0%);
+  `
+};
+
+const hideStyles = {
+  fade: css`
     opacity: 0.01;
-    transition: opacity ${props => props.timeout}ms ease-in;
+  `,
+  slide: css`
+    transform: translateY(-100%);
+  `
+};
+
+const ScreenTransitionElement = transition.div.attrs({
+  showStyles: props =>
+    props.type === 'slide' ? showStyles.slide : showStyles.fade,
+  hideStyles: props =>
+    props.type === 'slide' ? hideStyles.slide : hideStyles.fade
+})`
+  &:enter {
+    ${props => props.hideStyles}
+  }
+  &:enter-active {
+    ${props => props.showStyles}
+    transition: all ${props => props.timeout}ms ease-in-out;
+  }
+  &:exit {
+    ${props => props.showStyles}
+  }
+  &:exit-active {
+    ${props => props.hideStyles}
+    transition: all ${props => props.timeout}ms ease-in-out;
   }
 `;
 

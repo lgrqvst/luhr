@@ -3,6 +3,8 @@ import { connect } from 'react-redux';
 import * as actionTypes from './store/actionTypes';
 import styled from 'styled-components';
 import MainLoop from 'mainloop.js';
+import StylesSanitize from './styles/Sanitize';
+import StylesBase from './styles/Base';
 
 import * as gameStates from './data/gameStates';
 
@@ -31,20 +33,17 @@ class Game extends Component {
 
   componentDidMount() {
     this.initialize();
-    this.state.input.bindKeys();
   }
 
   componentWillUnmount() {
-    this.resizeListener = window.RemoveEventListener(
-      'resize',
-      this.handleResize
-    );
-    this.state.input.unbindKeys();
+    window.RemoveEventListener('resize', this.handleResize);
+    this.state.input.unsubscribe();
   }
 
   initialize = () => {
     this.setCanvasSize();
-    this.resizeListener = window.addEventListener('resize', this.handleResize);
+    this.state.input.subscribe();
+    window.addEventListener('resize', this.handleResize);
 
     MainLoop.setUpdate(this.update)
       .setDraw(this.draw)
@@ -70,6 +69,7 @@ class Game extends Component {
 
   startGame = () => {
     this.props.setGameState(gameStates.RUNNING);
+    // Load a level and initialize player
   };
 
   pauseGame = () => {
@@ -160,12 +160,16 @@ class Game extends Component {
     ));
 
     return (
-      <GameContainer>
-        <TitleScreen show={gameState === gameStates.TITLE} />
-        <PauseScreen show={gameState === gameStates.PAUSED} />
-        <GameOverScreen show={gameState === gameStates.OVER} />
-        {canvas}
-      </GameContainer>
+      <>
+        <StylesSanitize />
+        <StylesBase />
+        <GameContainer>
+          <TitleScreen show={gameState === gameStates.TITLE} />
+          <PauseScreen show={gameState === gameStates.PAUSED} />
+          <GameOverScreen show={gameState === gameStates.OVER} />
+          {canvas}
+        </GameContainer>
+      </>
     );
   }
 }
@@ -176,14 +180,20 @@ const mapStateToProps = state => {
   return {
     layers: state.layers,
     gameState: state.gameState,
-    previousGameState: state.previousGameState
+    previousGameState: state.previousGameState,
+    stage: state.stage
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     setGameState: gameState =>
-      dispatch({ type: actionTypes.SET_GAME_STATE, gameState: gameState })
+      dispatch({ type: actionTypes.SET_GAME_STATE, gameState: gameState }),
+    addToStage: element =>
+      dispatch({ type: actionTypes.ADD_TO_STAGE, element: element }),
+    removeFromStage: id =>
+      dispatch({ type: actionTypes.REMOVE_FROM_STAGE, id: id }),
+    clearStage: id => dispatch({ type: actionTypes.CLEAR_STAGE })
   };
 };
 

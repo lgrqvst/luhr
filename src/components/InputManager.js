@@ -15,12 +15,12 @@ export default class InputManager {
     };
   }
 
-  bindKeys = () => {
+  subscribe = () => {
     window.addEventListener('keydown', e => this.handleKeys(e, true));
     window.addEventListener('keyup', e => this.handleKeys(e, false));
   };
 
-  unbindKeys = () => {
+  unsubscribe = () => {
     window.removeEventListener('keyup', this.handleKeys);
     window.removeEventListener('keydown', this.handleKeys);
   };
@@ -37,6 +37,10 @@ export default class InputManager {
     let pressedKeys = this.pressedKeys;
     let tappedKeys = this.tappedKeys;
     switch (e.keyCode) {
+      /*
+       * PRESSING
+       */
+
       case keys.W:
       case keys.UP:
         pressedKeys.up = value;
@@ -56,17 +60,22 @@ export default class InputManager {
       case keys.SPACE:
         pressedKeys.space = value;
         break;
+      case keys.TAB:
+        pressedKeys.tab = value;
+        break;
+
+      /*
+       * TAPPING
+       */
       case keys.ENTER:
         tappedKeys.enter = value ? false : true;
         break;
       case keys.ESC:
         tappedKeys.esc = value ? false : true;
         break;
-      case keys.TAB:
-        pressedKeys.tab = value;
-        break;
+
       default:
-        // Don't do nuthin
+        // Listen pal if it ain't one of the above, I don't want ya to do NUTHIN
         break;
     }
     this.pressedKeys = pressedKeys;

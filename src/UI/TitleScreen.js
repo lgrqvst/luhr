@@ -1,12 +1,16 @@
 import React from 'react';
 import ScreenTransition from './ScreenTransition';
+import ScreenWrapper from './ScreenWrapper';
+import Title from './Title';
+import Prompt from './Prompt';
 
 const TitleScreen = props => {
   return (
-    <ScreenTransition show={props.show} timeout={1000}>
-      <h1>RAVr</h1>
-      <p>Press ENTER to start.</p>
-      {/* <h1>TEST</h1> */}
+    <ScreenTransition show={props.show} timeout={200} type="fade">
+      <ScreenWrapper>
+        <Title>RAVr</Title>
+        <Prompt>Press ENTER to start.</Prompt>
+      </ScreenWrapper>
     </ScreenTransition>
   );
 };
