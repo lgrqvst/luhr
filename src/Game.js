@@ -33,6 +33,7 @@ class Game extends Component {
 
   componentDidMount() {
     this.initialize();
+    // If there are generated levels stored in localStorage, get them and put them in the state
   }
 
   componentWillUnmount() {
@@ -69,7 +70,7 @@ class Game extends Component {
 
   startGame = () => {
     this.props.setGameState(gameStates.RUNNING);
-    // Load a level and initialize player
+    this.loadLevel('area1');
   };
 
   pauseGame = () => {
@@ -83,7 +84,18 @@ class Game extends Component {
   endGame = () => {};
 
   loadLevel = level => {
+    // Check if the level has been generated before and stored in the state
+    // Otherwise generate it based on information in levels[level] and store generatedLevel in the state
+    // Take the level data, whether retrieved or generated and push it to the stage
+    // The generatedLevel object should have information about what goes in the foreground and what goes in the background, as well as relevant parallax info
+    // initializePlayer() to create the ship
     console.log('Loading: ' + level);
+  };
+
+  unloadLevel = () => {
+    // Unload the current level
+    // I.e. Remove it and the player from the stage.
+    // It is assumed that when this function is called, loadLevel is also called with a new level.
   };
 
   resetTaps = () => {
@@ -145,7 +157,9 @@ class Game extends Component {
     taps = this.resetTaps();
   };
 
-  draw = () => {};
+  draw = () => {
+    // Draw out everything that's in the stage array
+  };
 
   end = () => {};
 
