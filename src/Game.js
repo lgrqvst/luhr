@@ -98,6 +98,10 @@ class Game extends Component {
     // It is assumed that when this function is called, loadLevel is also called with a new level.
   };
 
+  initializePlayer = () => {
+    // Check the state for the currently status of the ship (including cargo status, equipped upgrades, etc.) and generate a copy.
+  }
+
   resetTaps = () => {
     return this.state.input.resetTaps();
   };
