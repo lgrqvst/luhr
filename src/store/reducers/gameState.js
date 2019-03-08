@@ -11,7 +11,7 @@ const reducer = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.SET_GAME_STATE:
       return updateObject(state, {
-        current: action.gameState,
+        current: action.payload.gameState,
         previous: state.current
       });
     default:

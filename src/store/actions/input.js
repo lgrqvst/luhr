@@ -3,8 +3,10 @@ import * as actionTypes from './actionTypes';
 export const updateInput = (keyCode, value) => {
   return {
     type: actionTypes.UDPATE_INPUT,
-    keyCode: keyCode,
-    value: value
+    payload: {
+      keyCode: keyCode,
+      value: value
+    }
   };
 };
 

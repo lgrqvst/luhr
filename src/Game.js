@@ -1,23 +1,19 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import * as actionCreators from './store/actions/index';
+import MainLoop from 'mainloop.js';
 
 import styled from 'styled-components';
-import MainLoop from 'mainloop.js';
 import StylesSanitize from './styles/Sanitize';
 import StylesBase from './styles/Base';
 
 import * as gameStates from './data/gameStates';
+import levels from './data/levels';
 
 import Canvas from './components/Canvas';
-// import InputManager from './components/InputManager';
-
-import TitleScreen from './UI/TitleScreen';
-import PauseScreen from './UI/PauseScreen';
-import GameOverScreen from './UI/GameOverScreen';
-
-// import layers from './data/layers';
-// import * as GameStates from './data/gameStates';
+import TitleScreen from './components/UI/TitleScreen';
+import PauseScreen from './components/UI/PauseScreen';
+import GameOverScreen from './components/UI/GameOverScreen';
 
 class Game extends Component {
   constructor(props) {
@@ -33,7 +29,6 @@ class Game extends Component {
   componentDidMount() {
     this.initialize();
     // If there are generated levels stored in localStorage, get them and put them in the state
-    console.log(this.props.layers);
   }
 
   componentWillUnmount() {
@@ -44,7 +39,6 @@ class Game extends Component {
 
   initialize = () => {
     this.setCanvasSize();
-    // this.state.input.subscribe();
     window.addEventListener('resize', this.handleResize);
 
     window.addEventListener('keydown', ({ keyCode }) =>
@@ -98,9 +92,9 @@ class Game extends Component {
   };
 
   loadLevel = level => {
-    // Check if the level has been generated before and stored in the state
-    // Otherwise generate it based on information in levels[level] and store generatedLevel in the state
-    // Take the level data, whether retrieved or generated and push it to the stage
+    // Check if a level matrix has been generated before and stored in the state
+    // If no, generate it based on information in levels[level] and store generatedLevel in the state
+    // Take the level data from the state and push it to the stage
     // The generatedLevel object should have information about what goes in the foreground and what goes in the background, as well as relevant parallax info
     // initializePlayer() to create the ship
     console.log('Loading: ' + level);
@@ -169,7 +163,7 @@ class Game extends Component {
      * FINISH UP
      */
 
-    this.props.resetTaps();
+    // this.props.resetTaps();
   };
 
   draw = () => {

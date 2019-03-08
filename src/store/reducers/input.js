@@ -17,7 +17,7 @@ const initialState = {
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.UDPATE_INPUT:
-      return updateInput(state, action.keyCode, action.value);
+      return updateInput(state, action.payload.keyCode, action.payload.value);
     case actionTypes.RESET_TAPS:
       return updateObject(state, {
         tapped: { enter: false, esc: false }
