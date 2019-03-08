@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import * as actionTypes from './store/actionTypes';
+import * as actionCreators from './store/actions/index';
+
 import styled from 'styled-components';
 import MainLoop from 'mainloop.js';
 import StylesSanitize from './styles/Sanitize';
@@ -9,7 +10,7 @@ import StylesBase from './styles/Base';
 import * as gameStates from './data/gameStates';
 
 import Canvas from './components/Canvas';
-import InputManager from './components/InputManager';
+// import InputManager from './components/InputManager';
 
 import TitleScreen from './UI/TitleScreen';
 import PauseScreen from './UI/PauseScreen';
@@ -25,26 +26,33 @@ class Game extends Component {
     for (let layer of this.props.layers) {
       this[`${layer.name}CanvasRef`] = React.createRef();
     }
-  }
 
-  state = {
-    input: new InputManager()
-  };
+    // this.canvasRef = React.createRef();
+  }
 
   componentDidMount() {
     this.initialize();
     // If there are generated levels stored in localStorage, get them and put them in the state
+    console.log(this.props.layers);
   }
 
   componentWillUnmount() {
-    window.RemoveEventListener('resize', this.handleResize);
-    this.state.input.unsubscribe();
+    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener('keydown', this.props.updateInput);
+    window.removeEventListener('keyup', this.props.updateInput);
   }
 
   initialize = () => {
     this.setCanvasSize();
-    this.state.input.subscribe();
+    // this.state.input.subscribe();
     window.addEventListener('resize', this.handleResize);
+
+    window.addEventListener('keydown', ({ keyCode }) =>
+      this.props.updateInput(keyCode, true)
+    );
+    window.addEventListener('keyup', ({ keyCode }) =>
+      this.props.updateInput(keyCode, false)
+    );
 
     MainLoop.setUpdate(this.update)
       .setDraw(this.draw)
@@ -62,6 +70,10 @@ class Game extends Component {
         `${layer.name}CanvasRef`
       ].current.getContext('2d');
     }
+
+    // this.canvasRef.current.width = width;
+    // this.canvasRef.current.height = height;
+    // this.stage = this.canvasRef.current.getContext('2d');
   };
 
   handleResize = () => {
@@ -81,7 +93,9 @@ class Game extends Component {
     this.props.setGameState(gameStates.RUNNING);
   };
 
-  endGame = () => {};
+  endGame = () => {
+    this.props.setGameState(gameStates.OVER);
+  };
 
   loadLevel = level => {
     // Check if the level has been generated before and stored in the state
@@ -100,25 +114,23 @@ class Game extends Component {
 
   initializePlayer = () => {
     // Check the state for the currently status of the ship (including cargo status, equipped upgrades, etc.) and generate a copy.
-  }
-
-  resetTaps = () => {
-    return this.state.input.resetTaps();
   };
 
-  update = delta => {
-    // console.log(this.state.input.tappedKeys);
-    // console.log(this.props.gameState);
+  // resetTaps = () => {
+  //   // return this.state.input.resetTaps();
+  // };
 
-    // let keys = this.state.input.pressedKeys;
-    let taps = this.state.input.tappedKeys;
+  update = delta => {
+    const { pressed } = this.props.input;
+    const { tapped } = this.props.input;
+    const { gameState } = this.props;
 
     /*
      * TITLE
      */
 
-    if (this.props.gameState === gameStates.TITLE && taps.enter) {
-      taps = this.resetTaps();
+    if (gameState.current === gameStates.TITLE && tapped.enter) {
+      this.props.resetTaps();
       this.startGame();
     }
 
@@ -126,11 +138,10 @@ class Game extends Component {
      * RUNNING
      */
 
-    if (this.props.gameState === gameStates.RUNNING) {
+    if (gameState.current === gameStates.RUNNING) {
       // Update all the stuff
-
-      if (taps.esc) {
-        taps = this.resetTaps();
+      if (tapped.esc) {
+        this.props.resetTaps();
         this.pauseGame();
       }
     }
@@ -139,9 +150,9 @@ class Game extends Component {
      * PAUSED
      */
 
-    if (this.props.gameState === gameStates.PAUSED) {
-      if (taps.enter || taps.esc) {
-        taps = this.resetTaps();
+    if (gameState.current === gameStates.PAUSED) {
+      if (tapped.enter || tapped.esc) {
+        this.props.resetTaps();
         this.resumeGame();
       }
     }
@@ -150,7 +161,7 @@ class Game extends Component {
      * OVER
      */
 
-    if (this.props.gameState === gameStates.OVER) {
+    if (gameState.current === gameStates.OVER) {
       //Game over, friendo. Play again?
     }
 
@@ -158,7 +169,7 @@ class Game extends Component {
      * FINISH UP
      */
 
-    taps = this.resetTaps();
+    this.props.resetTaps();
   };
 
   draw = () => {
@@ -177,14 +188,16 @@ class Game extends Component {
       />
     ));
 
+    // const canvas = <Canvas key="canvas" ref={this.canvasRef} depth={1} />;
+
     return (
       <>
         <StylesSanitize />
         <StylesBase />
         <GameContainer>
-          <TitleScreen show={gameState === gameStates.TITLE} />
-          <PauseScreen show={gameState === gameStates.PAUSED} />
-          <GameOverScreen show={gameState === gameStates.OVER} />
+          <TitleScreen show={gameState.current === gameStates.TITLE} />
+          <PauseScreen show={gameState.current === gameStates.PAUSED} />
+          <GameOverScreen show={gameState.current === gameStates.OVER} />
           {canvas}
         </GameContainer>
       </>
@@ -196,22 +209,19 @@ const GameContainer = styled.div``;
 
 const mapStateToProps = state => {
   return {
-    layers: state.layers,
+    layers: state.layers.layers,
     gameState: state.gameState,
     previousGameState: state.previousGameState,
-    stage: state.stage
+    input: state.input
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    setGameState: gameState =>
-      dispatch({ type: actionTypes.SET_GAME_STATE, gameState: gameState }),
-    addToStage: element =>
-      dispatch({ type: actionTypes.ADD_TO_STAGE, element: element }),
-    removeFromStage: id =>
-      dispatch({ type: actionTypes.REMOVE_FROM_STAGE, id: id }),
-    clearStage: id => dispatch({ type: actionTypes.CLEAR_STAGE })
+    setGameState: gameState => dispatch(actionCreators.setGameState(gameState)),
+    updateInput: (keyCode, value) =>
+      dispatch(actionCreators.updateInput(keyCode, value)),
+    resetTaps: () => dispatch(actionCreators.resetTaps())
   };
 };
 

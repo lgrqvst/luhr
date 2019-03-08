@@ -2,11 +2,19 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Game from './Game';
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
-import reducer from './store/reducer';
+import { createStore, combineReducers } from 'redux';
+import gameStateReducer from './store/reducers/gameState';
+import inputReducer from './store/reducers/input';
+import layersReducer from './store/reducers/layers';
 import * as serviceWorker from './serviceWorker';
 
-const store = createStore(reducer);
+const rootReducer = combineReducers({
+  gameState: gameStateReducer,
+  input: inputReducer,
+  layers: layersReducer
+});
+
+const store = createStore(rootReducer);
 
 const game = (
   <Provider store={store}>

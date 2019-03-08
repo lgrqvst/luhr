@@ -8,7 +8,7 @@ const TitleScreen = props => {
   return (
     <ScreenTransition show={props.show} timeout={200} type="fade">
       <ScreenWrapper>
-        <Title>RAVr</Title>
+        <Title />
         <Prompt>Press ENTER to start.</Prompt>
       </ScreenWrapper>
     </ScreenTransition>

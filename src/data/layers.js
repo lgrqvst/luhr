@@ -10,7 +10,7 @@ const layers = [
   // {
   //   name: 'ship',
   //   depth: 2
-  // },
+  // }
   {
     name: 'game',
     depth: 1

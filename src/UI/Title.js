@@ -2,7 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 
 const Title = () => {
-  return <TitleElement>RAVr</TitleElement>;
+  // return <TitleElement>RAVr</TitleElement>;
+  return <TitleElement />;
 };
 
 const TitleElement = styled.h1`
