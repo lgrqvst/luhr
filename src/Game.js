@@ -14,6 +14,7 @@ import Canvas from './components/Canvas';
 import TitleScreen from './components/UI/TitleScreen';
 import PauseScreen from './components/UI/PauseScreen';
 import GameOverScreen from './components/UI/GameOverScreen';
+import { timingSafeEqual } from 'crypto';
 
 class Game extends Component {
   constructor(props) {
@@ -86,9 +87,6 @@ class Game extends Component {
   };
 
   loadLevel = level => {
-    // Check if a level matrix has been generated before and stored in the state
-    // If no, generate it based on information in levels[level] and store generatedLevel in the state
-
     // # ground
     // . air
     // _ surface, y
@@ -106,35 +104,30 @@ class Game extends Component {
 
     const levels = {
       area1: {
+        id: 1,
+        name: 'Area One',
         matrix: [
           ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
           ['.', '.', '.', '.', '.', '.', '^A5', '.', '.', '.', '.', '.', '.', '.', '/48', '85', '.', '.', '.', '.'],
           ['-63', ']345', '.', '.', '/57', '-70', '#', ')05', ']534', '.', '.', '/87', '_7', '-72', '(24', '|59', '.', '.', '/27', '_7'],
           ['#', '|58', '.', '[894', '(45', '#', '#', '#', '|47', '.', '.', '|48', '#', '#', '#', ')94', '-46', '_6', '(62', '#'],
           ['#', ')87', 'v73', '(78', '#', '#', '#', '#', ')75', '_5@8', '-52', '(24', '#', '#', '#', '#', '#', '#', '#', '#']
-        ]
+        ],
+        width: 20,
+        height: 5
       }
     };
 
-    // Take the level data from the state and push it to the stage
-    // The generatedLevel object should have information about what goes in the foreground and what goes in the background, as well as relevant parallax info
-    // initializePlayer() to create the ship
-    console.log('Loading: ' + level);
+    this.props.loadLevel(levels[level]);
+
+    // console.log(levels[level].height, levels[level].width);
+
+    // console.log('Loading: ' + level);
   };
 
-  unloadLevel = () => {
-    // Unload the current level
-    // I.e. Remove it and the player from the stage.
-    // It is assumed that when this function is called, loadLevel is also called with a new level.
-  };
+  unloadLevel = () => {};
 
-  initializePlayer = () => {
-    // Check the state for the currently status of the ship (including cargo status, equipped upgrades, etc.) and generate a copy.
-  };
-
-  // resetTaps = () => {
-  //   // return this.state.input.resetTaps();
-  // };
+  initializePlayer = () => {};
 
   update = delta => {
     const { pressed } = this.props.input;
@@ -224,7 +217,8 @@ const mapStateToProps = state => {
     layers: state.layers.layers,
     gameState: state.gameState,
     previousGameState: state.previousGameState,
-    input: state.input
+    input: state.input,
+    level: state.level
   };
 };
 
@@ -232,7 +226,8 @@ const mapDispatchToProps = dispatch => {
   return {
     setGameState: gameState => dispatch(actionCreators.setGameState(gameState)),
     updateInput: (keyCode, value) => dispatch(actionCreators.updateInput(keyCode, value)),
-    resetTaps: () => dispatch(actionCreators.resetTaps())
+    resetTaps: () => dispatch(actionCreators.resetTaps()),
+    loadLevel: level => dispatch(actionCreators.loadLevel(level))
   };
 };
 
