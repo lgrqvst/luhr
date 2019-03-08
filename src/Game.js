@@ -15,7 +15,6 @@ import Canvas from './components/Canvas';
 import TitleScreen from './components/UI/TitleScreen';
 import PauseScreen from './components/UI/PauseScreen';
 import GameOverScreen from './components/UI/GameOverScreen';
-import { timingSafeEqual } from 'crypto';
 
 class Game extends Component {
   constructor(props) {
