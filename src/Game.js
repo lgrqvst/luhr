@@ -41,12 +41,8 @@ class Game extends Component {
     this.setCanvasSize();
     window.addEventListener('resize', this.handleResize);
 
-    window.addEventListener('keydown', ({ keyCode }) =>
-      this.props.updateInput(keyCode, true)
-    );
-    window.addEventListener('keyup', ({ keyCode }) =>
-      this.props.updateInput(keyCode, false)
-    );
+    window.addEventListener('keydown', ({ keyCode }) => this.props.updateInput(keyCode, true));
+    window.addEventListener('keyup', ({ keyCode }) => this.props.updateInput(keyCode, false));
 
     MainLoop.setUpdate(this.update)
       .setDraw(this.draw)
@@ -60,9 +56,7 @@ class Game extends Component {
     for (let layer of this.props.layers) {
       this[`${layer.name}CanvasRef`].current.width = width;
       this[`${layer.name}CanvasRef`].current.height = height;
-      this[`${layer.name}RenderingContext`] = this[
-        `${layer.name}CanvasRef`
-      ].current.getContext('2d');
+      this[`${layer.name}RenderingContext`] = this[`${layer.name}CanvasRef`].current.getContext('2d');
     }
 
     // this.canvasRef.current.width = width;
@@ -94,6 +88,34 @@ class Game extends Component {
   loadLevel = level => {
     // Check if a level matrix has been generated before and stored in the state
     // If no, generate it based on information in levels[level] and store generatedLevel in the state
+
+    // # ground
+    // . air
+    // _ surface, y
+    // - gentle slope, y[left], y[right]
+    // | steep slope, x[top], x[bottom]
+    // [ cliff to left, x[base], x[top], y[right]
+    // ] cliff to right, y[left], x[top], x[base]
+    // v pit, y[level], x, y[depth]
+    // ^ hill, y[level], x, y[height]
+    // @ landing pad, x
+    // / small slope right, x, y
+    // \ small slope left, y, x
+    // ) small slope high right, x, y
+    // ( small slope high left, y, x
+
+    const levels = {
+      area1: {
+        matrix: [
+          ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
+          ['.', '.', '.', '.', '.', '.', '^A5', '.', '.', '.', '.', '.', '.', '.', '/48', '85', '.', '.', '.', '.'],
+          ['-63', ']345', '.', '.', '/57', '-70', '#', ')05', ']534', '.', '.', '/87', '_7', '-72', '(24', '|59', '.', '.', '/27', '_7'],
+          ['#', '|58', '.', '[894', '(45', '#', '#', '#', '|47', '.', '.', '|48', '#', '#', '#', ')94', '-46', '_6', '(62', '#'],
+          ['#', ')87', 'v73', '(78', '#', '#', '#', '#', ')75', '_5@8', '-52', '(24', '#', '#', '#', '#', '#', '#', '#', '#']
+        ]
+      }
+    };
+
     // Take the level data from the state and push it to the stage
     // The generatedLevel object should have information about what goes in the foreground and what goes in the background, as well as relevant parallax info
     // initializePlayer() to create the ship
@@ -163,7 +185,9 @@ class Game extends Component {
      * FINISH UP
      */
 
-    // this.props.resetTaps();
+    if (tapped.enter || tapped.esc) {
+      this.props.resetTaps();
+    }
   };
 
   draw = () => {
@@ -174,13 +198,7 @@ class Game extends Component {
 
   render() {
     const { gameState } = this.props;
-    const canvas = this.props.layers.map(layer => (
-      <Canvas
-        key={layer.name}
-        ref={this[`${layer.name}CanvasRef`]}
-        depth={layer.depth}
-      />
-    ));
+    const canvas = this.props.layers.map(layer => <Canvas key={layer.name} ref={this[`${layer.name}CanvasRef`]} depth={layer.depth} />);
 
     // const canvas = <Canvas key="canvas" ref={this.canvasRef} depth={1} />;
 
@@ -213,8 +231,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     setGameState: gameState => dispatch(actionCreators.setGameState(gameState)),
-    updateInput: (keyCode, value) =>
-      dispatch(actionCreators.updateInput(keyCode, value)),
+    updateInput: (keyCode, value) => dispatch(actionCreators.updateInput(keyCode, value)),
     resetTaps: () => dispatch(actionCreators.resetTaps())
   };
 };
