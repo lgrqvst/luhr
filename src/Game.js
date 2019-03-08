@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import StylesSanitize from './styles/Sanitize';
 import StylesBase from './styles/Base';
 
+import layers from './data/layers';
 import * as gameStates from './data/gameStates';
 import levels from './data/levels';
 
@@ -20,7 +21,7 @@ class Game extends Component {
   constructor(props) {
     super(props);
 
-    for (let layer of this.props.layers) {
+    for (let layer of layers) {
       this[`${layer.name}CanvasRef`] = React.createRef();
     }
 
@@ -54,7 +55,7 @@ class Game extends Component {
   setCanvasSize = () => {
     const width = window.innerWidth * 2;
     const height = window.innerHeight * 2;
-    for (let layer of this.props.layers) {
+    for (let layer of layers) {
       this[`${layer.name}CanvasRef`].current.width = width;
       this[`${layer.name}CanvasRef`].current.height = height;
       this[`${layer.name}RenderingContext`] = this[`${layer.name}CanvasRef`].current.getContext('2d');
@@ -191,7 +192,7 @@ class Game extends Component {
 
   render() {
     const { gameState } = this.props;
-    const canvas = this.props.layers.map(layer => <Canvas key={layer.name} ref={this[`${layer.name}CanvasRef`]} depth={layer.depth} />);
+    const canvas = layers.map(layer => <Canvas key={layer.name} ref={this[`${layer.name}CanvasRef`]} depth={layer.depth} />);
 
     // const canvas = <Canvas key="canvas" ref={this.canvasRef} depth={1} />;
 
@@ -214,7 +215,6 @@ const GameContainer = styled.div``;
 
 const mapStateToProps = state => {
   return {
-    layers: state.layers.layers,
     gameState: state.gameState,
     previousGameState: state.previousGameState,
     input: state.input,

@@ -5,12 +5,7 @@ import transition from 'styled-transition-group';
 
 const ScreenTransition = props => {
   return (
-    <ScreenTransitionElement
-      in={props.show}
-      timeout={props.timeout}
-      type={props.type}
-      unmountOnExit
-    >
+    <ScreenTransitionElement in={props.show} timeout={props.timeout} type={props.type} unmountOnExit>
       {props.children}
     </ScreenTransitionElement>
   );
@@ -35,10 +30,8 @@ const hideStyles = {
 };
 
 const ScreenTransitionElement = transition.div.attrs({
-  showStyles: props =>
-    props.type === 'slide' ? showStyles.slide : showStyles.fade,
-  hideStyles: props =>
-    props.type === 'slide' ? hideStyles.slide : hideStyles.fade
+  showStyles: props => (props.type === 'slide' ? showStyles.slide : showStyles.fade),
+  hideStyles: props => (props.type === 'slide' ? hideStyles.slide : hideStyles.fade)
 })`
   &:enter {
     ${props => props.hideStyles}

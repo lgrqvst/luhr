@@ -8,7 +8,7 @@ const layers = [
   //   depth: 3
   // },
   // {
-  //   name: 'ship',
+  //   name: 'avatar',
   //   depth: 2
   // }
   {
