@@ -4,11 +4,12 @@ const initialState = {};
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case actionTypes.LOAD_LEVEL:
-      console.log('Loading level: ', action.payload.name);
-      return {
-        ...action.payload
-      };
+    case actionTypes.ADD_CHUNK:
+      console.log('Adding chunk: ', action.payload.id);
+      return state;
+    case actionTypes.DISCARD_CHUNK:
+      console.log('Discarding chunk: ', action.payload.id);
+      return state;
     default:
       return state;
   }

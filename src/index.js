@@ -6,12 +6,14 @@ import { createStore, combineReducers } from 'redux';
 import gameStateReducer from './store/reducers/gameState';
 import inputReducer from './store/reducers/input';
 import levelReducer from './store/reducers/level';
+import stageReducer from './store/reducers/stage';
 import * as serviceWorker from './serviceWorker';
 
 const rootReducer = combineReducers({
   gameState: gameStateReducer,
   input: inputReducer,
-  level: levelReducer
+  level: levelReducer,
+  stage: stageReducer
 });
 
 const store = createStore(rootReducer);

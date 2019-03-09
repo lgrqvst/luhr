@@ -1,15 +1,22 @@
 import React from 'react';
 
-import { css } from 'styled-components';
+import styled, { css } from 'styled-components';
 import transition from 'styled-transition-group';
 
 const ScreenTransition = props => {
   return (
-    <ScreenTransitionElement in={props.show} timeout={props.timeout} type={props.type} unmountOnExit>
-      {props.children}
-    </ScreenTransitionElement>
+    <ScreenTransitionWrapper>
+      <ScreenTransitionElement in={props.show} timeout={props.timeout} type={props.type} unmountOnExit>
+        {props.children}
+      </ScreenTransitionElement>
+    </ScreenTransitionWrapper>
   );
 };
+
+const ScreenTransitionWrapper = styled.div`
+  position: relative;
+  z-index: 100;
+`;
 
 const showStyles = {
   fade: css`

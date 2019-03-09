@@ -9,7 +9,7 @@ import StylesBase from './styles/Base';
 
 import layers from './data/layers';
 import * as gameStates from './data/gameStates';
-import levels from './data/levels';
+import { levels, chunkSize } from './data/levels';
 
 import Canvas from './components/Canvas';
 import TitleScreen from './components/UI/TitleScreen';
@@ -26,6 +26,11 @@ class Game extends Component {
 
     // this.canvasRef = React.createRef();
   }
+
+  state = {
+    width: null,
+    height: null
+  };
 
   componentDidMount() {
     this.initialize();
@@ -51,9 +56,18 @@ class Game extends Component {
       .start();
   };
 
+  updateSize = () => {
+    this.setState({
+      width: window.innerWidth * 2,
+      height: window.innerHeight * 2
+    });
+  };
+
   setCanvasSize = () => {
-    const width = window.innerWidth * 2;
-    const height = window.innerHeight * 2;
+    this.updateSize();
+    const width = this.state.width || window.innerWidth * 2;
+    const height = this.state.height || window.innerHeight * 2;
+
     for (let layer of layers) {
       this[`${layer.name}CanvasRef`].current.width = width;
       this[`${layer.name}CanvasRef`].current.height = height;
@@ -86,43 +100,22 @@ class Game extends Component {
     this.props.setGameState(gameStates.OVER);
   };
 
-  loadLevel = level => {
-    // # ground
-    // . air
-    // _ surface, y
-    // - gentle slope, y[left], y[right]
-    // | steep slope, x[top], x[bottom]
-    // [ cliff to left, x[base], x[top], y[right]
-    // ] cliff to right, y[left], x[top], x[base]
-    // v pit, y[level], x, y[depth]
-    // ^ hill, y[level], x, y[height]
-    // @ landing pad, x
-    // / small slope right, x, y
-    // \ small slope left, y, x
-    // ) small slope high right, x, y
-    // ( small slope high left, y, x
+  loadLevel = levelId => {
+    const level = levels[levelId];
+    const { matrix } = level;
 
-    const levels = {
-      area1: {
-        id: 1,
-        name: 'Area One',
-        matrix: [
-          ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
-          ['.', '.', '.', '.', '.', '.', '^A5', '.', '.', '.', '.', '.', '.', '.', '/48', '85', '.', '.', '.', '.'],
-          ['-63', ']345', '.', '.', '/57', '-70', '#', ')05', ']534', '.', '.', '/87', '_7', '-72', '(24', '|59', '.', '.', '/27', '_7'],
-          ['#', '|58', '.', '[894', '(45', '#', '#', '#', '|47', '.', '.', '|48', '#', '#', '#', ')94', '-46', '_6', '(62', '#'],
-          ['#', ')87', 'v73', '(78', '#', '#', '#', '#', ')75', '_5@8', '-52', '(24', '#', '#', '#', '#', '#', '#', '#', '#']
-        ],
-        width: 20,
-        height: 5
-      }
-    };
+    this.props.loadLevel(level);
 
-    this.props.loadLevel(levels[level]);
+    // Get the chunk with the landing pad
+    // Check the location of the landing pad in that chunk
+    // Calculate how that chunk is positioned relative to the screen if the ship is in the middle
+    // Calculate how many chunks need to be drawn to the left, right, top and bottom
+    // Generate chunks
+    // Add chunks to stage
 
-    // console.log(levels[level].height, levels[level].width);
-
-    // console.log('Loading: ' + level);
+    const chunkHome = matrix[level.start.y][level.start.x].split('');
+    const padX = chunkHome[chunkHome.indexOf('@') + 1];
+    console.log(padX);
   };
 
   unloadLevel = () => {};
@@ -185,6 +178,18 @@ class Game extends Component {
 
   draw = () => {
     // Draw out everything that's in the stage array
+    const ctx = this.gameRenderingContext;
+    const { width, height } = this.state;
+
+    // Clear the canvas
+    ctx.clearRect(0, 0, width, height);
+
+    if (this.props.gameState.current === gameStates.RUNNING) {
+      ctx.beginPath();
+      ctx.arc(width / 2, height / 2, width / 20, 0, Math.PI * 2);
+      ctx.fillStyle = '#222222';
+      ctx.fill();
+    }
   };
 
   end = () => {};
@@ -217,7 +222,8 @@ const mapStateToProps = state => {
     gameState: state.gameState,
     previousGameState: state.previousGameState,
     input: state.input,
-    level: state.level
+    level: state.level,
+    stage: state.stage
   };
 };
 
@@ -226,7 +232,9 @@ const mapDispatchToProps = dispatch => {
     setGameState: gameState => dispatch(actionCreators.setGameState(gameState)),
     updateInput: (keyCode, value) => dispatch(actionCreators.updateInput(keyCode, value)),
     resetTaps: () => dispatch(actionCreators.resetTaps()),
-    loadLevel: level => dispatch(actionCreators.loadLevel(level))
+    loadLevel: level => dispatch(actionCreators.loadLevel(level)),
+    addChunk: chunk => dispatch(actionCreators.addChunk(chunk)),
+    discardChunk: id => dispatch(actionCreators.discardChunk(id))
   };
 };
 
