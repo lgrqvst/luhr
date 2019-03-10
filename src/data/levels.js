@@ -13,7 +13,7 @@
 // ) small slope high right, x, y
 // ( small slope high left, y, x
 
-const chunkSize = 500;
+const chunkSize = 1000;
 
 const levels = {
   area1: {

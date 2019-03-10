@@ -11,6 +11,8 @@ import layers from './data/layers';
 import * as gameStates from './data/gameStates';
 import { levels, chunkSize } from './data/levels';
 
+import Chunk from './classes/Chunk';
+
 import Canvas from './components/Canvas';
 import TitleScreen from './components/UI/TitleScreen';
 import PauseScreen from './components/UI/PauseScreen';
@@ -103,19 +105,34 @@ class Game extends Component {
   loadLevel = levelId => {
     const level = levels[levelId];
     const { matrix } = level;
+    const { width, height } = this.state;
 
     this.props.loadLevel(level);
 
     // Get the chunk with the landing pad
-    // Check the location of the landing pad in that chunk
-    // Calculate how that chunk is positioned relative to the screen if the ship is in the middle
-    // Calculate how many chunks need to be drawn to the left, right, top and bottom
+    // Get the position of the landing pad
+    // Calculate how the chunk needs to be placed for the landing pad to end in the center of the stage
+    // Calculate viewport position (stage scroll position) based on that
+    // Calculate how many chunks need to be drawn to the left, right, top and bottom based on that scroll position
     // Generate chunks
-    // Add chunks to stage
+    // Add all chunks to stage
+    // Initialize ship in the position of the landing pad
 
-    const chunkHome = matrix[level.start.y][level.start.x].split('');
-    const padX = chunkHome[chunkHome.indexOf('@') + 1];
-    console.log(padX);
+    const chunkHomeDescriptor = matrix[level.start.y][level.start.x];
+    const chunkHomeArray = chunkHomeDescriptor.split('');
+    const padX = chunkHomeArray[chunkHomeArray.indexOf('@') + 1];
+    const padY = chunkHomeArray[1];
+
+    const stageScrollPosX = level.start.x * chunkSize + chunkSize / 2 + (padX * chunkSize) / 10 - chunkSize / 2;
+    const stageScrollPosY = level.start.y * chunkSize + chunkSize / 2 + (padY * chunkSize) / 10 - chunkSize / 2;
+
+    this.props.updateStageScrollPosition({ x: stageScrollPosX, y: stageScrollPosY });
+
+    console.log(stageScrollPosX, stageScrollPosY);
+
+    const chunkHome = new Chunk(chunkHomeDescriptor, level.start.y, level.start.x);
+
+    // console.log(padX, padY);
   };
 
   unloadLevel = () => {};
@@ -234,7 +251,8 @@ const mapDispatchToProps = dispatch => {
     resetTaps: () => dispatch(actionCreators.resetTaps()),
     loadLevel: level => dispatch(actionCreators.loadLevel(level)),
     addChunk: chunk => dispatch(actionCreators.addChunk(chunk)),
-    discardChunk: id => dispatch(actionCreators.discardChunk(id))
+    discardChunk: id => dispatch(actionCreators.discardChunk(id)),
+    updateStageScrollPosition: position => dispatch(actionCreators.updateStageScrollPosition(position))
   };
 };
 

@@ -15,3 +15,10 @@ export const discardChunk = id => {
     }
   };
 };
+
+export const updateStageScrollPosition = position => {
+  return {
+    type: actionTypes.UPDATE_STAGE_POS,
+    payload: position
+  };
+};
