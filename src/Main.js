@@ -110,27 +110,26 @@ class Main extends Component {
 
     this.props.loadLevel(level);
 
-    // [x] Get the chunk with the landing pad
-    // [x] Get the position of the landing pad
-    // [x] Calculate how the chunk needs to be placed for the landing pad to end in the center of the stage
-    // [x] Calculate viewport position (stage scroll position) based on that
-    // [x] Calculate how many chunks need to be drawn to the left, right, top and bottom based on that scroll position
-    // [x] Generate chunks
-    // [x] Add all chunks to stage
-    // [ ] Initialize ship in the position of the landing pad
-
     const chunkHomeDescriptor = matrix[level.start.y][level.start.x];
     const chunkHomeArray = chunkHomeDescriptor.split('');
     const padX = chunkHomeArray[chunkHomeArray.indexOf('@') + 1];
     const padY = chunkHomeArray[1];
 
-    let stageScrollX = level.start.x * chunkSize + chunkSize / 2 + (padX * chunkSize) / 10 - chunkSize / 2;
-    let stageScrollY = level.start.y * chunkSize + chunkSize / 2 + (padY * chunkSize) / 10 - chunkSize / 2;
+    const stageScrollXBase = level.start.x * chunkSize + chunkSize / 2 + (padX * chunkSize) / 10 - chunkSize / 2;
+    const stageScrollYBase = level.start.y * chunkSize + chunkSize / 2 + (padY * chunkSize) / 10 - chunkSize / 2;
 
-    if (stageScrollX < width / 2) stageScrollX = width / 2;
-    if (stageScrollY < height / 2) stageScrollY = height / 2;
-    if (stageScrollX > level.matrix[0].length * chunkSize - width / 2 - 1) stageScrollX = level.matrix[0].length * chunkSize - width / 2 - 1;
-    if (stageScrollY > level.matrix.length * chunkSize - height / 2 - 1) stageScrollY = level.matrix.length * chunkSize - height / 2 - 1;
+    const stageScrollXMax = level.matrix[0].length * chunkSize - width / 2 - 1;
+    const stageScrollXMin = width / 2;
+    const stageScrollYMax = level.matrix.length * chunkSize - height / 2 - 1;
+    const stageScrollYMin = height / 2;
+
+    let stageScrollX = stageScrollXBase;
+    let stageScrollY = stageScrollYBase;
+
+    if (stageScrollXBase < stageScrollXMin) stageScrollX = stageScrollXMin;
+    if (stageScrollYBase < stageScrollYMin) stageScrollY = stageScrollYMin;
+    if (stageScrollXBase > stageScrollXMax) stageScrollX = stageScrollXMax;
+    if (stageScrollYBase > stageScrollYMax) stageScrollY = stageScrollYMax;
 
     this.props.updateStageScroll({ x: stageScrollX, y: stageScrollY });
 
@@ -146,12 +145,7 @@ class Main extends Component {
       }
     }
 
-    // const shipY = stageScrollY - level.start.y * chunkSize + (padY * chunkSize) / 10;
-    const shipY = stageScrollY - level.start.y * chunkSize + ((10 - padY) * chunkSize) / 10 - height / 2;
-    console.log(shipY);
-    console.log(((10 - padY) * chunkSize) / 10);
-
-    this.initializePlayer(width / 2, shipY);
+    this.initializePlayer(stageScrollXBase, stageScrollYBase);
   };
 
   unloadLevel = () => {
@@ -160,6 +154,7 @@ class Main extends Component {
 
   initializePlayer = (x, y) => {
     const ship = new Ship(x, y);
+    this.props.initializeShip({ x: x, y: y });
     this.props.addObjectToStage(ship);
   };
 
@@ -266,7 +261,8 @@ const mapStateToProps = state => {
     previousGameState: state.previousGameState,
     input: state.input,
     level: state.level,
-    stage: state.stage
+    stage: state.stage,
+    ship: state.ship
   };
 };
 
@@ -281,7 +277,8 @@ const mapDispatchToProps = dispatch => {
     addObjectToStage: object => dispatch(actionCreators.addObjectToStage(object)),
     removeObjectFromStage: id => dispatch(actionCreators.removeObjectFromStage(id)),
     updateStageSize: size => dispatch(actionCreators.updateStageSize(size)),
-    updateStageScroll: position => dispatch(actionCreators.updateStageScroll(position))
+    updateStageScroll: position => dispatch(actionCreators.updateStageScroll(position)),
+    initializeShip: ship => dispatch(actionCreators.initializeShip(ship))
   };
 };
 
