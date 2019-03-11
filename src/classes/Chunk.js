@@ -1,5 +1,4 @@
 import { chunkSize } from '../data/levels';
-import { timingSafeEqual } from 'crypto';
 
 class Chunk {
   constructor(descriptor, x, y) {
