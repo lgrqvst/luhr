@@ -1,21 +1,39 @@
 import * as actionTypes from '../actions/actionTypes';
+import { updateObject } from '../utility';
 
 const initialState = {
   chunks: [],
-  stageScrollPosX: 0,
-  stageScrollPosY: 0
+  objects: [],
+  width: 0,
+  height: 0,
+  scrollX: 0,
+  scrollY: 0
 };
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.ADD_CHUNK:
       console.log('Adding chunk: ', action.payload.id);
-      return state;
+      const chunks = [...state.chunks];
+      chunks.push(action.payload);
+      return updateObject(state, { chunks: chunks });
     case actionTypes.DISCARD_CHUNK:
       console.log('Discarding chunk: ', action.payload.id);
       return state;
+    case actionTypes.ADD_OBJECT_TO_STAGE:
+      console.log('Adding object to stage');
+      const objects = [...state.objects];
+      objects.push(action.payload);
+      return updateObject(state, { objects: objects });
+    case actionTypes.REMOVE_OBJECT_FROM_STAGE:
+      console.log('Removing object from stage: ', action.payload.id);
+      return state;
+    case actionTypes.UPDATE_STAGE_SIZE:
+      console.log('Updating stage size');
+      return updateObject(state, { width: action.payload.width, height: action.payload.height });
     case actionTypes.UPDATE_STAGE_POS:
-      console.log('Updating stage position: X: ' + action.payload.x + ', Y: ' + action.payload.y);
+      console.log('Updating stage scroll: x: ' + action.payload.x + ', y: ' + action.payload.y);
+      return updateObject(state, { scrollX: action.payload.x, scrollY: action.payload.y });
     default:
       return state;
   }

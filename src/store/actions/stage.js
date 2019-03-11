@@ -16,7 +16,30 @@ export const discardChunk = id => {
   };
 };
 
-export const updateStageScrollPosition = position => {
+export const addObjectToStage = object => {
+  return {
+    type: actionTypes.ADD_OBJECT_TO_STAGE,
+    payload: object
+  };
+};
+
+export const removeObjectFromStage = id => {
+  return {
+    type: actionTypes.REMOVE_OBJECT_FROM_STAGE,
+    payload: {
+      id: id
+    }
+  };
+};
+
+export const updateStageSize = size => {
+  return {
+    type: actionTypes.UPDATE_STAGE_SIZE,
+    payload: size
+  };
+};
+
+export const updateStageScroll = position => {
   return {
     type: actionTypes.UPDATE_STAGE_POS,
     payload: position
