@@ -1,6 +1,6 @@
 import store from '../store/store';
 import * as actionCreators from '../store/actions/';
-import { degs, rads } from '../utility';
+import { rads } from '../utility';
 
 class Ship {
   constructor() {

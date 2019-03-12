@@ -148,18 +148,6 @@ class Main extends Component {
       yMin: stageScrollYMin
     });
 
-    // const initialChunkLowX = Math.floor((stageScrollX - width / 2) / chunkSize);
-    // const initialChunkHighX = Math.floor((stageScrollX + width / 2) / chunkSize);
-    // const initialChunkLowY = Math.floor((stageScrollY - height / 2) / chunkSize);
-    // const initialChunkHighY = Math.floor((stageScrollY + height / 2) / chunkSize);
-
-    // for (let y = initialChunkLowY; y <= initialChunkHighY; y++) {
-    //   for (let x = initialChunkLowX; x <= initialChunkHighX; x++) {
-    //     let chunk = new Chunk(level.matrix[y][x], x, y);
-    //     this.props.addChunk(chunk);
-    //   }
-    // }
-
     const chunks = this.getChunksBasedOnScroll();
 
     chunks.forEach(el => {
@@ -326,7 +314,6 @@ const GameContainer = styled.div``;
 const mapStateToProps = state => {
   return {
     gameState: state.gameState,
-    previousGameState: state.previousGameState,
     input: state.input,
     level: state.level,
     stage: state.stage,
@@ -340,6 +327,7 @@ const mapDispatchToProps = dispatch => {
     updateInput: (keyCode, value) => dispatch(actionCreators.updateInput(keyCode, value)),
     resetTaps: () => dispatch(actionCreators.resetTaps()),
     loadLevel: level => dispatch(actionCreators.loadLevel(level)),
+    storeLevel: level => dispatch(actionCreators.storeLevel(level)),
     addChunk: chunk => dispatch(actionCreators.addChunk(chunk)),
     discardChunk: id => dispatch(actionCreators.discardChunk(id)),
     addObjectToStage: object => dispatch(actionCreators.addObjectToStage(object)),

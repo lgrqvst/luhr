@@ -6,3 +6,10 @@ export const loadLevel = level => {
     payload: level
   };
 };
+
+export const storeLevel = level => {
+  return {
+    type: actionTypes.STORE_LEVEL,
+    payload: level
+  };
+};
