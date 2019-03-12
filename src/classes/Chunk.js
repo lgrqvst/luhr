@@ -9,6 +9,7 @@ class Chunk {
     this.terrainType = this.descriptorArray[0];
     this.x = x;
     this.y = y;
+    this.seed0 = Math.random();
     this.seed1 = Math.random();
     this.seed2 = Math.random();
     this.seed3 = Math.random();
@@ -18,7 +19,6 @@ class Chunk {
     this.seed7 = Math.random();
     this.seed8 = Math.random();
     this.seed9 = Math.random();
-    this.seed10 = Math.random();
     // console.log(`CHUNK: id: ${this.id}, x: ${x}, y: ${y}, descriptor: ${descriptor}`);
   }
 
@@ -41,7 +41,7 @@ class Chunk {
     ctx.closePath();
     ctx.lineWidth = 1;
     ctx.strokeStyle = '#ffffff';
-    ctx.fillStyle = `rgba(${50 * this.seed1},${50 * this.seed2},${50 * this.seed3},1)`;
+    ctx.fillStyle = `rgba(${50 * this.seed0},${50 * this.seed1},${50 * this.seed2},1)`;
     ctx.stroke();
     ctx.fill();
     ctx.restore();

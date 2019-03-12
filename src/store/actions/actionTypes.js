@@ -10,4 +10,7 @@ export const UPDATE_STAGE_POS = 'UPDATE_STAGE_POS';
 export const UPDATE_STAGE_SIZE = 'UPDATE_STAGE_SIZE';
 export const INITIALIZE_SHIP = 'INITIALIZE_SHIP';
 export const RESET_SHIP = 'RESET_SHIP';
+export const UPDATE_SHIP = 'UPDATE_SHIP';
+// export const MOVE_SHIP = 'MOVE_SHIP';
+// export const ROTATE_SHIP = 'ROTATE_SHIP';
 // export const LOAD_SHIP = 'LOAD_SHIP';

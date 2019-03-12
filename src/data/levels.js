@@ -31,6 +31,11 @@ const levels = {
     start: {
       x: 9,
       y: 4
+    },
+    gravity: 1,
+    wind: {
+      max: 5,
+      min: -5
     }
   },
   area2: {},

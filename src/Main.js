@@ -26,8 +26,6 @@ class Main extends Component {
     for (let layer of layers) {
       this[`${layer.name}CanvasRef`] = React.createRef();
     }
-
-    // this.canvasRef = React.createRef();
   }
 
   state = {
@@ -39,6 +37,17 @@ class Main extends Component {
     this.initialize();
     // If there are generated levels stored in localStorage, get them and put them in the state
   }
+
+  shouldComponentUpdate(nextProps) {
+    if (this.props.gameState !== nextProps.gameState) {
+      return true;
+    }
+    return false;
+  }
+
+  // componentDidUpdate() {
+  //   console.log('Component Did Update!');
+  // }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
@@ -64,6 +73,8 @@ class Main extends Component {
       width: window.innerWidth * 2,
       height: window.innerHeight * 2
     });
+
+    // Also update scrollMin, scrollMax, but only if there's a level loaded.
   };
 
   setCanvasSize = () => {
@@ -76,10 +87,6 @@ class Main extends Component {
       this[`${layer.name}CanvasRef`].current.height = height;
       this[`${layer.name}RenderingContext`] = this[`${layer.name}CanvasRef`].current.getContext('2d');
     }
-
-    // this.canvasRef.current.width = width;
-    // this.canvasRef.current.height = height;
-    // this.stage = this.canvasRef.current.getContext('2d');
   };
 
   handleResize = () => {
@@ -104,6 +111,7 @@ class Main extends Component {
   };
 
   loadLevel = levelId => {
+    // Consider moving this function to a separate file
     const level = levels[levelId];
     const { matrix } = level;
     const { width, height } = this.props.stage;
@@ -131,7 +139,14 @@ class Main extends Component {
     if (stageScrollXBase > stageScrollXMax) stageScrollX = stageScrollXMax;
     if (stageScrollYBase > stageScrollYMax) stageScrollY = stageScrollYMax;
 
-    this.props.updateStageScroll({ x: stageScrollX, y: stageScrollY });
+    this.props.updateStageScroll({
+      x: stageScrollX,
+      y: stageScrollY,
+      xMax: stageScrollXMax,
+      yMax: stageScrollYMax,
+      xMin: stageScrollXMin,
+      yMin: stageScrollYMin
+    });
 
     const initialChunkLowX = Math.floor((stageScrollX - width / 2) / chunkSize);
     const initialChunkHighX = Math.floor((stageScrollX + width / 2) / chunkSize);
@@ -149,6 +164,7 @@ class Main extends Component {
   };
 
   unloadLevel = () => {
+    // Move this to same file as loadLevel?
     // Discard all chunks?
   };
 
@@ -162,6 +178,9 @@ class Main extends Component {
     const { pressed } = this.props.input;
     const { tapped } = this.props.input;
     const { gameState } = this.props;
+    const { objects, scrollX, scrollY, scrollXMax, scrollXMin, scrollYMax, scrollYMin, width, height } = this.props.stage;
+    const shipX = this.props.ship.x;
+    const shipY = this.props.ship.y;
 
     /*
      * TITLE
@@ -176,11 +195,35 @@ class Main extends Component {
      * RUNNING
      */
 
+    // Wait for pause
     if (gameState.current === gameStates.RUNNING) {
-      // Update all the stuff
       if (tapped.esc) {
         this.props.resetTaps();
         this.pauseGame();
+      }
+    }
+
+    // Update all the stuff
+    if (gameState.current === gameStates.RUNNING) {
+      objects.forEach(object => {
+        object.update();
+      });
+
+      if (shipX - scrollX > width / 4 && scrollX < scrollXMax) {
+        console.log('Scroll right');
+        // Dispatch action here to move scrollX closer to shipX
+      }
+      if (shipX - scrollX < (width / 4) * -1 && scrollX > scrollXMin) {
+        console.log('Scroll left');
+        // Dispatch action here to move scrollX closer to shipX
+      }
+      if (shipY - scrollY > height / 4 && scrollY < scrollYMax) {
+        console.log('Scroll down');
+        // Dispatch action here to move scrollY closer to shipY
+      }
+      if (shipY - scrollY < (height / 4) * -1 && scrollY > scrollYMin) {
+        console.log('Scroll up');
+        // Dispatch action here to move scrollY closer to shipY
       }
     }
 
@@ -235,8 +278,6 @@ class Main extends Component {
   render() {
     const { gameState } = this.props;
     const canvas = layers.map(layer => <Canvas key={layer.name} ref={this[`${layer.name}CanvasRef`]} depth={layer.depth} />);
-
-    // const canvas = <Canvas key="canvas" ref={this.canvasRef} depth={1} />;
 
     return (
       <>

@@ -1,14 +1,21 @@
 import * as actionTypes from './actionTypes';
 
-export const initializeShip = ship => {
+export const initializeShip = shipData => {
   return {
     type: actionTypes.INITIALIZE_SHIP,
-    payload: ship
+    payload: shipData
   };
 };
 
 export const resetShip = () => {
   return {
     type: actionTypes.RESET_SHIP
+  };
+};
+
+export const updateShip = shipData => {
+  return {
+    type: actionTypes.UPDATE_SHIP,
+    payload: shipData
   };
 };
