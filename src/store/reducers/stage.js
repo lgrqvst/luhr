@@ -40,7 +40,7 @@ const reducer = (state = initialState, action) => {
       console.log('Updating stage size');
       return updateObject(state, { width: action.payload.width, height: action.payload.height });
 
-    case actionTypes.UPDATE_STAGE_POS:
+    case actionTypes.INITIALIZE_STAGE_POS:
       console.log('Updating stage scroll: x: ' + action.payload.x + ', y: ' + action.payload.y);
       return updateObject(state, {
         scrollX: action.payload.x,
@@ -50,6 +50,12 @@ const reducer = (state = initialState, action) => {
         scrollXMin: action.payload.xMin,
         scrollYMin: action.payload.yMin
       });
+
+    case actionTypes.UPDATE_STAGE_POS:
+      return updateObject(state, action.payload);
+
+    case actionTypes.UPDATE_STAGE_CONSTRAINTS:
+      return state;
 
     default:
       return state;

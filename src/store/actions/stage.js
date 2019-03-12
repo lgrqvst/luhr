@@ -39,9 +39,23 @@ export const updateStageSize = size => {
   };
 };
 
-export const updateStageScroll = position => {
+export const initializeStagePosition = position => {
+  return {
+    type: actionTypes.INITIALIZE_STAGE_POS,
+    payload: position
+  };
+};
+
+export const updateStagePosition = position => {
   return {
     type: actionTypes.UPDATE_STAGE_POS,
     payload: position
+  };
+};
+
+export const updateStageConstraints = constraints => {
+  return {
+    type: actionTypes.UPDATE_STAGE_CONSTRAINTS,
+    payload: constraints
   };
 };

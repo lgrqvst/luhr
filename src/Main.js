@@ -139,7 +139,7 @@ class Main extends Component {
     if (stageScrollXBase > stageScrollXMax) stageScrollX = stageScrollXMax;
     if (stageScrollYBase > stageScrollYMax) stageScrollY = stageScrollYMax;
 
-    this.props.updateStageScroll({
+    this.props.initializeStagePosition({
       x: stageScrollX,
       y: stageScrollY,
       xMax: stageScrollXMax,
@@ -209,21 +209,17 @@ class Main extends Component {
         object.update();
       });
 
-      if (shipX - scrollX > width / 4 && scrollX < scrollXMax) {
-        console.log('Scroll right');
-        // Dispatch action here to move scrollX closer to shipX
+      if (shipX - scrollX > width / 6 && scrollX < scrollXMax) {
+        this.props.updateStagePosition({ scrollX: scrollX + (shipX - scrollX) / 75 });
       }
-      if (shipX - scrollX < (width / 4) * -1 && scrollX > scrollXMin) {
-        console.log('Scroll left');
-        // Dispatch action here to move scrollX closer to shipX
+      if (shipX - scrollX < (width / 6) * -1 && scrollX > scrollXMin) {
+        this.props.updateStagePosition({ scrollX: scrollX - Math.abs(shipX - scrollX) / 75 });
       }
-      if (shipY - scrollY > height / 4 && scrollY < scrollYMax) {
-        console.log('Scroll down');
-        // Dispatch action here to move scrollY closer to shipY
+      if (shipY - scrollY > height / 6 && scrollY < scrollYMax) {
+        this.props.updateStagePosition({ scrollY: scrollY + (shipY - scrollY) / 75 });
       }
-      if (shipY - scrollY < (height / 4) * -1 && scrollY > scrollYMin) {
-        console.log('Scroll up');
-        // Dispatch action here to move scrollY closer to shipY
+      if (shipY - scrollY < (height / 6) * -1 && scrollY > scrollYMin) {
+        this.props.updateStagePosition({ scrollY: scrollY - Math.abs(shipY - scrollY) / 75 });
       }
     }
 
@@ -318,7 +314,9 @@ const mapDispatchToProps = dispatch => {
     addObjectToStage: object => dispatch(actionCreators.addObjectToStage(object)),
     removeObjectFromStage: id => dispatch(actionCreators.removeObjectFromStage(id)),
     updateStageSize: size => dispatch(actionCreators.updateStageSize(size)),
-    updateStageScroll: position => dispatch(actionCreators.updateStageScroll(position)),
+    initializeStagePosition: position => dispatch(actionCreators.initializeStagePosition(position)),
+    updateStagePosition: position => dispatch(actionCreators.updateStagePosition(position)),
+    updateStageConstraints: constraints => dispatch(actionCreators.updateStageConstraints(constraints)),
     initializeShip: ship => dispatch(actionCreators.initializeShip(ship))
   };
 };
