@@ -148,19 +148,48 @@ class Main extends Component {
       yMin: stageScrollYMin
     });
 
-    const initialChunkLowX = Math.floor((stageScrollX - width / 2) / chunkSize);
-    const initialChunkHighX = Math.floor((stageScrollX + width / 2) / chunkSize);
-    const initialChunkLowY = Math.floor((stageScrollY - height / 2) / chunkSize);
-    const initialChunkHighY = Math.floor((stageScrollY + height / 2) / chunkSize);
+    // const initialChunkLowX = Math.floor((stageScrollX - width / 2) / chunkSize);
+    // const initialChunkHighX = Math.floor((stageScrollX + width / 2) / chunkSize);
+    // const initialChunkLowY = Math.floor((stageScrollY - height / 2) / chunkSize);
+    // const initialChunkHighY = Math.floor((stageScrollY + height / 2) / chunkSize);
+
+    // for (let y = initialChunkLowY; y <= initialChunkHighY; y++) {
+    //   for (let x = initialChunkLowX; x <= initialChunkHighX; x++) {
+    //     let chunk = new Chunk(level.matrix[y][x], x, y);
+    //     this.props.addChunk(chunk);
+    //   }
+    // }
+
+    const chunks = this.getChunksBasedOnScroll();
+
+    chunks.forEach(el => {
+      let chunk = new Chunk(level.matrix[el.y][el.x], el.x, el.y);
+      this.props.addChunk(chunk);
+    });
+
+    this.initializePlayer(stageScrollXBase, stageScrollYBase);
+  };
+
+  getChunksBasedOnScroll = () => {
+    const { width, height, scrollX, scrollY } = this.props.stage;
+
+    const initialChunkLowX = Math.floor((scrollX - width / 2) / chunkSize);
+    const initialChunkHighX = Math.floor((scrollX + width / 2) / chunkSize);
+    const initialChunkLowY = Math.floor((scrollY - height / 2) / chunkSize);
+    const initialChunkHighY = Math.floor((scrollY + height / 2) / chunkSize);
+
+    const chunks = [];
 
     for (let y = initialChunkLowY; y <= initialChunkHighY; y++) {
       for (let x = initialChunkLowX; x <= initialChunkHighX; x++) {
-        let chunk = new Chunk(level.matrix[y][x], x, y);
-        this.props.addChunk(chunk);
+        // let chunk = new Chunk(level.matrix[y][x], x, y);
+        // this.props.addChunk(chunk);
+        let chunk = { x: x, y: y };
+        chunks.push(chunk);
       }
     }
 
-    this.initializePlayer(stageScrollXBase, stageScrollYBase);
+    return chunks;
   };
 
   unloadLevel = () => {
@@ -221,6 +250,8 @@ class Main extends Component {
       if (shipY - scrollY < (height / 6) * -1 && scrollY > scrollYMin) {
         this.props.updateStagePosition({ scrollY: scrollY - Math.abs(shipY - scrollY) / 75 });
       }
+
+      // Calculate which chunks need to be visible based on stage scroll position.
     }
 
     /*
