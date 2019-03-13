@@ -45,10 +45,6 @@ class Main extends Component {
     return false;
   }
 
-  // componentDidUpdate() {
-  //   console.log('Component Did Update!');
-  // }
-
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
     window.removeEventListener('keydown', this.props.updateInput);
