@@ -3,7 +3,7 @@ import store from '../store/store';
 
 class Chunk {
   constructor(descriptor, x, y) {
-    this.id = `x${x}y${y}:${descriptor}`;
+    this.id = `x${x}y${y}`;
     this.descriptor = descriptor;
     this.descriptorArray = descriptor.split('');
     this.terrainType = this.descriptorArray[0];

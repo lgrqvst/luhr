@@ -191,7 +191,7 @@ class Main extends Component {
     const { pressed } = this.props.input;
     const { tapped } = this.props.input;
     const { gameState } = this.props;
-    const { objects, scrollX, scrollY, scrollXMax, scrollXMin, scrollYMax, scrollYMin, width, height } = this.props.stage;
+    const { chunks, objects, scrollX, scrollY, scrollXMax, scrollXMin, scrollYMax, scrollYMin, width, height } = this.props.stage;
     const shipX = this.props.ship.x;
     const shipY = this.props.ship.y;
 
@@ -236,6 +236,38 @@ class Main extends Component {
       }
 
       // Calculate which chunks need to be visible based on stage scroll position.
+      // Get list of visibleChunks based on scrollPosition
+      // Get an array of all chunks on the stage
+      // For every chunk in visibleChunks, check if it's in stageChunks
+      // If it is, remove it from stageChunks and visibleChunks
+      // If it is not, keep it in visibleChunks
+      // After checking all, stageChunks should contain only those chunks which should be deleted
+      // visibleChunks should have only those which should be added
+      // Delete chunks in stageChunks from stage
+      // Add chunks in visibleChunks to stage
+
+      const stageChunks = chunks.map(el => {
+        // return { id: `x${el.x}y${el.y}` };
+        return el.id;
+      });
+
+      // console.log('=====');
+      // console.log('BASE: ', stageChunks);
+
+      const visibleChunks = this.getChunksBasedOnScroll().filter(el => {
+        let index = stageChunks.indexOf(`x${el.x}y${el.y}`);
+
+        if (index > 0) {
+          stageChunks.splice(index);
+          return false;
+        }
+        return true;
+      });
+
+      // console.log(stageChunks, visibleChunks);
+
+      // console.log('DELETE: ', stageChunks);
+      // console.log('ADD: ', visibleChunks);
     }
 
     /*
