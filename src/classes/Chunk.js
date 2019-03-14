@@ -113,6 +113,7 @@ class Chunk {
     const y = (scrollY - this.y * chunkSize - height / 2) * -1;
 
     // ==========
+    // GRID Small
     ctx.save();
     ctx.beginPath();
     for (let i = 0; i < 10; i++) {
@@ -128,6 +129,7 @@ class Chunk {
     // ==========
 
     // ==========
+    // GRID Large
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(x, y);
