@@ -2,87 +2,99 @@ import { chunkSize } from '../data/levels';
 import store from '../store/store';
 
 class Chunk {
+  seed0 = Math.random();
+  seed1 = Math.random();
+  // seed2 = Math.random();
+  // seed3 = Math.random();
+  // seed4 = Math.random();
+  // seed5 = Math.random();
+  // seed6 = Math.random();
+  // seed7 = Math.random();
+  // seed8 = Math.random();
+  // seed9 = Math.random();
+
   constructor(descriptor, x, y) {
     this.id = `x${x}y${y}`;
-    this.descriptor = descriptor;
+    this.x = x;
+    this.y = y;
+
     this.terrainArray = descriptor.split(':')[0].split('');
     this.terrainType = this.terrainArray[0];
-    if (this.descriptor.split(':').length > 1) {
+
+    if (descriptor.split(':').length > 1) {
       this.objectsArray = descriptor.split(':')[1].split('');
       this.objectType = this.objectsArray[0];
     }
-    this.x = x;
-    this.y = y;
-    this.seed0 = Math.random();
-    this.seed1 = Math.random();
-    this.seed2 = Math.random();
-    this.seed3 = Math.random();
-    this.seed4 = Math.random();
-    this.seed5 = Math.random();
-    this.seed6 = Math.random();
-    this.seed7 = Math.random();
-    this.seed8 = Math.random();
-    this.seed9 = Math.random();
-    // console.log(`CHUNK: id: ${this.id}, x: ${x}, y: ${y}, descriptor: ${descriptor}`);
 
     this.realLine = { start: { x: 0, y: 0 }, end: { x: 0, y: 0 }, control1: { x: 0, y: 0 }, control2: { x: 0, y: 0 } };
 
+    const c = i => {
+      return parseInt(`0x${this.terrainArray[i]}`);
+    };
+
     switch (this.terrainType) {
       case '_':
-        this.realLine.start = { x: 0, y: parseInt(`0x${this.terrainArray[1]}`) };
-        this.realLine.end = { x: 10, y: parseInt(`0x${this.terrainArray[1]}`) };
+        this.realLine.start = { x: 0, y: c(1) };
+        this.realLine.end = { x: 10, y: c(1) };
         this.realLine.control1 = this.realLine.start;
         this.realLine.control2 = this.realLine.end;
         break;
       case '-':
-        this.realLine.start = { x: 0, y: parseInt(`0x${this.terrainArray[1]}`) };
-        this.realLine.end = { x: 10, y: parseInt(`0x${this.terrainArray[2]}`) };
+        this.realLine.start = { x: 0, y: c(1) };
+        this.realLine.end = { x: 10, y: c(2) };
         this.realLine.control1 = { ...this.realLine.start, x: this.seed0 * 5 + 2.5 };
         this.realLine.control2 = { ...this.realLine.end, x: this.seed1 * 5 + 2.5 };
         break;
       case '|':
-        this.realLine.start = { x: parseInt(`0x${this.terrainArray[1]}`), y: 0 };
-        this.realLine.end = { x: parseInt(`0x${this.terrainArray[2]}`), y: 10 };
+        this.realLine.start = { x: c(1), y: 0 };
+        this.realLine.end = { x: c(2), y: 10 };
         this.realLine.control1 = { ...this.realLine.start, y: this.seed0 * 10 };
         this.realLine.control2 = { ...this.realLine.end, y: this.seed1 * 10 };
         break;
       case '(':
-        this.realLine.start = { x: 0, y: parseInt(`0x${this.terrainArray[1]}`) };
-        this.realLine.end = { x: parseInt(`0x${this.terrainArray[2]}`), y: 0 };
+        this.realLine.start = { x: 0, y: c(1) };
+        this.realLine.end = { x: c(2), y: 0 };
         this.realLine.control1 = { ...this.realLine.start, x: this.seed0 * 3 };
         this.realLine.control2 = { ...this.realLine.end, y: this.seed1 * 3 };
         break;
       case ')':
-        this.realLine.start = { x: parseInt(`0x${this.terrainArray[1]}`), y: 0 };
-        this.realLine.end = { x: 10, y: parseInt(`0x${this.terrainArray[2]}`) };
+        this.realLine.start = { x: c(1), y: 0 };
+        this.realLine.end = { x: 10, y: c(2) };
         this.realLine.control1 = { ...this.realLine.start, y: this.seed0 * 3 };
         this.realLine.control2 = { ...this.realLine.end, x: this.seed1 * 3 + 7 };
         break;
       case '/':
-        this.realLine.start = { x: parseInt(`0x${this.terrainArray[1]}`), y: 10 };
-        this.realLine.end = { x: 10, y: parseInt(`0x${this.terrainArray[2]}`) };
+        this.realLine.start = { x: c(1), y: 10 };
+        this.realLine.end = { x: 10, y: c(2) };
         this.realLine.control1 = { ...this.realLine.start, y: this.seed0 * 3 + 7 };
         this.realLine.control2 = { ...this.realLine.end, x: this.seed1 * 3 + 7 };
         break;
       case '\\':
-        this.realLine.start = { x: 0, y: parseInt(`0x${this.terrainArray[1]}`) };
-        this.realLine.end = { x: parseInt(`0x${this.terrainArray[2]}`), y: 10 };
+        this.realLine.start = { x: 0, y: c(1) };
+        this.realLine.end = { x: c(2), y: 10 };
         this.realLine.control1 = { ...this.realLine.start, x: this.seed0 * 3 };
         this.realLine.control2 = { ...this.realLine.end, y: this.seed1 * 3 + 7 };
         break;
       case '[':
-        this.realLine.start = { x: parseInt(`0x${this.terrainArray[1]}`), y: 10 };
-        this.realLine.end = { x: 10, y: parseInt(`0x${this.terrainArray[2]}`) };
-        this.realLine.control1 = { x: parseInt(`0x${this.terrainArray[1]}`), y: parseInt(`0x${this.terrainArray[2]}`) };
-        this.realLine.control2 = { x: 0, y: parseInt(`0x${this.terrainArray[2]}`) };
+        this.realLine.start = { x: c(1), y: 10 };
+        this.realLine.end = { x: 10, y: c(2) };
+        this.realLine.control1 = { ...this.realLine.start, y: c(2) };
+        this.realLine.control2 = { ...this.realLine.end, x: 0 };
         break;
       case ']':
-        this.realLine.start = { x: 0, y: parseInt(`0x${this.terrainArray[1]}`) };
-        this.realLine.end = { x: parseInt(`0x${this.terrainArray[2]}`), y: 10 };
-        this.realLine.control1 = { x: 10, y: parseInt(`0x${this.terrainArray[1]}`) };
-        this.realLine.control2 = { x: parseInt(`0x${this.terrainArray[2]}`), y: parseInt(`0x${this.terrainArray[1]}`) };
+        this.realLine.start = { x: 0, y: c(1) };
+        this.realLine.end = { x: c(2), y: 10 };
+        this.realLine.control1 = { ...this.realLine.start, x: 10 };
+        this.realLine.control2 = { ...this.realLine.end, y: c(1) };
         break;
       case '^':
+        this.realLine.start = { x: 0, y: 0 };
+        this.realLine.mid = { x: 0, y: 0 };
+        this.realLine.end = { x: 0, y: 0 };
+        this.realLine.control1 = { x: 0, y: 0 };
+        this.realLine.control2 = { x: 0, y: 0 };
+        this.realLine.control3 = { x: 0, y: 0 };
+        this.realLine.control4 = { x: 0, y: 0 };
         break;
       case 'v':
         break;
@@ -140,9 +152,6 @@ class Chunk {
     );
     ctx.lineWidth = 1;
     ctx.strokeStyle = '#ffffff';
-    if (this.terrainType === '(') {
-      ctx.strokeStyle = '#ff0000';
-    }
     ctx.stroke();
     ctx.restore();
 
