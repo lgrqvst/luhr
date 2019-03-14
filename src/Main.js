@@ -108,6 +108,7 @@ class Main extends Component {
 
   loadLevel = levelId => {
     // Consider moving this function to a separate file
+    // Add logic here checking if the level exists in the store
     const level = levels[levelId];
     const { matrix } = level;
     const { width, height } = this.props.stage;
@@ -176,6 +177,10 @@ class Main extends Component {
     return chunks;
   };
 
+  updateChunks = () => {
+    // Logic to check which chunks to keep, which to add and which to remove
+  };
+
   unloadLevel = () => {
     // Move this to same file as loadLevel?
     // Discard all chunks?
@@ -191,6 +196,7 @@ class Main extends Component {
     const { pressed } = this.props.input;
     const { tapped } = this.props.input;
     const { gameState } = this.props;
+    const { level } = this.props;
     const { chunks, objects, scrollX, scrollY, scrollXMax, scrollXMin, scrollYMax, scrollYMin, width, height } = this.props.stage;
     const shipX = this.props.ship.x;
     const shipY = this.props.ship.y;
@@ -223,16 +229,24 @@ class Main extends Component {
       });
 
       if (shipX - scrollX > width / 6 && scrollX < scrollXMax) {
-        this.props.updateStagePosition({ scrollX: scrollX + (shipX - scrollX) / 75 });
+        let newScrollX = scrollX + (shipX - scrollX) / 75;
+        if (newScrollX > scrollXMax) newScrollX = scrollYMax;
+        this.props.updateStagePosition({ scrollX: newScrollX });
       }
       if (shipX - scrollX < (width / 6) * -1 && scrollX > scrollXMin) {
-        this.props.updateStagePosition({ scrollX: scrollX - Math.abs(shipX - scrollX) / 75 });
+        let newScrollX = scrollX - Math.abs(shipX - scrollX) / 75;
+        if (newScrollX < scrollXMin) newScrollX = scrollXMin;
+        this.props.updateStagePosition({ scrollX: newScrollX });
       }
       if (shipY - scrollY > height / 6 && scrollY < scrollYMax) {
-        this.props.updateStagePosition({ scrollY: scrollY + (shipY - scrollY) / 75 });
+        let newScrollY = scrollY + (shipY - scrollY) / 75;
+        if (newScrollY > scrollYMax) newScrollY = scrollYMax;
+        this.props.updateStagePosition({ scrollY: newScrollY });
       }
       if (shipY - scrollY < (height / 6) * -1 && scrollY > scrollYMin) {
-        this.props.updateStagePosition({ scrollY: scrollY - Math.abs(shipY - scrollY) / 75 });
+        let newScrollY = scrollY - Math.abs(shipY - scrollY) / 75;
+        if (newScrollY < scrollYMin) newScrollY = scrollYMin;
+        this.props.updateStagePosition({ scrollY: newScrollY });
       }
 
       // Calculate which chunks need to be visible based on stage scroll position.
@@ -247,27 +261,36 @@ class Main extends Component {
       // Add chunks in visibleChunks to stage
 
       const stageChunks = chunks.map(el => {
-        // return { id: `x${el.x}y${el.y}` };
         return el.id;
       });
 
-      // console.log('=====');
-      // console.log('BASE: ', stageChunks);
-
       const visibleChunks = this.getChunksBasedOnScroll().filter(el => {
-        let index = stageChunks.indexOf(`x${el.x}y${el.y}`);
-
-        if (index > 0) {
-          stageChunks.splice(index);
+        const id = `x${el.x}y${el.y}`;
+        const index = stageChunks.indexOf(id);
+        if (index >= 0) {
+          stageChunks.splice(index, 1);
           return false;
         }
         return true;
       });
 
-      // console.log(stageChunks, visibleChunks);
-
-      // console.log('DELETE: ', stageChunks);
+      // console.log('=====');
       // console.log('ADD: ', visibleChunks);
+      // console.log('DEL: ', stageChunks);
+
+      if (visibleChunks.length > 0) {
+        visibleChunks.forEach(el => {
+          const descriptor = level.current.matrix[el.y][el.x];
+          const chunk = new Chunk(descriptor, el.x, el.y);
+          this.props.addChunk(chunk);
+        });
+      }
+
+      if (stageChunks.length > 0) {
+        stageChunks.forEach(el => {
+          this.props.discardChunk(el);
+        });
+      }
     }
 
     /*

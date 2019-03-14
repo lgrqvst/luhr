@@ -13,7 +13,7 @@ const reducer = (state = initialState, action) => {
       return updateObject(state, action.payload);
 
     case actionTypes.UPDATE_SHIP:
-      console.log('Updating ship');
+      // console.log('Updating ship');
       return updateObject(state, action.payload);
 
     case actionTypes.RESET_SHIP:

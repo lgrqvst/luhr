@@ -15,16 +15,20 @@ const initialState = {
 };
 
 const reducer = (state = initialState, action) => {
+  let chunks;
   switch (action.type) {
     case actionTypes.ADD_CHUNK:
       console.log('Adding chunk: ', action.payload.id);
-      const chunks = [...state.chunks];
+      chunks = [...state.chunks];
       chunks.push(action.payload);
       return updateObject(state, { chunks: chunks });
 
     case actionTypes.DISCARD_CHUNK:
       console.log('Discarding chunk: ', action.payload.id);
-      return state;
+      chunks = [...state.chunks].filter(el => {
+        return el.id !== action.payload.id;
+      });
+      return updateObject(state, { chunks: chunks });
 
     case actionTypes.ADD_OBJECT_TO_STAGE:
       console.log('Adding object to stage');
