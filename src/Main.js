@@ -249,7 +249,6 @@ class Main extends Component {
         this.props.updateStagePosition({ scrollY: newScrollY });
       }
 
-      // Calculate which chunks need to be visible based on stage scroll position.
       // Get list of visibleChunks based on scrollPosition
       // Get an array of all chunks on the stage
       // For every chunk in visibleChunks, check if it's in stageChunks
@@ -273,10 +272,6 @@ class Main extends Component {
         }
         return true;
       });
-
-      // console.log('=====');
-      // console.log('ADD: ', visibleChunks);
-      // console.log('DEL: ', stageChunks);
 
       if (visibleChunks.length > 0) {
         visibleChunks.forEach(el => {
