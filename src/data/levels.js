@@ -13,7 +13,7 @@
 // ) small slope high right, x, y
 // ( small slope high left, y, x
 
-const chunkSize = 1000;
+const chunkSize = 330;
 
 const levels = {
   area1: {
@@ -38,8 +38,133 @@ const levels = {
       min: -5
     }
   },
-  area2: {},
-  area3: {}
+  test: {
+    id: 1,
+    name: 'TEST AREA',
+    matrix: [
+      [
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`
+      ],
+      [
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`
+      ],
+      [
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`
+      ],
+      [
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`
+      ],
+      [
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}@5`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
+        `]${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`
+      ]
+    ],
+    width: 20,
+    height: 5,
+    start: {
+      x: 0,
+      y: 4
+    },
+    gravity: 1,
+    wind: {
+      max: 5,
+      min: -5
+    }
+  }
 };
 
 export { levels, chunkSize };
