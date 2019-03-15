@@ -230,7 +230,7 @@ class Main extends Component {
 
       if (shipX - scrollX > width / 6 && scrollX < scrollXMax) {
         let newScrollX = scrollX + (shipX - scrollX) / 75;
-        if (newScrollX > scrollXMax) newScrollX = scrollYMax;
+        if (newScrollX > scrollXMax) newScrollX = scrollXMax;
         this.props.updateStagePosition({ scrollX: newScrollX });
       }
       if (shipX - scrollX < (width / 6) * -1 && scrollX > scrollXMin) {
