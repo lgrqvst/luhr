@@ -36,8 +36,8 @@ class Chunk {
       case '_':
         this.realLine.start = { x: 0, y: c(1) };
         this.realLine.end = { x: 10, y: c(1) };
-        this.realLine.control1 = this.realLine.start;
-        this.realLine.control2 = this.realLine.end;
+        this.realLine.control1 = { ...this.realLine.start };
+        this.realLine.control2 = { ...this.realLine.end };
         break;
       case '-':
         this.realLine.start = { x: 0, y: c(1) };
@@ -48,32 +48,32 @@ class Chunk {
       case '|':
         this.realLine.start = { x: c(1), y: 0 };
         this.realLine.end = { x: c(2), y: 10 };
-        this.realLine.control1 = { ...this.realLine.start, y: this.seed0 * 10 };
-        this.realLine.control2 = { ...this.realLine.end, y: this.seed1 * 10 };
+        this.realLine.control1 = { ...this.realLine.start, y: this.seed0 * 5 + 2.5 };
+        this.realLine.control2 = { ...this.realLine.end, y: this.seed1 * 5 + 2.5 };
         break;
       case '(':
         this.realLine.start = { x: 0, y: c(1) };
         this.realLine.end = { x: c(2), y: 0 };
-        this.realLine.control1 = { ...this.realLine.start, x: this.seed0 * 3 };
-        this.realLine.control2 = { ...this.realLine.end, y: this.seed1 * 3 };
+        this.realLine.control1 = { ...this.realLine.start, x: ((this.seed0 * c(2)) / 3) * 2 + c(2) / 3 };
+        this.realLine.control2 = { ...this.realLine.end, y: ((this.seed1 * c(1)) / 3) * 2 + c(1) / 3 };
         break;
       case ')':
         this.realLine.start = { x: c(1), y: 0 };
         this.realLine.end = { x: 10, y: c(2) };
-        this.realLine.control1 = { ...this.realLine.start, y: this.seed0 * 3 };
-        this.realLine.control2 = { ...this.realLine.end, x: this.seed1 * 3 + 7 };
+        this.realLine.control1 = { ...this.realLine.start, y: (this.seed0 * c(2)) / 2 + c(2) / 3 };
+        this.realLine.control2 = { ...this.realLine.end, x: ((10 - c(1)) / 3) * 2 * this.seed1 + c(1) };
         break;
       case '/':
         this.realLine.start = { x: c(1), y: 10 };
         this.realLine.end = { x: 10, y: c(2) };
-        this.realLine.control1 = { ...this.realLine.start, y: this.seed0 * 3 + 7 };
-        this.realLine.control2 = { ...this.realLine.end, x: this.seed1 * 3 + 7 };
+        this.realLine.control1 = { ...this.realLine.start, y: ((10 - c(2)) / 3) * 2 * this.seed0 + c(2) };
+        this.realLine.control2 = { ...this.realLine.end, x: ((10 - c(1)) / 3) * 2 * this.seed1 + c(1) };
         break;
       case '\\':
         this.realLine.start = { x: 0, y: c(1) };
         this.realLine.end = { x: c(2), y: 10 };
-        this.realLine.control1 = { ...this.realLine.start, x: this.seed0 * 3 };
-        this.realLine.control2 = { ...this.realLine.end, y: this.seed1 * 3 + 7 };
+        this.realLine.control1 = { ...this.realLine.start, x: (this.seed0 * c(2)) / 2 + c(2) / 3 };
+        this.realLine.control2 = { ...this.realLine.end, y: ((10 - c(1)) / 3) * 2 * this.seed1 + c(1) };
         break;
       case '[':
         this.realLine.start = { x: c(1), y: 10 };
