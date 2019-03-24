@@ -4,8 +4,8 @@ import store from '../store/store';
 class Chunk {
   seed0 = Math.random();
   seed1 = Math.random();
-  // seed2 = Math.random();
-  // seed3 = Math.random();
+  seed2 = Math.random();
+  seed3 = Math.random();
   // seed4 = Math.random();
   // seed5 = Math.random();
   // seed6 = Math.random();
@@ -88,15 +88,14 @@ class Chunk {
         this.realLine.control2 = { ...this.realLine.end, y: c(1) };
         break;
       case '^':
-        this.realLine.start = { x: 0, y: 0 };
-        this.realLine.mid = { x: 0, y: 0 };
-        this.realLine.end = { x: 0, y: 0 };
-        this.realLine.control1 = { x: 0, y: 0 };
-        this.realLine.control2 = { x: 0, y: 0 };
-        this.realLine.control3 = { x: 0, y: 0 };
-        this.realLine.control4 = { x: 0, y: 0 };
-        break;
       case 'v':
+        this.realLine.start = { x: 0, y: c(1) };
+        this.realLine.mid = { x: c(2), y: c(3) };
+        this.realLine.end = { x: 10, y: c(4) };
+        this.realLine.control1 = { ...this.realLine.start, x: c(2) * this.seed0 };
+        this.realLine.control2 = { ...this.realLine.mid, x: c(2) - this.seed1 * 5 };
+        this.realLine.control3 = { ...this.realLine.mid, x: c(2) + this.seed1 * 5 };
+        this.realLine.control4 = { ...this.realLine.end, x: 10 - this.seed0 * 5 - this.seed3 * 1 };
         break;
       case '#':
         break;
@@ -144,14 +143,38 @@ class Chunk {
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(x + (chunkSize / 10) * this.realLine.start.x, y + (chunkSize / 10) * this.realLine.start.y);
-    ctx.bezierCurveTo(
-      x + (chunkSize / 10) * this.realLine.control1.x,
-      y + (chunkSize / 10) * this.realLine.control1.y,
-      x + (chunkSize / 10) * this.realLine.control2.x,
-      y + (chunkSize / 10) * this.realLine.control2.y,
-      x + (chunkSize / 10) * this.realLine.end.x,
-      y + (chunkSize / 10) * this.realLine.end.y
-    );
+    switch (Object.values(this.realLine).length) {
+      case 4:
+        ctx.bezierCurveTo(
+          x + (chunkSize / 10) * this.realLine.control1.x,
+          y + (chunkSize / 10) * this.realLine.control1.y,
+          x + (chunkSize / 10) * this.realLine.control2.x,
+          y + (chunkSize / 10) * this.realLine.control2.y,
+          x + (chunkSize / 10) * this.realLine.end.x,
+          y + (chunkSize / 10) * this.realLine.end.y
+        );
+        break;
+      case 7:
+        ctx.bezierCurveTo(
+          x + (chunkSize / 10) * this.realLine.control1.x,
+          y + (chunkSize / 10) * this.realLine.control1.y,
+          x + (chunkSize / 10) * this.realLine.control2.x,
+          y + (chunkSize / 10) * this.realLine.control2.y,
+          x + (chunkSize / 10) * this.realLine.mid.x,
+          y + (chunkSize / 10) * this.realLine.mid.y
+        );
+        ctx.bezierCurveTo(
+          x + (chunkSize / 10) * this.realLine.control3.x,
+          y + (chunkSize / 10) * this.realLine.control3.y,
+          x + (chunkSize / 10) * this.realLine.control4.x,
+          y + (chunkSize / 10) * this.realLine.control4.y,
+          x + (chunkSize / 10) * this.realLine.end.x,
+          y + (chunkSize / 10) * this.realLine.end.y
+        );
+        break;
+      default:
+      // Do nothing in particular
+    }
     ctx.lineWidth = 1;
     ctx.strokeStyle = '#ffffff';
     ctx.stroke();
